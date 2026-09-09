@@ -22,13 +22,17 @@ const screens = {
     'Home',
   ],
   Diario: [
-    
+    'DiarioEmocional',
+    'EscreverDiario',
   ],
   Agenda: [
-
+    'Agendamento',
+    'BuscaProfissionais',
+    'PerfilProfissional',
   ],
-  Conversas:[
+  Conversas: [
     'Conversas',
+    'Conversa',
   ],
   Perfil:[
     'Perfil',

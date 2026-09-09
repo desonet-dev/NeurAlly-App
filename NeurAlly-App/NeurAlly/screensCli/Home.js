@@ -8,6 +8,7 @@ import SearchBar from '../components/searchBar.js';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
+import paleta from '../styles/Tema.js';
 
 export default function HomeScreen() {
     const [fontsLoaded] = useFonts({
@@ -98,7 +99,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF', // Fundo padrão branco
+        backgroundColor: paleta.cor.a2, // Fundo padrão branco
     },
     mainView: {
         flex: 1,

@@ -10,6 +10,7 @@ import {
     ScrollView,
 } from 'react-native';
 import { useFonts } from 'expo-font';
+import paleta from '../styles/Tema.js';
 
 export default function LoginScreen({ navigation }) {
     const [fontsLoaded] = useFonts({

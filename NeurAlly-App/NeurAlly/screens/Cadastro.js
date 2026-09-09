@@ -11,6 +11,8 @@ import {
     Image
 } from 'react-native';
 import { useFonts } from 'expo-font';
+import { theme } from '../styles/Tema.js';
+import paleta from '../styles/Tema.js';
 
 export default function CadastroScreen({ navigation }) {
     // Estado para controlar qual aba está ativa (false = usuário, true = psicólogo)
@@ -115,13 +117,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     card: {
-        backgroundColor: '#9EBDF0', // Cor de fundo do card extraída do protótipo
+        backgroundColor: '#9EBDF0',
         width: '100%',
         borderRadius: 15,
         padding: 25,
         alignItems: 'center',
-        elevation: 3, // Sombra para Android
-        shadowColor: '#000', // Sombra para iOS
+        elevation: 3,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -162,10 +164,10 @@ const styles = StyleSheet.create({
     textLinkBold: {
         fontFamily: 'Montserrat-Bold',
         fontSize: 12,
-        color: '#1A56DB', // Um tom de azul mais escuro para o link
+        color: '#1A56DB',
     },
     submitButton: {
-        backgroundColor: '#2563EB', // Azul do botão
+        backgroundColor: '#2563EB',
         paddingVertical: 12,
         paddingHorizontal: 30,
         borderRadius: 8,
@@ -178,7 +180,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 
-    // Toggle (Usuário / Psicólogo)
+    // Alterar entre cliente e profissional
     toggleContainer: {
         flexDirection: 'row',
         marginTop: 30,
@@ -199,7 +201,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     toggleActive: {
-        backgroundColor: '#9EBDF0', // Azul claro indicando que está selecionado
+        backgroundColor: '#9EBDF0',
     },
     toggleText: {
         fontFamily: 'Montserrat-Regular',
@@ -211,7 +213,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Bold',
     },
 
-    // Redes Sociais
+    // Método de entrada rápida (Google, Facebook)
     socialContainer: {
         flexDirection: 'row',
         marginTop: 30,
