@@ -56,7 +56,7 @@ export default function NavBar() {
                 <TouchableOpacity
                     key={button.name}
                     style={telaAtual(button.name) ? styles.chosenBarOption : styles.barOption}
-                    onPress={() => navigation.navigate(button.name)}
+                    onPress={() => navigation.navigate(screens[button.name][0])}
                 >
                     <View style={styles.barImage}>
                         <IconComponent

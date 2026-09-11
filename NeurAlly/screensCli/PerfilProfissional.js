@@ -77,7 +77,14 @@ export default function PerfilProfissional({ route, navigation }) {
         </View>
 
         {/* Botão Confirmar */}
-        <TouchableOpacity style={styles.confirmButton}>
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={() => navigation.navigate('FinalAgendamento', {
+            profissional,
+            dia: selectedDay,
+            horario: selectedTime,
+          })}
+        >
           <Text style={styles.confirmButtonText}>Confirmar</Text>
         </TouchableOpacity>
 

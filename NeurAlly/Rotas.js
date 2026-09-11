@@ -1,38 +1,81 @@
-import { createDrawerNavigator } from '@react-navigation/drawer';
-const Drawer = createDrawerNavigator();
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+const Stack = createNativeStackNavigator();
 
+// Telas de autenticação / carregamento
 import LoadingScreen from './screens/Carregamento.js';
-import HomeScreen from './screensCli/Home.js';
-import PerfilScreen from './screens/Perfil.js';
-import ConversasScreen from './screensCli/Conversas.js';
-import TriagemScreen from './screensCli/Triagem.js';
-import ConversaScreen from './screensCli/Conversa.js';
+import LoginScreen from './screens/Login.js';
 import CadastroScreen from './screens/Cadastro.js';
 import EsqueciSenhaScreen from './screens/RecSenha.js';
-import LoginScreen from './screens/Login.js'
 
+// Telas do cliente
+import HomeScreen from './screensCli/Home.js';
+import TriagemScreen from './screensCli/Triagem.js';
+import PerfilScreen from './screensCli/Perfil.js';
+import DadosPessoaisScreen from './screensCli/DadosPessoais.js';
+import PreferenciasScreen from './screensCli/Preferencias.js';
+import ConversasScreen from './screensCli/Conversas.js';
+import ConversaScreen from './screensCli/Conversa.js';
+import DiarioEmocionalScreen from './screensCli/DiarioEmocional.js';
+import EscreverDiarioScreen from './screensCli/EscreverDiario.js';
+import AgendamentoScreen from './screensCli/Agendamento.js';
+import BuscaProfissionaisScreen from './screensCli/BuscaProfissionais.js';
+import PerfilProfissionalScreen from './screensCli/PerfilProfissional.js';
+import FinalAgendamentoScreen from './screensCli/FinalAgendamento.js';
+import PagamentoScreen from './screensCli/Pagamento.js';
+
+// Telas do psicólogo
+import HomePsiScreen from './screensPsi/Home.js';
+import PerfilPsiScreen from './screensPsi/Perfil.js';
+import PerfilConfigScreen from './screensPsi/PerfilConfig.js';
+import PerfilDadosPsiScreen from './screensPsi/DadosPessoais.js';
+import DisponibilidadePsiScreen from './screensPsi/Disponibilidade.js';
+import PerfilPrefScreen from './screensPsi/Preferencias.js';
+import ExibicaoPsiScreen from './screensPsi/Exibicao.js';
+
+// O "name" de cada rota precisa bater exatamente com o que é usado nas
+// chamadas navigation.navigate(...) espalhadas pelas telas.
 const screens = [
+  // Autenticação / carregamento
+  { name: 'Loading', component: LoadingScreen },
+  { name: 'Login', component: LoginScreen },
+  { name: 'Cadastro', component: CadastroScreen },
+  { name: 'EsqueciSenha', component: EsqueciSenhaScreen },
+
+  // Área do cliente
   { name: 'Home', component: HomeScreen },
   { name: 'Triagem', component: TriagemScreen },
-  { name: 'Esqueci Senha', component: EsqueciSenhaScreen},
-  { name: 'Login', component: LoginScreen},
-  { name: 'Cadastro', component: CadastroScreen},
   { name: 'Perfil', component: PerfilScreen },
-  { name: 'Conversa', component: ConversaScreen},
-  { name: 'Conversas', component: ConversasScreen},
-  { name: 'Loading', component: LoadingScreen },
+  { name: 'DadosPessoais', component: DadosPessoaisScreen },
+  { name: 'Preferencias', component: PreferenciasScreen },
+  { name: 'Conversas', component: ConversasScreen },
+  { name: 'Conversa', component: ConversaScreen },
+  { name: 'DiarioEmocional', component: DiarioEmocionalScreen },
+  { name: 'EscreverDiario', component: EscreverDiarioScreen },
+  { name: 'Agendamento', component: AgendamentoScreen },
+  { name: 'BuscaProfissionais', component: BuscaProfissionaisScreen },
+  { name: 'PerfilProfissional', component: PerfilProfissionalScreen },
+  { name: 'FinalAgendamento', component: FinalAgendamentoScreen },
+  { name: 'Pagamento', component: PagamentoScreen },
+
+  // Área do psicólogo (rotas com sufixo "Psi" para não colidir com as do cliente)
+  { name: 'HomePsi', component: HomePsiScreen },
+  { name: 'PerfilPsi', component: PerfilPsiScreen },
+  { name: 'PerfilConfig', component: PerfilConfigScreen },
+  { name: 'PerfilDadosPsi', component: PerfilDadosPsiScreen },
+  { name: 'DisponibilidadePsi', component: DisponibilidadePsiScreen },
+  { name: 'PerfilPref', component: PerfilPrefScreen },
+  { name: 'ExibicaoPsi', component: ExibicaoPsiScreen },
 ];
 
 export default function Rotas() {
   return (
-    <Drawer.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      initialRouteName="Loading"
+      screenOptions={{ headerShown: false }}
+    >
       {screens.map(({ name, component }) => (
-        <Drawer.Screen
-          key={name}
-          name={name}
-          component={component}
-        />
+        <Stack.Screen key={name} name={name} component={component} />
       ))}
-    </Drawer.Navigator>
+    </Stack.Navigator>
   );
 }

@@ -98,7 +98,7 @@ export default function HomePsicologo({ navigation }) {
         <TouchableOpacity style={styles.navItem}>
           <Ionicons name="chatbubble-outline" size={22} color="#888" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Perfil')}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PerfilPsi')}>
           <Ionicons name="person-outline" size={22} color="#888" />
         </TouchableOpacity>
       </View>

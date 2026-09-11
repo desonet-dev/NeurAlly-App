@@ -11,7 +11,7 @@ import Animated, {
 
 SplashScreen.preventAutoHideAsync();
 
-export default function App() {
+export default function Carregamento({ navigation }) {
     const [isReady, setIsReady] = useState(false);
     const translateX = useSharedValue(300); // start off-screen to the right
 
@@ -34,8 +34,16 @@ export default function App() {
                 duration: 600,
                 easing: Easing.out(Easing.exp),
             });
+
+            // Depois que a animação termina, segue para a tela de Login.
+            // Usamos "replace" para que o usuário não consiga voltar para a splash.
+            const timer = setTimeout(() => {
+                navigation.replace('Login');
+            }, 1600);
+
+            return () => clearTimeout(timer);
         }
-    }, [isReady]);
+    }, [isReady, navigation]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],

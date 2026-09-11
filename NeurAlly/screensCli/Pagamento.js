@@ -11,8 +11,8 @@ export default function Pagamento({ navigation }) {
   const [metodo, setMetodo] = useState('cartao');
 
   const [fontsLoaded] = useFonts({
-    'Montserrat-Regular': require('../assets/fonts/Montserrat/static/Montserrat-Regular.ttf'),
-    'Montserrat-Bold': require('../assets/fonts/Montserrat/static/Montserrat-Bold.ttf'),
+    'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
+    'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
   if (!fontsLoaded) return null;
@@ -91,7 +91,10 @@ export default function Pagamento({ navigation }) {
           {renderRadio(metodo === 'apple')}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.payButton}>
+        <TouchableOpacity
+          style={styles.payButton}
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Home' }] })}
+        >
           <Text style={styles.payButtonText}>Pagar</Text>
         </TouchableOpacity>
 

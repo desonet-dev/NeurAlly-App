@@ -31,7 +31,7 @@ export default function Agendamento({ navigation }) {
             Verifique no calendário abaixo suas próximas consultas!
           </Text>
           
-          <TouchableOpacity style={styles.orangeButtonSmall}>
+          <TouchableOpacity style={styles.orangeButtonSmall} onPress={() => navigation.navigate('FinalAgendamento')}>
             <Text style={styles.buttonTextWhite}>Agende uma consulta</Text>
           </TouchableOpacity>
 

@@ -47,7 +47,7 @@ export default function EsqueciSenhaScreen({ navigation }) {
                             autoCapitalize="none"
                         />
 
-                        <TouchableOpacity style={styles.submitButton}>
+                        <TouchableOpacity style={styles.submitButton} onPress={() => navigation.navigate('Login')}>
                             <Text style={styles.submitButtonText}>Enviar e-mail</Text>
                         </TouchableOpacity>
                     </View>
