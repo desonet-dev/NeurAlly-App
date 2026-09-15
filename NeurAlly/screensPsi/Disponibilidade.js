@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, TextInput } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import paleta from '../styles/Tema.js';
 
 export default function DisponibilidadePsi({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -91,7 +92,7 @@ export default function DisponibilidadePsi({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#9EBDF0', padding: 20 },
+  container: { flex: 1, backgroundColor: paleta.cor.fundoCard, padding: 20 },
   card: { flex: 1, backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingBottom: 10 },
   headerTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: '#1A56DB', marginLeft: 10 },

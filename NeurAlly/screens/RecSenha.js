@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import paleta from '../styles/Tema.js';
 
 export default function EsqueciSenhaScreen({ navigation }) {
     const [fontsLoaded] = useFonts({
@@ -60,7 +61,7 @@ export default function EsqueciSenhaScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: paleta.cor.fundoAuth,
     },
     keyboardView: {
         flex: 1,
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
         paddingBottom: 50,
     },
     card: {
-        backgroundColor: '#9EBDF0',
+        backgroundColor: paleta.cor.fundoCard,
         width: '100%',
         borderRadius: 15,
         padding: 25,
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: paleta.cor.fundoAuth,
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,

@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, SafeAreaView, ScrollVi
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import NavBar from '../components/navBarCli.js';
+import paleta from '../styles/Tema.js';
 
 export default function Perfil({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -15,7 +17,7 @@ export default function Perfil({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.card}>
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
           
           <View style={styles.avatarContainer}>
             <Image source={require('../assets/Anderson.png')} style={styles.avatar} />
@@ -53,16 +55,17 @@ export default function Perfil({ navigation }) {
 
         </ScrollView>
       </View>
+      <NavBar />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#9EBDF0', padding: 20 },
+  container: { flex: 1, backgroundColor: paleta.cor.fundoCard, padding: 20 },
   card: { flex: 1, backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden', paddingBottom: 20 },
-  scrollContent: { padding: 20, alignItems: 'center' },
+  scrollContent: { padding: 20, paddingBottom: 100, alignItems: 'center' },
   avatarContainer: { position: 'relative', marginBottom: 20, marginTop: 20 },
-  avatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#E4F0F8' },
+  avatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: paleta.cor.fundo },
   editAvatarButton: { position: 'absolute', bottom: 0, right: 10, backgroundColor: '#000', width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF' },
   divider: { width: '100%', height: 2, backgroundColor: '#1A56DB', opacity: 0.5, marginBottom: 20 },
   menuItem: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F0F4FF', paddingVertical: 15, paddingHorizontal: 20, borderRadius: 15, marginBottom: 12 },

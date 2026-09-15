@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
+import NavBar from '../components/navBarCli.js';
+import paleta from '../styles/Tema.js';
 
 export default function PerfilProfissional({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   // Recebe os dados, ou usa um mock se a navegação vier vazia para testes
   const profissional = route?.params?.profissional || { nome: 'Dr. Thiago', esp: 'Especialista em traumas' };
   
@@ -27,13 +31,13 @@ export default function PerfilProfissional({ route, navigation }) {
         {/* Substitua pela imagem em alta qualidade */}
         <Image source={require('../assets/Anderson.png')} style={styles.headerImage} resizeMode="cover" />
         
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={[styles.backButton, { top: insets.top + 10 }]} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={30} color="#FFF" />
         </TouchableOpacity>
       </View>
 
       {/* Conteúdo Principal */}
-      <ScrollView contentContainerStyle={styles.contentScroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.contentScroll} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         
         {/* Card Azul Flutuante (Sobrepondo a imagem) */}
         <View style={styles.nameCard}>
@@ -89,17 +93,18 @@ export default function PerfilProfissional({ route, navigation }) {
         </TouchableOpacity>
 
       </ScrollView>
+      <NavBar />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E4F0F8' },
+  container: { flex: 1, backgroundColor: paleta.cor.fundo },
   headerImageContainer: { height: '35%', width: '100%', position: 'relative' },
   headerImage: { width: '100%', height: '100%' },
-  backButton: { position: 'absolute', top: 50, left: 20, backgroundColor: 'rgba(98, 146, 214, 0.8)', borderRadius: 20, padding: 5 },
+  backButton: { position: 'absolute', left: 20, backgroundColor: 'rgba(98, 146, 214, 0.8)', borderRadius: 20, padding: 5 },
   
-  contentScroll: { paddingHorizontal: 20, paddingBottom: 100 },
+  contentScroll: { paddingHorizontal: 20, paddingBottom: 130 },
   nameCard: {
     backgroundColor: '#6292D6', borderRadius: 15, paddingVertical: 20, paddingHorizontal: 15,
     alignItems: 'center', marginTop: -40, marginBottom: 30, // Margem negativa para sobrepor a foto

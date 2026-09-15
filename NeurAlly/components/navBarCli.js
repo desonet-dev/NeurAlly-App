@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import paleta from '../styles/Tema.js';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -42,13 +43,23 @@ const screens = {
 export default function NavBar() {
   const navigation = useNavigation();
   const route = useRoute();
+  const insets = useSafeAreaInsets();
 
   const telaAtual = (grupo)=>{
     return screens[grupo].includes(route.name);
   }
 
   return (
-      <View style={styles.barBackground}>
+      // position: 'absolute' deixa o menu flutuando sobre o conteúdo, com fundo
+      // transparente, sempre fixo na parte de baixo da tela (acima da área segura
+      // do sistema, ex: barra de gestos do iPhone).
+      <View
+        style={[
+          styles.barBackground,
+          { bottom: insets.bottom > 0 ? insets.bottom + 10 : 20 },
+        ]}
+        pointerEvents="box-none"
+      >
         {buttons.map((button) => {
             const IconComponent = button.library;
 
@@ -79,14 +90,25 @@ export default function NavBar() {
 
 const styles = StyleSheet.create({
   barBackground: {
-    height: 80,
+    position: 'absolute',
+    left: 10,
+    right: 10,
+    height: 70,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: paleta.cor.a1,
-    marginHorizontal: 10,
-    marginBottom: 35,
+    // Fundo semitransparente: o menu flutua sobre o conteúdo em vez de
+    // empurrá-lo, mas ainda mantém contraste e legibilidade dos ícones.
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
     paddingHorizontal: 10,
     borderRadius: 35,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    // Sombra para o menu se destacar do conteúdo por baixo dele
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
   },
   barOption: {
     flex: 1,
@@ -96,11 +118,11 @@ const styles = StyleSheet.create({
     color: paleta.cor.branco,
   },
   chosenBarOption: {
-    marginVertical: 18,
+    marginVertical: 13,
     paddingLeft: 10,
     paddingRight: 5,
     color: paleta.cor.branco,
-    backgroundColor: paleta.cor.a8,
+    backgroundColor: 'rgba(228, 236, 255, 0.85)',
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',

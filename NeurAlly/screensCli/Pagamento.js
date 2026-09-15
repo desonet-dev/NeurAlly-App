@@ -6,6 +6,7 @@ import {
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import paleta from '../styles/Tema.js';
 
 export default function Pagamento({ navigation }) {
   const [metodo, setMetodo] = useState('cartao');
@@ -104,7 +105,7 @@ export default function Pagamento({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E4F0F8' },
+  container: { flex: 1, backgroundColor: paleta.cor.fundo },
   scrollContent: { padding: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   headerTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: '#1A56DB', marginLeft: 10 },

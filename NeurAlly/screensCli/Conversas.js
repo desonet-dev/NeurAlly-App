@@ -5,6 +5,7 @@ import {
     Image,
     FlatList,
     TouchableOpacity,
+    SafeAreaView,
 } from 'react-native';
 
 import paleta from '../styles/Tema.js';
@@ -72,9 +73,8 @@ export default function Conversas() {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={{ flex: 1 }}>
-                <View style={{ height: 40 }} />
+        <SafeAreaView style={styles.container}>
+            <View style={{ flex: 1, paddingTop: 15 }}>
                 <SearchBar />
 
                 <View style={styles.activeNow}>
@@ -158,14 +158,14 @@ export default function Conversas() {
             </View>
 
             <NavBar />
-        </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+        backgroundColor: paleta.cor.fundo,
     },
     activeNow: {
         marginHorizontal: 16,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     },
     chatsListContent: {
         paddingHorizontal: 16,
-        paddingBottom: 20,
+        paddingBottom: 110,
     },
     chatCard: {
         flexDirection: 'row',

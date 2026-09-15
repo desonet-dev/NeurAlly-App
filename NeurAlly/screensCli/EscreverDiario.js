@@ -7,6 +7,8 @@ import { useFonts } from 'expo-font';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
+import NavBar from '../components/navBarCli.js';
+import paleta from '../styles/Tema.js';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
@@ -165,13 +167,14 @@ export default function EscreverDiario({ navigation }) {
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <NavBar />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E4F0F8' },
-  scrollContent: { padding: 20, paddingBottom: 100 },
+  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+  scrollContent: { padding: 20, paddingBottom: 130 },
   inputTitle: { backgroundColor: '#FFF', borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   inputBody: { backgroundColor: '#FFF', borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 160, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   moodContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 25 },

@@ -8,10 +8,10 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Image
+    Image,
+    SafeAreaView
 } from 'react-native';
 import { useFonts } from 'expo-font';
-import { theme } from '../styles/Tema.js';
 import paleta from '../styles/Tema.js';
 
 export default function CadastroScreen({ navigation }) {
@@ -26,10 +26,11 @@ export default function CadastroScreen({ navigation }) {
     if (!fontsLoaded) return null;
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <SafeAreaView style={styles.container}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                 {/* Card Azul Claro */}
@@ -101,14 +102,15 @@ export default function CadastroScreen({ navigation }) {
                 </View>
 
             </ScrollView>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: paleta.cor.fundoAuth,
     },
     scrollContent: {
         paddingHorizontal: 20,
@@ -117,7 +119,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     card: {
-        backgroundColor: '#9EBDF0',
+        backgroundColor: paleta.cor.fundoCard,
         width: '100%',
         borderRadius: 15,
         padding: 25,
@@ -136,7 +138,7 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: paleta.cor.fundoAuth,
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,
@@ -201,7 +203,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     toggleActive: {
-        backgroundColor: '#9EBDF0',
+        backgroundColor: paleta.cor.fundoCard,
     },
     toggleText: {
         fontFamily: 'Montserrat-Regular',

@@ -21,6 +21,11 @@ const theme = {
       
       preto: '#000',
       branco: '#FFF',
+
+      // Fundos padronizados do app (evitar hex soltos nas telas)
+      fundo: '#E4F0F8',       // fundo das telas principais (Home, Agenda, Diário, Conversas...)
+      fundoCard: '#9EBDF0',   // fundo por trás dos cartões brancos (Perfil, Dados, Preferências...) e cartões de autenticação
+      fundoAuth: '#FFF',      // fundo das telas de login/cadastro/splash
     }
   }
   

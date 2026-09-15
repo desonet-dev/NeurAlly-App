@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
+import NavBar from '../components/navBarCli.js';
+import paleta from '../styles/Tema.js';
 
 export default function BuscaProfissionais({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -55,13 +57,15 @@ export default function BuscaProfissionais({ navigation }) {
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
       />
+      <NavBar />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E4F0F8' },
+  container: { flex: 1, backgroundColor: paleta.cor.fundo },
   searchContainer: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', margin: 20,
     borderRadius: 12, paddingHorizontal: 15, height: 50,
@@ -69,7 +73,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 15 },
-  listContent: { paddingHorizontal: 20, paddingBottom: 100 },
+  listContent: { paddingHorizontal: 20, paddingBottom: 130 },
   card: {
     backgroundColor: '#FFF', borderRadius: 16, padding: 18, marginBottom: 15, flexDirection: 'row', justifyContent: 'space-between',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,

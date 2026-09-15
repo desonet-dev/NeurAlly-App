@@ -20,9 +20,10 @@ export default function HomeScreen() {
     }
 
     return (
-        <View style={styles.container}>
-            <View
-                style={styles.mainView}
+        <SafeAreaView style={styles.container}>
+            <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={styles.mainView}
                 showsVerticalScrollIndicator={false}
             >
 
@@ -89,19 +90,19 @@ export default function HomeScreen() {
                     </View>
                 </TouchableOpacity>
 
-            </View>
+            </ScrollView>
             <NavBar />
-        </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.a2, // Fundo padrão branco
+        backgroundColor: paleta.cor.fundo,
     },
     mainView: {
-        flex: 1,
+        paddingBottom: 110,
     },
 
     // Header

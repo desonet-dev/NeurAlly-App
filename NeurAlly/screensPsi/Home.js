@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import paleta from '../styles/Tema.js';
 
 export default function HomePsicologo({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -107,7 +108,7 @@ export default function HomePsicologo({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E4F0F8' },
+  container: { flex: 1, backgroundColor: paleta.cor.fundo },
   scrollContent: { padding: 20, paddingBottom: 100 },
   headerContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   greetingText: { fontFamily: 'Montserrat-Regular', fontSize: 16, color: '#333' },

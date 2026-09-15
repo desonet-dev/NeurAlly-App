@@ -4,6 +4,7 @@ import {
     View,
     StyleSheet,
     useWindowDimensions,
+    SafeAreaView,
 } from 'react-native';
 import { useState } from 'react';
 import { useFonts } from 'expo-font';
@@ -115,7 +116,7 @@ export default function TriagemScreen() {
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.progressBar}>
                 <View style={styles.bar} />
                 <View
@@ -157,7 +158,7 @@ export default function TriagemScreen() {
                 </TouchableOpacity>
             </View>
 
-        </View>
+        </SafeAreaView>
     );
 }
 

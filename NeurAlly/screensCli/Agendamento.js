@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useFonts } from 'expo-font';
+import NavBar from '../components/navBarCli.js';
+import paleta from '../styles/Tema.js';
 
 export default function Agendamento({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -22,7 +24,7 @@ export default function Agendamento({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         
         {/* Card: Suas próximas consultas */}
         <View style={styles.card}>
@@ -82,13 +84,14 @@ export default function Agendamento({ navigation }) {
         </View>
 
       </ScrollView>
+      <NavBar />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E4F0F8' },
-  scrollContent: { padding: 20, paddingBottom: 100 }, // Espaço para NavBar
+  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+  scrollContent: { padding: 20, paddingBottom: 130 }, // Espaço para o menu flutuante
   card: {
     backgroundColor: '#FFF', borderRadius: 20, padding: 20, marginBottom: 20,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,

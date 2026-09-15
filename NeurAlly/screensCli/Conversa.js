@@ -160,7 +160,7 @@ export default function Conversa({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+        backgroundColor: paleta.cor.fundo,
     },
 
     // Header

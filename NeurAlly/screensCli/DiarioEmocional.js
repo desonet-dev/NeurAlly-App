@@ -6,6 +6,8 @@ import { useFonts } from 'expo-font';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
+import NavBar from '../components/navBarCli.js';
+import paleta from '../styles/Tema.js';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
@@ -58,7 +60,7 @@ export default function DiarioEmocional({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         
         <View style={styles.calendarWrapper}>
           <Calendar
@@ -153,13 +155,15 @@ export default function DiarioEmocional({ navigation }) {
       >
         <Ionicons name="add" size={32} color="#FFF" />
       </TouchableOpacity>
+
+      <NavBar />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#E4F0F8' },
-  scrollContent: { padding: 20, paddingBottom: 120 },
+  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+  scrollContent: { padding: 20, paddingBottom: 130 },
   calendarWrapper: {
     borderRadius: 15,
     overflow: 'hidden',
