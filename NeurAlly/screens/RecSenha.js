@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -7,19 +7,46 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView
+    SafeAreaView,
+    Alert,
+    ActivityIndicator
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
+import { recuperarSenha, traduzErroFirebase } from '../services/authService.js';
 
 export default function EsqueciSenhaScreen({ navigation }) {
+    const [email, setEmail] = useState('');
+    const [enviando, setEnviando] = useState(false);
+
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
         'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
     });
 
     if (!fontsLoaded) return null;
+
+    const handleEnviar = async () => {
+        if (!email.trim()) {
+            Alert.alert('Digite seu e-mail', 'Informe o e-mail da sua conta para receber o link de redefinição.');
+            return;
+        }
+
+        setEnviando(true);
+        try {
+            await recuperarSenha({ email: email.trim() });
+            Alert.alert(
+                'E-mail enviado',
+                'Verifique sua caixa de entrada para redefinir sua senha.',
+                [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+            );
+        } catch (erro) {
+            Alert.alert('Não foi possível enviar', traduzErroFirebase(erro));
+        } finally {
+            setEnviando(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -46,10 +73,21 @@ export default function EsqueciSenhaScreen({ navigation }) {
                             placeholderTextColor="#666"
                             keyboardType="email-address"
                             autoCapitalize="none"
+                            value={email}
+                            onChangeText={setEmail}
+                            editable={!enviando}
                         />
 
-                        <TouchableOpacity style={styles.submitButton} onPress={() => navigation.navigate('Login')}>
-                            <Text style={styles.submitButtonText}>Enviar e-mail</Text>
+                        <TouchableOpacity
+                            style={[styles.submitButton, enviando && styles.submitButtonDisabled]}
+                            onPress={handleEnviar}
+                            disabled={enviando}
+                        >
+                            {enviando ? (
+                                <ActivityIndicator size="small" color="#FFF" />
+                            ) : (
+                                <Text style={styles.submitButtonText}>Enviar e-mail</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -73,7 +111,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingHorizontal: 20,
-        justifyContent: 'center', // Centraliza o card na tela
+        justifyContent: 'center',
         paddingBottom: 50,
     },
     card: {
@@ -126,6 +164,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 30,
         borderRadius: 8,
         alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 44,
+        minWidth: 160,
+    },
+    submitButtonDisabled: {
+        opacity: 0.7,
     },
     submitButtonText: {
         color: '#FFF',

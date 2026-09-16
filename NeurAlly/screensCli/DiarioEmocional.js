@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView
+  StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -8,6 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import NavBar from '../components/navBarCli.js';
 import paleta from '../styles/Tema.js';
+import { escutarRegistrosPorData, escutarDatasComRegistro } from '../services/diarioService.js';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
@@ -18,30 +19,85 @@ LocaleConfig.locales['pt-br'] = {
 };
 LocaleConfig.defaultLocale = 'pt-br';
 
+function getHojeISO() {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+function formatarDataExtenso(dataISO) {
+  const [ano, mes, dia] = dataISO.split('-');
+  const nomeMes = LocaleConfig.locales['pt-br'].monthNames[parseInt(mes, 10) - 1];
+  return `${parseInt(dia, 10)} de ${nomeMes.toLowerCase()}`;
+}
+
 export default function DiarioEmocional({ navigation }) {
+  const [selectedDate, setSelectedDate] = useState(getHojeISO());
+  const [relatos, setRelatos] = useState([]);
+  const [datasComRegistro, setDatasComRegistro] = useState(new Set());
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
-  if (!fontsLoaded) return null;
+  useEffect(() => {
+    let cancelarEscuta = () => {};
+    let ativo = true;
 
-  const relatos = [
-    {
-      id: '1',
-      data: '15/06/2026',
-      titulo: 'NÃO GOSTEI DE HOJE',
-      texto: 'Eu sofri bullying de um menino chamado Henrique na escola, ele roubou o meu almoço e também jogou o meu caderno na privada.',
-      emocao: 'triste',
-    },
-    {
-      id: '2',
-      data: '15/06/2026',
-      titulo: 'Deixa, hoje foi legal',
-      texto: 'Fui no diretor reclamar e ele fez os pais deles pagarem por um caderno novo, e ainda ganhei 20 reais para gastar no almoço de amanhã.',
-      emocao: 'muitofeliz',
-    }
-  ];
+    escutarDatasComRegistro(
+      (datas) => {
+        if (ativo) setDatasComRegistro(datas);
+      },
+      (erroRecebido) => {
+        if (ativo) setErro(erroRecebido);
+      }
+    ).then((unsubscribe) => {
+      if (ativo) cancelarEscuta = unsubscribe;
+      else unsubscribe();
+    });
+
+    return () => {
+      ativo = false;
+      cancelarEscuta();
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelarEscuta = () => {};
+    let ativo = true;
+    setCarregando(true);
+
+    escutarRegistrosPorData(
+      selectedDate,
+      (registros) => {
+        if (ativo) {
+          setRelatos(registros);
+          setCarregando(false);
+        }
+      },
+      (erroRecebido) => {
+        if (ativo) {
+          setErro(erroRecebido);
+          setCarregando(false);
+        }
+      }
+    ).then((unsubscribe) => {
+      if (ativo) cancelarEscuta = unsubscribe;
+      else unsubscribe();
+    });
+
+    return () => {
+      ativo = false;
+      cancelarEscuta();
+    };
+  }, [selectedDate]);
+
+  if (!fontsLoaded) return null;
 
   const getEmotionIcon = (emocao) => {
     switch(emocao) {
@@ -53,28 +109,30 @@ export default function DiarioEmocional({ navigation }) {
     }
   };
 
-  const dots = {
-    orange: { key: 'orange', color: '#FF8C42' },
-    blue: { key: 'blue', color: '#1A56DB' }
+  const markedDates = {};
+  datasComRegistro.forEach((data) => {
+    markedDates[data] = {
+      ...(markedDates[data] || {}),
+      dots: [{ key: 'registro', color: '#FF8C42' }],
+    };
+  });
+  markedDates[selectedDate] = {
+    ...(markedDates[selectedDate] || {}),
+    selected: true,
+    selectedColor: 'transparent',
+    selectedTextColor: '#6292D6',
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-        
+
         <View style={styles.calendarWrapper}>
           <Calendar
-            current={'2026-06-15'}
+            current={selectedDate}
             markingType={'multi-dot'}
-            markedDates={{
-              '2026-06-15': {
-                dots: [dots.orange],
-                selected: true,
-                selectedColor: 'transparent',
-                selectedTextColor: '#6292D6',
-              },
-              '2026-06-16': { dots: [dots.blue] }
-            }}
+            markedDates={markedDates}
+            onDayPress={(day) => setSelectedDate(day.dateString)}
             theme={{
               calendarBackground: '#FFF',
               textSectionTitleColor: '#FFF',
@@ -130,14 +188,34 @@ export default function DiarioEmocional({ navigation }) {
 
         <View style={styles.dateDivider}>
           <View style={styles.line} />
-          <Text style={styles.dateTitle}>15 de junho</Text>
+          <Text style={styles.dateTitle}>{formatarDataExtenso(selectedDate)}</Text>
           <View style={styles.line} />
         </View>
 
-        {relatos.map((item) => (
+        {carregando && (
+          <ActivityIndicator size="small" color={paleta.cor.a5} style={{ marginTop: 10 }} />
+        )}
+
+        {!carregando && erro && (
+          <View style={styles.avisoContainer}>
+            <Text style={styles.avisoTexto}>
+              Não foi possível carregar os registros. Verifique a configuração do Firebase e sua conexão.
+            </Text>
+          </View>
+        )}
+
+        {!carregando && !erro && relatos.length === 0 && (
+          <View style={styles.avisoContainer}>
+            <Text style={styles.avisoTexto}>
+              Nenhum registro neste dia. Toque no + para adicionar o primeiro.
+            </Text>
+          </View>
+        )}
+
+        {!carregando && !erro && relatos.map((item) => (
           <View key={item.id} style={styles.card}>
             <View style={styles.cardHeader}>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.cardData}>Data: {item.data}</Text>
                 <Text style={styles.cardTitle}>{item.titulo}</Text>
               </View>
@@ -149,9 +227,9 @@ export default function DiarioEmocional({ navigation }) {
 
       </ScrollView>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate('EscreverDiario')}
+        onPress={() => navigation.navigate('EscreverDiario', { data: selectedDate })}
       >
         <Ionicons name="add" size={32} color="#FFF" />
       </TouchableOpacity>
@@ -181,7 +259,9 @@ const styles = StyleSheet.create({
   card: { backgroundColor: '#FFF', borderRadius: 15, padding: 20, marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
   cardData: { fontSize: 12, fontFamily: 'Montserrat-Bold', color: '#1A1A1A', marginBottom: 5 },
-  cardTitle: { fontSize: 16, fontFamily: 'Montserrat-Bold', color: '#1A1A1A', textTransform: 'uppercase', width: '90%' },
+  cardTitle: { fontSize: 16, fontFamily: 'Montserrat-Bold', color: '#1A1A1A', textTransform: 'uppercase' },
   cardText: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: '#333', lineHeight: 18 },
+  avisoContainer: { paddingVertical: 30, alignItems: 'center' },
+  avisoTexto: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: '#5A6B87', textAlign: 'center', paddingHorizontal: 20 },
   fab: { position: 'absolute', right: 20, bottom: 90, backgroundColor: '#1A56DB', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 }
-}); 
+});

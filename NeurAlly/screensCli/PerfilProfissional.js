@@ -8,7 +8,6 @@ import paleta from '../styles/Tema.js';
 
 export default function PerfilProfissional({ route, navigation }) {
   const insets = useSafeAreaInsets();
-  // Recebe os dados, ou usa um mock se a navegação vier vazia para testes
   const profissional = route?.params?.profissional || { nome: 'Dr. Thiago', esp: 'Especialista em traumas' };
   
   const [selectedDay, setSelectedDay] = useState('Ter');
@@ -107,7 +106,7 @@ const styles = StyleSheet.create({
   contentScroll: { paddingHorizontal: 20, paddingBottom: 130 },
   nameCard: {
     backgroundColor: '#6292D6', borderRadius: 15, paddingVertical: 20, paddingHorizontal: 15,
-    alignItems: 'center', marginTop: -40, marginBottom: 30, // Margem negativa para sobrepor a foto
+    alignItems: 'center', marginTop: -40, marginBottom: 30,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 5,
   },
   nameCardTitle: { color: '#FFF', fontSize: 22, fontFamily: 'Montserrat-Bold', marginBottom: 5 },

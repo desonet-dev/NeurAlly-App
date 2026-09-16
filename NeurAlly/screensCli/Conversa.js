@@ -162,8 +162,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: paleta.cor.fundo,
     },
-
-    // Header
     header: {
         paddingTop: 30,
         paddingBottom: 15,
@@ -198,8 +196,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         fontFamily: 'Montserrat-Bold',
     },
-
-    // Lista de mensagens
     messagesList: {
         paddingHorizontal: 16,
         paddingVertical: 20,
@@ -215,8 +211,6 @@ const styles = StyleSheet.create({
     otherWrapper: {
         alignSelf: 'flex-start',
     },
-
-    // Balões de conversa
     messageBubble: {
         paddingHorizontal: 16,
         paddingVertical: 12,
@@ -241,8 +235,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Regular',
         lineHeight: 22,
     },
-
-    // Horário das mensagens
     timeText: {
         fontSize: 13,
         fontFamily: 'Montserrat-Bold',
@@ -255,8 +247,6 @@ const styles = StyleSheet.create({
     otherTime: {
         alignSelf: 'flex-start',
     },
-
-    // Divisores de data
     dateContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -273,15 +263,13 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Bold',
         color: '#D0D0D0',
     },
-
-    // Campo de texto inferior
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'flex-end',
         paddingHorizontal: 12,
         paddingVertical: 10,
         backgroundColor: '#FFF',
-        marginBottom: 40, // Ajuste esse valor dependendo se você usa tabBar na tela de chat
+        marginBottom: 40,
     },
     textInputWrapper: {
         flex: 1,

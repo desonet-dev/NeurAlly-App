@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -9,17 +9,47 @@ import {
     Platform,
     ScrollView,
     SafeAreaView,
+    Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import paleta from '../styles/Tema.js';
+import { buscarPerfil, entrarComEmailSenha, traduzErroFirebase } from '../services/authService.js';
 
 export default function LoginScreen({ navigation }) {
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
+    const [entrando, setEntrando] = useState(false);
+
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
         'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
     });
 
     if (!fontsLoaded) return null;
+
+    const handleEntrar = async () => {
+        if (!email.trim() || !senha) {
+            Alert.alert('Preencha os campos', 'Digite seu e-mail e sua senha para entrar.');
+            return;
+        }
+
+        setEntrando(true);
+        try {
+            const usuario = await entrarComEmailSenha({ email: email.trim(), senha });
+            const perfil = await buscarPerfil(usuario.uid);
+
+            if (perfil?.tipo === 'psicologo') {
+                navigation.reset({ index: 0, routes: [{ name: 'HomePsi' }] });
+            } else {
+                navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+            }
+        } catch (erro) {
+            Alert.alert('Não foi possível entrar', traduzErroFirebase(erro));
+        } finally {
+            setEntrando(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -29,7 +59,6 @@ export default function LoginScreen({ navigation }) {
             >
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                {/* Card Azul Claro */}
                 <View style={styles.card}>
                     <Text style={styles.title}>Login</Text>
 
@@ -39,12 +68,18 @@ export default function LoginScreen({ navigation }) {
                         placeholderTextColor="#666"
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        value={email}
+                        onChangeText={setEmail}
+                        editable={!entrando}
                     />
                     <TextInput
                         style={styles.input}
                         placeholder="Senha"
                         placeholderTextColor="#666"
                         secureTextEntry={true}
+                        value={senha}
+                        onChangeText={setSenha}
+                        editable={!entrando}
                     />
 
                     {/* Links de Acesso */}
@@ -66,10 +101,15 @@ export default function LoginScreen({ navigation }) {
 
                     {/* Botão Entrar */}
                     <TouchableOpacity
-                        style={styles.submitButton}
-                        onPress={() => navigation.navigate('Home')} // Ajuste para o nome da sua tela inicial
+                        style={[styles.submitButton, entrando && styles.submitButtonDisabled]}
+                        onPress={handleEntrar}
+                        disabled={entrando}
                     >
-                        <Text style={styles.submitButtonText}>Entrar</Text>
+                        {entrando ? (
+                            <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                            <Text style={styles.submitButtonText}>Entrar</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
 
@@ -105,7 +145,7 @@ const styles = StyleSheet.create({
         width: '100%',
         borderRadius: 15,
         padding: 25,
-        paddingVertical: 40, // Um pouco mais de espaço vertical no login
+        paddingVertical: 40,
         alignItems: 'center',
         elevation: 3,
         shadowColor: '#000',
@@ -161,6 +201,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 40,
         borderRadius: 8,
         alignItems: 'center',
+        minWidth: 120,
+        justifyContent: 'center',
+    },
+    submitButtonDisabled: {
+        opacity: 0.7,
     },
     submitButtonText: {
         color: '#FFF',
@@ -190,6 +235,6 @@ const styles = StyleSheet.create({
     socialTextPlaceholder: {
         fontSize: 24,
         fontFamily: 'Montserrat-Bold',
-        color: '#1877F2', // Azul do facebook
+        color: '#1877F2',
     }
 });

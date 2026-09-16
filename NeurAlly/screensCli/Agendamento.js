@@ -12,7 +12,6 @@ export default function Agendamento({ navigation }) {
 
   if (!fontsLoaded) return null;
 
-  // Mock de dias para desenhar o calendário visualmente igual ao protótipo
   const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Quinta', 'Sex', 'Sáb'];
   const calendarDays = [
     ['31', '1', '2', '3', '4', '5', '6'],
@@ -91,7 +90,7 @@ export default function Agendamento({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: paleta.cor.fundo },
-  scrollContent: { padding: 20, paddingBottom: 130 }, // Espaço para o menu flutuante
+  scrollContent: { padding: 20, paddingBottom: 130 },
   card: {
     backgroundColor: '#FFF', borderRadius: 20, padding: 20, marginBottom: 20,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
@@ -112,6 +111,6 @@ const styles = StyleSheet.create({
   calendarDay: { flex: 1, aspectRatio: 1, justifyContent: 'center', alignItems: 'center', borderRightWidth: 1, borderRightColor: '#F0F0F0' },
   calendarDayActive: { borderColor: '#6292D6', borderWidth: 2, borderRadius: 20, margin: 2 },
   calendarDayText: { fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#333' },
-  calendarDayTextDisabled: { color: '#FFB890' }, // Cor alaranjada clara para dias de outro mês
+  calendarDayTextDisabled: { color: '#FFB890' },
   calendarDayTextActive: { color: '#6292D6', fontFamily: 'Montserrat-Bold' },
 });

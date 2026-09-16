@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, Text, View, ScrollView, TouchableOpacity, 
-  SafeAreaView, TextInput, KeyboardAvoidingView, Platform 
+import {
+  StyleSheet, Text, View, ScrollView, TouchableOpacity,
+  SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -9,6 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import NavBar from '../components/navBarCli.js';
 import paleta from '../styles/Tema.js';
+import { adicionarRegistro } from '../services/diarioService.js';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
@@ -22,11 +23,20 @@ if (LocaleConfig.defaultLocale !== 'pt-br') {
   LocaleConfig.defaultLocale = 'pt-br';
 }
 
-export default function EscreverDiario({ navigation }) {
+function getHojeISO() {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+export default function EscreverDiario({ navigation, route }) {
   const [titulo, setTitulo] = useState('');
   const [relato, setRelato] = useState('');
   const [humor, setHumor] = useState(null);
-  const [selectedDate, setSelectedDate] = useState('2026-06-15');
+  const [selectedDate, setSelectedDate] = useState(route?.params?.data || getHojeISO());
+  const [salvando, setSalvando] = useState(false);
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -35,57 +45,93 @@ export default function EscreverDiario({ navigation }) {
 
   if (!fontsLoaded) return null;
 
+  const handleEnviar = async () => {
+    if (!titulo.trim() || !relato.trim()) {
+      Alert.alert('Preencha os campos', 'Escreva um título e um relato antes de enviar.');
+      return;
+    }
+    if (!humor) {
+      Alert.alert('Selecione uma emoção', 'Toque em um dos ícones para indicar como você se sentiu.');
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      await adicionarRegistro({
+        titulo: titulo.trim(),
+        texto: relato.trim(),
+        emocao: humor,
+        data: selectedDate,
+      });
+      navigation.goBack();
+    } catch (erro) {
+      console.warn('Erro ao salvar registro do diário:', erro);
+      Alert.alert(
+        'Não foi possível salvar',
+        'Verifique sua conexão e a configuração do Firebase, e tente novamente.'
+      );
+    } finally {
+      setSalvando(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          <TextInput 
-            style={styles.inputTitle} 
-            placeholder="Digite o título de seu relato aqui..." 
+
+          <TextInput
+            style={styles.inputTitle}
+            placeholder="Digite o título de seu relato aqui..."
             placeholderTextColor="#888"
             value={titulo}
             onChangeText={setTitulo}
+            editable={!salvando}
           />
 
-          <TextInput 
-            style={styles.inputBody} 
-            placeholder="Digite o seu relato aqui..." 
+          <TextInput
+            style={styles.inputBody}
+            placeholder="Digite o seu relato aqui..."
             placeholderTextColor="#888"
             multiline={true}
             textAlignVertical="top"
             value={relato}
             onChangeText={setRelato}
+            editable={!salvando}
           />
 
           <View style={styles.moodContainer}>
-            <TouchableOpacity 
-              style={[styles.moodIcon, humor === 'triste' && styles.moodIconActiveOrange]} 
+            <TouchableOpacity
+              style={[styles.moodIcon, humor === 'triste' && styles.moodIconActiveOrange]}
               onPress={() => setHumor('triste')}
+              disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-sad-outline" size={45} color="#FF8C42" />
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.moodIcon, humor === 'neutro' && styles.moodIconActiveOrange]} 
+            <TouchableOpacity
+              style={[styles.moodIcon, humor === 'neutro' && styles.moodIconActiveOrange]}
               onPress={() => setHumor('neutro')}
+              disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-neutral-outline" size={45} color="#FF8C42" />
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.moodIcon, humor === 'feliz' && styles.moodIconActiveBlue]} 
+            <TouchableOpacity
+              style={[styles.moodIcon, humor === 'feliz' && styles.moodIconActiveBlue]}
               onPress={() => setHumor('feliz')}
+              disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-happy-outline" size={45} color="#6292D6" />
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.moodIcon, humor === 'muitofeliz' && styles.moodIconActiveBlue]} 
+            <TouchableOpacity
+              style={[styles.moodIcon, humor === 'muitofeliz' && styles.moodIconActiveBlue]}
               onPress={() => setHumor('muitofeliz')}
+              disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-excited-outline" size={45} color="#6292D6" />
             </TouchableOpacity>
@@ -153,13 +199,22 @@ export default function EscreverDiario({ navigation }) {
           </View>
 
           <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Enviar</Text>
+            <TouchableOpacity
+              style={[styles.submitButton, salvando && styles.submitButtonDisabled]}
+              onPress={handleEnviar}
+              disabled={salvando}
+            >
+              {salvando ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>Enviar</Text>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => navigation.goBack()}
+              disabled={salvando}
             >
               <Ionicons name="close" size={30} color="#FFF" />
             </TouchableOpacity>
@@ -193,7 +248,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   actionButtonsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 20 },
-  submitButton: { backgroundColor: '#6292D6', paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+  submitButton: { backgroundColor: '#6292D6', paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3, minWidth: 120, alignItems: 'center' },
+  submitButtonDisabled: { opacity: 0.7 },
   submitButtonText: { color: '#FFF', fontSize: 16, fontFamily: 'Montserrat-Bold' },
   cancelButton: { backgroundColor: '#FF8C42', width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 }
 });

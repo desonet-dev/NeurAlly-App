@@ -8,17 +8,18 @@ import Animated, {
     useAnimatedStyle,
     Easing,
 } from 'react-native-reanimated';
+import { useAuth } from '../contexts/AuthContext.js';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function Carregamento({ navigation }) {
     const [isReady, setIsReady] = useState(false);
-    const translateX = useSharedValue(300); // start off-screen to the right
+    const translateX = useSharedValue(300);
+    const { usuario, perfil, carregando: autenticando } = useAuth();
 
     useEffect(() => {
         async function prepare() {
             try {
-                // load resources here
             } finally {
                 setIsReady(true);
             }
@@ -29,21 +30,28 @@ export default function Carregamento({ navigation }) {
     useEffect(() => {
         if (isReady) {
             SplashScreen.hideAsync();
-            // Trigger slide-in animation
             translateX.value = withTiming(0, {
                 duration: 600,
                 easing: Easing.out(Easing.exp),
             });
-
-            // Depois que a animação termina, segue para a tela de Login.
-            // Usamos "replace" para que o usuário não consiga voltar para a splash.
-            const timer = setTimeout(() => {
-                navigation.replace('Login');
-            }, 1600);
-
-            return () => clearTimeout(timer);
         }
-    }, [isReady, navigation]);
+    }, [isReady]);
+
+    useEffect(() => {
+        if (!isReady || autenticando) return;
+
+        const timer = setTimeout(() => {
+            if (!usuario) {
+                navigation.replace('Login');
+            } else if (perfil?.tipo === 'psicologo') {
+                navigation.replace('HomePsi');
+            } else {
+                navigation.replace('Home');
+            }
+        }, 1200);
+
+        return () => clearTimeout(timer);
+    }, [isReady, autenticando, usuario, perfil, navigation]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],

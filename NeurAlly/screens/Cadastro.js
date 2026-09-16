@@ -9,14 +9,25 @@ import {
     Platform,
     ScrollView,
     Image,
-    SafeAreaView
+    SafeAreaView,
+    Alert,
+    ActivityIndicator
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import paleta from '../styles/Tema.js';
+import { cadastrarUsuario, traduzErroFirebase } from '../services/authService.js';
 
 export default function CadastroScreen({ navigation }) {
-    // Estado para controlar qual aba está ativa (false = usuário, true = psicólogo)
     const [isPsychologist, setIsPsychologist] = useState(false);
+
+    const [nome, setNome] = useState('');
+    const [dataNascimento, setDataNascimento] = useState('');
+    const [cpf, setCpf] = useState('');
+    const [email, setEmail] = useState('');
+    const [telefone, setTelefone] = useState('');
+    const [senha, setSenha] = useState('');
+    const [crp, setCrp] = useState('');
+    const [cadastrando, setCadastrando] = useState(false);
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -24,6 +35,44 @@ export default function CadastroScreen({ navigation }) {
     });
 
     if (!fontsLoaded) return null;
+
+    const handleCadastrar = async () => {
+        if (!nome.trim() || !email.trim() || !senha) {
+            Alert.alert('Preencha os campos', 'Nome, e-mail e senha são obrigatórios.');
+            return;
+        }
+        if (senha.length < 6) {
+            Alert.alert('Senha muito curta', 'A senha precisa ter pelo menos 6 caracteres.');
+            return;
+        }
+        if (isPsychologist && !crp.trim()) {
+            Alert.alert('Preencha o CRP', 'Informe o número de inscrição no CRP para se cadastrar como psicólogo.');
+            return;
+        }
+
+        setCadastrando(true);
+        try {
+            await cadastrarUsuario({
+                nome: nome.trim(),
+                email: email.trim(),
+                senha,
+                tipo: isPsychologist ? 'psicologo' : 'cliente',
+                dataNascimento: dataNascimento.trim(),
+                cpf: cpf.trim(),
+                telefone: telefone.trim(),
+                crp: crp.trim(),
+            });
+
+            navigation.reset({
+                index: 0,
+                routes: [{ name: isPsychologist ? 'HomePsi' : 'Home' }],
+            });
+        } catch (erro) {
+            Alert.alert('Não foi possível cadastrar', traduzErroFirebase(erro));
+        } finally {
+            setCadastrando(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -38,12 +87,12 @@ export default function CadastroScreen({ navigation }) {
                     <Text style={styles.title}>Cadastro</Text>
 
                     {/* Campos em comum */}
-                    <TextInput style={styles.input} placeholder="Nome" placeholderTextColor="#666" />
-                    <TextInput style={styles.input} placeholder="Data de nascimento" placeholderTextColor="#666" />
-                    <TextInput style={styles.input} placeholder="CPF" placeholderTextColor="#666" keyboardType="numeric" />
-                    <TextInput style={styles.input} placeholder="E-mail" placeholderTextColor="#666" keyboardType="email-address" />
-                    <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor="#666" keyboardType="phone-pad" />
-                    <TextInput style={styles.input} placeholder="Senha" placeholderTextColor="#666" secureTextEntry={true} />
+                    <TextInput style={styles.input} placeholder="Nome" placeholderTextColor="#666" value={nome} onChangeText={setNome} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="Data de nascimento" placeholderTextColor="#666" value={dataNascimento} onChangeText={setDataNascimento} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="CPF" placeholderTextColor="#666" keyboardType="numeric" value={cpf} onChangeText={setCpf} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="E-mail" placeholderTextColor="#666" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor="#666" keyboardType="phone-pad" value={telefone} onChangeText={setTelefone} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="Senha" placeholderTextColor="#666" secureTextEntry={true} value={senha} onChangeText={setSenha} editable={!cadastrando} />
 
                     {/* Renderização Condicional: Só aparece se for Psicólogo */}
                     {isPsychologist && (
@@ -51,6 +100,9 @@ export default function CadastroScreen({ navigation }) {
                             style={styles.input}
                             placeholder="Número de inscrição no CRP"
                             placeholderTextColor="#666"
+                            value={crp}
+                            onChangeText={setCrp}
+                            editable={!cadastrando}
                         />
                     )}
 
@@ -63,8 +115,16 @@ export default function CadastroScreen({ navigation }) {
                     </View>
 
                     {/* Botão Cadastrar */}
-                    <TouchableOpacity style={styles.submitButton} onPress={() => navigation.navigate('Login')}>
-                        <Text style={styles.submitButtonText}>Cadastrar</Text>
+                    <TouchableOpacity
+                        style={[styles.submitButton, cadastrando && styles.submitButtonDisabled]}
+                        onPress={handleCadastrar}
+                        disabled={cadastrando}
+                    >
+                        {cadastrando ? (
+                            <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                            <Text style={styles.submitButtonText}>Cadastrar</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
 
@@ -73,6 +133,7 @@ export default function CadastroScreen({ navigation }) {
                     <TouchableOpacity
                         style={[styles.toggleButton, !isPsychologist && styles.toggleActive]}
                         onPress={() => setIsPsychologist(false)}
+                        disabled={cadastrando}
                     >
                         <Text style={[styles.toggleText, !isPsychologist && styles.toggleTextActive]}>
                             Sou usuário
@@ -82,6 +143,7 @@ export default function CadastroScreen({ navigation }) {
                     <TouchableOpacity
                         style={[styles.toggleButton, isPsychologist && styles.toggleActive]}
                         onPress={() => setIsPsychologist(true)}
+                        disabled={cadastrando}
                     >
                         <Text style={[styles.toggleText, isPsychologist && styles.toggleTextActive]}>
                             Sou psicólogo
@@ -175,14 +237,17 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         width: '60%',
         alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 44,
+    },
+    submitButtonDisabled: {
+        opacity: 0.7,
     },
     submitButtonText: {
         color: '#FFF',
         fontFamily: 'Montserrat-Regular',
         fontSize: 16,
     },
-
-    // Alterar entre cliente e profissional
     toggleContainer: {
         flexDirection: 'row',
         marginTop: 30,
@@ -214,8 +279,6 @@ const styles = StyleSheet.create({
         color: '#000',
         fontFamily: 'Montserrat-Bold',
     },
-
-    // Método de entrada rápida (Google, Facebook)
     socialContainer: {
         flexDirection: 'row',
         marginTop: 30,

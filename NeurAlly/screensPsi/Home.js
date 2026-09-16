@@ -3,8 +3,11 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Tex
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
+import { useAuth } from '../contexts/AuthContext.js';
 
 export default function HomePsicologo({ navigation }) {
+  const { perfil } = useAuth();
+  const primeiroNome = perfil?.nome?.trim().split(' ')[0] || '';
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -27,7 +30,7 @@ export default function HomePsicologo({ navigation }) {
         <View style={styles.headerContainer}>
           <View>
             <Text style={styles.greetingText}>Olá,</Text>
-            <Text style={styles.nameText}>Marcello</Text>
+            <Text style={styles.nameText}>{primeiroNome || 'Doutor(a)'}</Text>
           </View>
           <View style={styles.avatarContainer}>
             <View style={styles.avatarMock} />

@@ -8,8 +8,11 @@ import SearchBar from '../components/searchBar.js';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
+import { useAuth } from '../contexts/AuthContext.js';
 
 export default function HomeScreen() {
+    const { perfil } = useAuth();
+    const primeiroNome = perfil?.nome?.trim().split(' ')[0] || '';
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
         'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -31,7 +34,7 @@ export default function HomeScreen() {
                 <View style={styles.header}>
                     <View>
                         <Text style={styles.greetingText}>Olá,</Text>
-                        <Text style={styles.greetingName}>Maria</Text>
+                        <Text style={styles.greetingName}>{primeiroNome || 'Maria'}</Text>
                     </View>
                     <Image
                         source={require('../assets/Anderson.png')}
@@ -104,8 +107,6 @@ const styles = StyleSheet.create({
     mainView: {
         paddingBottom: 110,
     },
-
-    // Header
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     greetingText: {
         fontSize: 16,
         fontFamily: 'Montserrat-Regular',
-        color: '#6B7A93', // Cor suave para o 'Olá'
+        color: '#6B7A93',
     },
     greetingName: {
         fontSize: 24,
@@ -131,8 +132,6 @@ const styles = StyleSheet.create({
         borderRadius: 27.5,
         backgroundColor: '#E5E5E5',
     },
-
-    // Próxima consulta
     professionalCard: {
         backgroundColor: paleta.cor.a7,
         borderRadius: 20,
@@ -192,8 +191,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Regular',
         color: '#FFFFFF',
     },
-
-    // Calendário de sessões
     sectionTitle: {
         fontSize: 18,
         fontFamily: 'Montserrat-Bold',
@@ -201,8 +198,6 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         marginHorizontal: 20,
     },
-
-    // Jogos relaxantes
     optionCard: {
         backgroundColor: paleta.cor.a3,
         borderRadius: 20,
