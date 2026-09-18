@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import paleta from '../styles/Tema.js';
+import NavBarPsi from '../components/navBarPsi.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
 export default function PerfilPsi({ navigation }) {
@@ -76,6 +77,7 @@ export default function PerfilPsi({ navigation }) {
 
         </ScrollView>
       </View>
+      <NavBarPsi />
     </SafeAreaView>
   );
 }
@@ -83,7 +85,7 @@ export default function PerfilPsi({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: paleta.cor.fundoCard, padding: 20 },
   card: { flex: 1, backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden', paddingBottom: 20 },
-  scrollContent: { padding: 20, alignItems: 'center' },
+  scrollContent: { padding: 20, paddingBottom: 100, alignItems: 'center' },
   avatarContainer: { position: 'relative', marginBottom: 20, marginTop: 20 },
   avatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: paleta.cor.fundo },
   editAvatarButton: { position: 'absolute', bottom: 0, right: 10, backgroundColor: '#000', width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF' },

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Tex
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
+import NavBarPsi from '../components/navBarPsi.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
 export default function HomePsicologo({ navigation }) {
@@ -25,7 +26,7 @@ export default function HomePsicologo({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         
         <View style={styles.headerContainer}>
           <View>
@@ -81,38 +82,21 @@ export default function HomePsicologo({ navigation }) {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.orangeCard}>
+        <TouchableOpacity style={styles.orangeCard} onPress={() => navigation.navigate('AnotacoesPsi')}>
           <Text style={styles.orangeCardText}>Anotações</Text>
           <Ionicons name="chevron-forward" size={24} color="#FFF" />
         </TouchableOpacity>
 
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="home" size={22} color="#1A56DB" />
-          <Text style={[styles.navText, { color: '#1A56DB' }]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="happy-outline" size={22} color="#888" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="calendar-outline" size={22} color="#888" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="chatbubble-outline" size={22} color="#888" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PerfilPsi')}>
-          <Ionicons name="person-outline" size={22} color="#888" />
-        </TouchableOpacity>
-      </View>
+      <NavBarPsi />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: paleta.cor.fundo },
-  scrollContent: { padding: 20, paddingBottom: 100 },
+  scrollContent: { padding: 20, paddingBottom: 130 },
   headerContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   greetingText: { fontFamily: 'Montserrat-Regular', fontSize: 16, color: '#333' },
   nameText: { fontFamily: 'Montserrat-Bold', fontSize: 22, color: '#1A1A1A' },
@@ -140,8 +124,5 @@ const styles = StyleSheet.create({
   dateText: { fontFamily: 'Montserrat-Bold', fontSize: 14, color: '#333' },
   dateTextActive: { color: '#FFF' },
   orangeCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#E29558', borderRadius: 15, padding: 20, height: 120, marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
-  orangeCardText: { fontFamily: 'Montserrat-Bold', fontSize: 18, color: '#FFF' },
-  bottomNav: { position: 'absolute', bottom: 15, left: 20, right: 20, backgroundColor: '#FFF', borderRadius: 25, flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 6, elevation: 5 },
-  navItem: { alignItems: 'center', justifyContent: 'center' },
-  navText: { fontFamily: 'Montserrat-Regular', fontSize: 10, marginTop: 2 }
+  orangeCardText: { fontFamily: 'Montserrat-Bold', fontSize: 18, color: '#FFF' }
 });

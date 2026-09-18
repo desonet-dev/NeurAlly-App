@@ -31,6 +31,10 @@ import PerfilDadosPsiScreen from './screensPsi/DadosPessoais.js';
 import DisponibilidadePsiScreen from './screensPsi/Disponibilidade.js';
 import PerfilPrefScreen from './screensPsi/Preferencias.js';
 import ExibicaoPsiScreen from './screensPsi/Exibicao.js';
+import AnotacoesPsiScreen from './screensPsi/Anotacoes.js';
+import EscreverAnotacaoPsiScreen from './screensPsi/EscreverAnotacao.js';
+import AgendaPsiScreen from './screensPsi/Agenda.js';
+import ConversasPsiScreen from './screensPsi/Conversas.js';
 
 // O "name" de cada rota precisa bater exatamente com o que é usado nas
 // chamadas navigation.navigate(...) espalhadas pelas telas.
@@ -65,6 +69,10 @@ const screens = [
   { name: 'DisponibilidadePsi', component: DisponibilidadePsiScreen },
   { name: 'PerfilPref', component: PerfilPrefScreen },
   { name: 'ExibicaoPsi', component: ExibicaoPsiScreen },
+  { name: 'AnotacoesPsi', component: AnotacoesPsiScreen },
+  { name: 'EscreverAnotacaoPsi', component: EscreverAnotacaoPsiScreen },
+  { name: 'AgendaPsi', component: AgendaPsiScreen },
+  { name: 'ConversasPsi', component: ConversasPsiScreen },
 ];
 
 export default function Rotas() {

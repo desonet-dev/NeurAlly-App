@@ -13,7 +13,7 @@ const dates = [
   {dayNum: 5, dayName: 'Sex', abrv: 'Sex'},
 ]
 
-export default function SearchBar() {
+export default function SearchBar({ placeholder = 'Procure por um profissional' }) {
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -26,7 +26,7 @@ export default function SearchBar() {
     <TouchableOpacity>
       <Entypo name="magnifying-glass" size={30} color='#CCC' />
     </TouchableOpacity>
-    <TextInput style={styles.textInput} placeholder='Procure por um profissional' placeholderTextColor='#AAA'>
+    <TextInput style={styles.textInput} placeholder={placeholder} placeholderTextColor='#AAA'>
 
     </TextInput>
   </View>)

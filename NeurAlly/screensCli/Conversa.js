@@ -100,7 +100,10 @@ export default function Conversa({ route, navigation }) {
             >
                 {/* Cabeçalho */}
                 <View style={styles.header}>
-                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Conversas')}>
+                    {/* goBack volta para a lista que abriu esta conversa
+                        (Conversas do cliente ou ConversasPsi do psicólogo),
+                        em vez de forçar sempre a tela do cliente. */}
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={28} color="#FFF" />
                     </TouchableOpacity>
 
