@@ -9,6 +9,17 @@ import NavBarPsi from '../components/navBarPsi.js';
 import paleta from '../styles/Tema.js';
 import { escutarAnotacoes, removerAnotacao } from '../services/anotacoesService.js';
 
+// Converte o timestamp do Firestore em algo como "16/09/2026 14:30".
+function formatarData(criadoEm) {
+  if (!criadoEm?.toDate) return '';
+  const data = criadoEm.toDate();
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const hora = String(data.getHours()).padStart(2, '0');
+  const minuto = String(data.getMinutes()).padStart(2, '0');
+  return `${dia}/${mes}/${data.getFullYear()} ${hora}:${minuto}`;
+}
+
 export default function AnotacoesPsi({ navigation }) {
   const [anotacoes, setAnotacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -77,7 +88,7 @@ export default function AnotacoesPsi({ navigation }) {
 
         <Text style={styles.pageTitle}>Anotações</Text>
         <Text style={styles.pageSubtitle}>
-          Registros particulares sobre seus atendimentos.
+          Registros particulares sobre seus atendimentos. Toque para editar.
         </Text>
 
         {carregando && (
@@ -101,7 +112,12 @@ export default function AnotacoesPsi({ navigation }) {
         )}
 
         {!carregando && !erro && anotacoes.map((item) => (
-          <View key={item.id} style={styles.card}>
+          <TouchableOpacity
+            key={item.id}
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('EscreverAnotacaoPsi', { anotacao: item })}
+          >
             <View style={styles.cardHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.cardTitle}>{item.titulo}</Text>
@@ -114,7 +130,10 @@ export default function AnotacoesPsi({ navigation }) {
               </TouchableOpacity>
             </View>
             <Text style={styles.cardText}>{item.texto}</Text>
-          </View>
+            {!!formatarData(item.criadoEm) && (
+              <Text style={styles.cardData}>{formatarData(item.criadoEm)}</Text>
+            )}
+          </TouchableOpacity>
         ))}
 
       </ScrollView>
@@ -141,6 +160,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontFamily: 'Montserrat-Bold', color: '#1A1A1A' },
   cardPaciente: { fontSize: 12, fontFamily: 'Montserrat-Regular', color: '#6292D6', marginTop: 2 },
   cardText: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: '#333', lineHeight: 18 },
+  cardData: { fontSize: 11, fontFamily: 'Montserrat-Regular', color: '#8696BB', marginTop: 10, textAlign: 'right' },
   avisoContainer: { paddingVertical: 30, alignItems: 'center' },
   avisoTexto: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: '#5A6B87', textAlign: 'center', paddingHorizontal: 20 },
   fab: { position: 'absolute', right: 20, bottom: 90, backgroundColor: '#1A56DB', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 }

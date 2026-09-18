@@ -1,4 +1,3 @@
-import { onAuthStateChanged } from 'firebase/auth';
 import {
   collection,
   addDoc,
@@ -7,24 +6,8 @@ import {
   onSnapshot,
   serverTimestamp,
 } from 'firebase/firestore';
-import { auth, db } from './firebaseConfig.js';
-
-export function garantirLogado() {
-  return new Promise((resolve, reject) => {
-    const cancelarEscuta = onAuthStateChanged(
-      auth,
-      (usuario) => {
-        cancelarEscuta();
-        if (usuario) {
-          resolve(usuario.uid);
-        } else {
-          reject(new Error('Nenhum usuário logado.'));
-        }
-      },
-      reject
-    );
-  });
-}
+import { db } from './firebaseConfig.js';
+import { garantirLogado } from './authService.js';
 
 function colecaoDoUsuario(uid) {
   return collection(db, 'usuarios', uid, 'diario');
@@ -54,8 +37,11 @@ export async function escutarRegistrosPorData(data, aoAtualizar, aoFalhar) {
       const registros = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
         .sort((a, b) => {
-          const tempoA = a.criadoEm?.toMillis ? a.criadoEm.toMillis() : 0;
-          const tempoB = b.criadoEm?.toMillis ? b.criadoEm.toMillis() : 0;
+          // Enquanto o serverTimestamp nao volta do servidor, criadoEm vem
+          // null; tratamos como "agora" para o registro recem-criado ja
+          // entrar na posicao certa (no fim, por ordem crescente).
+          const tempoA = a.criadoEm?.toMillis ? a.criadoEm.toMillis() : Number.MAX_SAFE_INTEGER;
+          const tempoB = b.criadoEm?.toMillis ? b.criadoEm.toMillis() : Number.MAX_SAFE_INTEGER;
           return tempoA - tempoB;
         });
       aoAtualizar(registros);

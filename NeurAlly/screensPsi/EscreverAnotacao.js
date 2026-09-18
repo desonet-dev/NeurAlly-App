@@ -6,12 +6,17 @@ import {
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
-import { adicionarAnotacao } from '../services/anotacoesService.js';
+import { adicionarAnotacao, atualizarAnotacao } from '../services/anotacoesService.js';
 
-export default function EscreverAnotacaoPsi({ navigation }) {
-  const [titulo, setTitulo] = useState('');
-  const [paciente, setPaciente] = useState('');
-  const [texto, setTexto] = useState('');
+export default function EscreverAnotacaoPsi({ navigation, route }) {
+  // Quando a tela recebe uma anotacao por parametro, estamos editando;
+  // sem parametro, estamos criando uma nova.
+  const anotacaoExistente = route?.params?.anotacao || null;
+  const editando = Boolean(anotacaoExistente);
+
+  const [titulo, setTitulo] = useState(anotacaoExistente?.titulo || '');
+  const [paciente, setPaciente] = useState(anotacaoExistente?.paciente || '');
+  const [texto, setTexto] = useState(anotacaoExistente?.texto || '');
   const [salvando, setSalvando] = useState(false);
 
   const [fontsLoaded] = useFonts({
@@ -29,11 +34,17 @@ export default function EscreverAnotacaoPsi({ navigation }) {
 
     setSalvando(true);
     try {
-      await adicionarAnotacao({
+      const dados = {
         titulo: titulo.trim(),
         texto: texto.trim(),
         paciente: paciente.trim(),
-      });
+      };
+
+      if (editando) {
+        await atualizarAnotacao(anotacaoExistente.id, dados);
+      } else {
+        await adicionarAnotacao(dados);
+      }
       navigation.goBack();
     } catch (erro) {
       console.warn('Erro ao salvar anotação:', erro);
@@ -52,9 +63,9 @@ export default function EscreverAnotacaoPsi({ navigation }) {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
-          <Text style={styles.pageTitle}>Nova anotação</Text>
+          <Text style={styles.pageTitle}>{editando ? 'Editar anotação' : 'Nova anotação'}</Text>
 
           <TextInput
             style={styles.inputTitle}

@@ -1,13 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 const Stack = createNativeStackNavigator();
-
-// Telas de autenticação / carregamento
 import LoadingScreen from './screens/Carregamento.js';
 import LoginScreen from './screens/Login.js';
 import CadastroScreen from './screens/Cadastro.js';
 import EsqueciSenhaScreen from './screens/RecSenha.js';
 
-// Telas do cliente
 import HomeScreen from './screensCli/Home.js';
 import TriagemScreen from './screensCli/Triagem.js';
 import PerfilScreen from './screensCli/Perfil.js';
@@ -23,7 +20,6 @@ import PerfilProfissionalScreen from './screensCli/PerfilProfissional.js';
 import FinalAgendamentoScreen from './screensCli/FinalAgendamento.js';
 import PagamentoScreen from './screensCli/Pagamento.js';
 
-// Telas do psicólogo
 import HomePsiScreen from './screensPsi/Home.js';
 import PerfilPsiScreen from './screensPsi/Perfil.js';
 import PerfilConfigScreen from './screensPsi/PerfilConfig.js';
@@ -36,16 +32,12 @@ import EscreverAnotacaoPsiScreen from './screensPsi/EscreverAnotacao.js';
 import AgendaPsiScreen from './screensPsi/Agenda.js';
 import ConversasPsiScreen from './screensPsi/Conversas.js';
 
-// O "name" de cada rota precisa bater exatamente com o que é usado nas
-// chamadas navigation.navigate(...) espalhadas pelas telas.
 const screens = [
-  // Autenticação / carregamento
   { name: 'Loading', component: LoadingScreen },
   { name: 'Login', component: LoginScreen },
   { name: 'Cadastro', component: CadastroScreen },
   { name: 'EsqueciSenha', component: EsqueciSenhaScreen },
 
-  // Área do cliente
   { name: 'Home', component: HomeScreen },
   { name: 'Triagem', component: TriagemScreen },
   { name: 'Perfil', component: PerfilScreen },
@@ -61,7 +53,6 @@ const screens = [
   { name: 'FinalAgendamento', component: FinalAgendamentoScreen },
   { name: 'Pagamento', component: PagamentoScreen },
 
-  // Área do psicólogo (rotas com sufixo "Psi" para não colidir com as do cliente)
   { name: 'HomePsi', component: HomePsiScreen },
   { name: 'PerfilPsi', component: PerfilPsiScreen },
   { name: 'PerfilConfig', component: PerfilConfigScreen },

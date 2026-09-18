@@ -18,13 +18,14 @@ import {
   collection,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
   query,
   onSnapshot,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebaseConfig.js';
-import { garantirLogado } from './diarioService.js';
+import { garantirLogado } from './authService.js';
 
 function colecaoDoUsuario(uid) {
   return collection(db, 'usuarios', uid, 'anotacoes');
@@ -41,6 +42,21 @@ export async function adicionarAnotacao({ titulo, texto, paciente = '' }) {
     texto,
     paciente,
     criadoEm: serverTimestamp(),
+  });
+}
+
+/**
+ * Atualiza uma anotação existente.
+ * @param {string} id
+ * @param {{ titulo: string, texto: string, paciente?: string }} anotacao
+ */
+export async function atualizarAnotacao(id, { titulo, texto, paciente = '' }) {
+  const uid = await garantirLogado();
+  await updateDoc(doc(db, 'usuarios', uid, 'anotacoes', id), {
+    titulo,
+    texto,
+    paciente,
+    atualizadoEm: serverTimestamp(),
   });
 }
 
@@ -67,8 +83,12 @@ export async function escutarAnotacoes(aoAtualizar, aoFalhar) {
       const anotacoes = snapshot.docs
         .map((documento) => ({ id: documento.id, ...documento.data() }))
         .sort((a, b) => {
-          const tempoA = a.criadoEm?.toMillis ? a.criadoEm.toMillis() : 0;
-          const tempoB = b.criadoEm?.toMillis ? b.criadoEm.toMillis() : 0;
+          // Logo apos addDoc, o serverTimestamp ainda nao voltou do servidor
+          // e criadoEm vem null. Tratamos esse caso como "agora" para a
+          // anotacao recem-criada ja aparecer no topo, sem pular de lugar
+          // quando a confirmacao chega.
+          const tempoA = a.criadoEm?.toMillis ? a.criadoEm.toMillis() : Number.MAX_SAFE_INTEGER;
+          const tempoB = b.criadoEm?.toMillis ? b.criadoEm.toMillis() : Number.MAX_SAFE_INTEGER;
           return tempoB - tempoA; // mais recentes primeiro
         });
       aoAtualizar(anotacoes);

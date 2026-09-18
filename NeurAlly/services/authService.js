@@ -47,6 +47,28 @@ export function recuperarSenha({ email }) {
   return sendPasswordResetEmail(auth, email);
 }
 
+/**
+ * Espera a confirmacao do Firebase de que existe alguem logado e devolve
+ * o uid. Usado pelos servicos de dados (diario, anotacoes) antes de ler
+ * ou gravar qualquer coisa no Firestore.
+ */
+export function garantirLogado() {
+  return new Promise((resolve, reject) => {
+    const cancelarEscuta = onAuthStateChanged(
+      auth,
+      (usuario) => {
+        cancelarEscuta();
+        if (usuario) {
+          resolve(usuario.uid);
+        } else {
+          reject(new Error('Nenhum usuario logado.'));
+        }
+      },
+      reject
+    );
+  });
+}
+
 export async function buscarPerfil(uid) {
   const snapshot = await getDoc(doc(db, 'usuarios', uid));
   return snapshot.exists() ? snapshot.data() : null;
