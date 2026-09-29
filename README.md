@@ -28,11 +28,11 @@ O desenvolvimento deste trabalho contou com o direcionamento e a orientação de
 
 Conheça a equipe responsável pelo desenvolvimento do projeto:
 
-* **Anderson Julião Costa Santos** - LinkedIn(https://linkedin.com)
-* **Arthur Sales Valdivino** - LinkedIn(https://linkedin.com)
-* **Diego Ernesto da Silva Vargas** - LinkedIn(https://linkedin.com)
-* **Erick de Moura Pereira** - LinkedIn(https://linkedin.com)
-* **Guilherme Carvalho dos Santos** - LinkedIn(https://linkedin.com)
+* **Anderson Julião Costa Santos** - [LinkedIn](https://linkedin.com)
+* **Arthur Sales Valdivino** - [LinkedIn](https://linkedin.com)
+* **Diego Ernesto da Silva Vargas** - [LinkedIn](https://linkedin.com)
+* **Erick de Moura Pereira** - [LinkedIn](https://linkedin.com)
+* **Guilherme Carvalho dos Santos** - [LinkedIn](https://linkedin.com)
 
 ---
 
