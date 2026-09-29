@@ -1,12 +1,12 @@
-# [NeurAlly]
+# NeurAlly
 
-> [Projeto para o Trabalho de Conclusão de Curso da turma de Desenvolvimento de Sistemas da Etec de Taboão da Serra do ano de 2026]
+> Projeto para o Trabalho de Conclusão de Curso da turma de Desenvolvimento de Sistemas da Etec de Taboão da Serra do ano de 2026.
 
 ---
 
 ## Descrição do Projeto
 
-[Um app voltado para a saúde mental, visa democratizar o acesso à tratamento e acompanhamento psicológico para a população brasileira.]
+Um app voltado para a saúde mental, visa democratizar o acesso à tratamento e acompanhamento psicológico para a população brasileira.
 
 ### Principais Funcionalidades
 - **Praticidade:** Consultas e acompanhamentos realizados de forma online ou híbrida.
@@ -19,8 +19,8 @@
 
 O desenvolvimento deste trabalho contou com o direcionamento e a orientação de:
 
-* **Profª. [Nathane de Castro]**
-* **Profª. [Alícia Stefany da Silva]**
+* **Profª. Nathane de Castro**
+* **Profª. Alícia Stefany da Silva**
 
 ---
 
@@ -28,16 +28,16 @@ O desenvolvimento deste trabalho contou com o direcionamento e a orientação de
 
 Conheça a equipe responsável pelo desenvolvimento do projeto:
 
-* **[Anderson Julião Costa Santos]** - [LinkedIn](https://linkedin.com)
-* **[Arthur Sales Valdivino]** - [LinkedIn](https://linkedin.com)
-* **[Diego Ernesto da Silva Vargas]** - [LinkedIn](https://linkedin.com)
-* **[Erick de Moura Pereira]** - [LinkedIn](https://linkedin.com)
-* **[Guilherme Carvalho dos Santos]** - [LinkedIn](https://linkedin.com)
+* **Anderson Julião Costa Santos** - LinkedIn(https://linkedin.com)
+* **Arthur Sales Valdivino** - LinkedIn(https://linkedin.com)
+* **Diego Ernesto da Silva Vargas** - LinkedIn(https://linkedin.com)
+* **Erick de Moura Pereira** - LinkedIn(https://linkedin.com)
+* **Guilherme Carvalho dos Santos** - LinkedIn(https://linkedin.com)
 
 ---
 
 ## Tecnologias Utilizadas
 
-* **Linguagem:** [JavaScript]
-* **Framework:** [React Native]
-* **Banco de Dados:** [Firebase/Firestore]
+* **Linguagem:** JavaScript
+* **Framework:** React Native
+* **Banco de Dados:** Firebase/Firestore
