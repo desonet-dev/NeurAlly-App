@@ -92,6 +92,11 @@ export default function Perfil({ navigation }) {
             <Ionicons name="options" size={20} color="#1A56DB" />
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Triagem')}>
+            <Text style={styles.menuItemText}>Triagem</Text>
+            <Ionicons name="clipboard-outline" size={20} color="#1A56DB" />
+          </TouchableOpacity>
+
           <View style={styles.spacer} />
 
           <TouchableOpacity style={styles.actionButton}>
