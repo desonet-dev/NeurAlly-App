@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -13,55 +14,12 @@ import NavBarPsi from '../components/navBarPsi.js';
 import SearchBar from '../components/searchBar.js';
 import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
+import { ouvirConversasDoPsicologo } from '../services/chatService';
 
 export default function ConversasPsi() {
-    // Mesmo formato usado na tela de Conversas do cliente. Aqui,
-    // "emAcompanhamento" faz o papel do "hired": destaca os pacientes
-    // que já são atendidos pelo profissional.
-    const data = [
-        {
-            name: 'Marina Alves',
-            title: 'Em acompanhamento',
-            recentMessage: 'Obrigada pela sessão de hoje!',
-            emAcompanhamento: true,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Rafael Dias',
-            title: 'Primeira consulta',
-            recentMessage: 'Posso remarcar para quinta?',
-            emAcompanhamento: true,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Carla Souza',
-            title: 'Em acompanhamento',
-            recentMessage: 'Fiz os exercícios que combinamos.',
-            emAcompanhamento: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Bruno Lima',
-            title: 'Retorno',
-            recentMessage: 'Até a próxima semana.',
-            emAcompanhamento: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Helena Costa',
-            title: 'Primeira consulta',
-            recentMessage: 'Gostaria de marcar um horário.',
-            emAcompanhamento: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Diego Martins',
-            title: 'Em acompanhamento',
-            recentMessage: 'Consegui dormir melhor esta semana.',
-            emAcompanhamento: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-    ];
+    const meuIdPsicologo = 'OVHfzNDwkZi54ELYFeiy693neo1'; 
+
+    const [conversas, setConversas] = useState([]);
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -69,6 +27,28 @@ export default function ConversasPsi() {
     });
 
     const navigation = useNavigation();
+
+    useEffect(() => {
+        const unsubscribe = ouvirConversasDoPsicologo(meuIdPsicologo, (listaDeChats) => {
+            setConversas(listaDeChats);
+        });
+
+        return () => unsubscribe();
+    }, [meuIdPsicologo]);
+
+    // Função para abrir o chat selecionado
+    const abrirChat = (chat) => {
+        navigation.navigate('Conversa', {
+            chatId: chat.chatId,
+            usuarioId: meuIdPsicologo,
+            contato: {
+                id: chat.id,
+                name: chat.name,
+                title: chat.title,
+                profilePicture: chat.profilePicture,
+            },
+        });
+    };
 
     if (!fontsLoaded) {
         return null;
@@ -80,21 +60,20 @@ export default function ConversasPsi() {
                 <SearchBar placeholder="Procure por um paciente" />
 
                 <View style={styles.activeNow}>
-                    <Text style={styles.activeText}>Ativos agora</Text>
+                    <Text style={styles.activeText}>Pacientes Ativos</Text>
                 </View>
 
-                {/* ATIVOS AGORA */}
                 <View style={styles.activeListContainer}>
                     <FlatList
-                        data={data}
+                        data={conversas}
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
-                        keyExtractor={(item) => item.name}
+                        keyExtractor={(item) => item.chatId || item.id}
                         contentContainerStyle={{ paddingHorizontal: 12 }}
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 style={styles.activeAvatarWrapper}
-                                onPress={() => navigation.navigate('Conversa', { contato: item })}
+                                onPress={() => abrirChat(item)}
                             >
                                 <Image
                                     source={item.profilePicture}
@@ -106,16 +85,14 @@ export default function ConversasPsi() {
                     />
                 </View>
 
-                {/* Linha */}
                 <View style={styles.dividerLine} />
 
-                {/* Chats disponíveis */}
                 <FlatList
                     style={styles.chatsList}
                     contentContainerStyle={styles.chatsListContent}
-                    data={data}
+                    data={conversas}
                     showsVerticalScrollIndicator={false}
-                    keyExtractor={(item) => item.name}
+                    keyExtractor={(item) => item.chatId || item.id}
                     renderItem={({ item }) => {
                         const emAcompanhamento = item.emAcompanhamento;
                         return (
@@ -124,7 +101,7 @@ export default function ConversasPsi() {
                                     styles.chatCard,
                                     emAcompanhamento ? styles.chatCardHired : styles.chatCardNormal,
                                 ]}
-                                onPress={() => navigation.navigate('Conversa', { contato: item })}
+                                onPress={() => abrirChat(item)}
                             >
                                 <Image source={item.profilePicture} style={styles.cardAvatar} />
 

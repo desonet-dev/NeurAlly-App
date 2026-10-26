@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -8,57 +9,19 @@ import {
     SafeAreaView,
 } from 'react-native';
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
 import NavBar from '../components/navBarCli.js';
 import SearchBar from '../components/searchBar.js';
 import { useFonts } from 'expo-font';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { ouvirConversasDoUsuario } from '../services/chatService';
 
 export default function Conversas() {
-    const data = [
-        {
-            name: 'Dra. Brinquedos',
-            title: 'Psiquiatra',
-            recentMessage: 'Próxima consulta dia 01/02.',
-            hired: true,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Dra. Aline Juliana',
-            title: 'Psicólogo',
-            recentMessage: 'Você é capaz em casos de trauma?',
-            hired: true,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Dr. Carrinhos',
-            title: 'Psicólogo',
-            recentMessage: 'Você é noob em casos de trauma?',
-            hired: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Dr. Adriel',
-            title: 'Psicólogo',
-            recentMessage: 'Você sabe de casos de trauma?',
-            hired: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Dra. Pâmela',
-            title: 'Psicólogo',
-            recentMessage: 'Você é capaz em casos de trauma?',
-            hired: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-        {
-            name: 'Dra. Juliana',
-            title: 'Psicólogo',
-            recentMessage: 'Você é capaz em casos de trauma?',
-            hired: false,
-            profilePicture: require('../assets/Anderson.png'),
-        },
-    ];
+    // ID do usuário logado atual (substitua pelo ID real do Auth ou AsyncStorage)
+    const meuIdUsuario = 'OVHfzNDwkZi54ELYFeiy693neo1'; 
+
+    const [conversas, setConversas] = useState([]);
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -66,7 +29,29 @@ export default function Conversas() {
     });
 
     const navigation = useNavigation();
-    const route = useRoute();
+
+    // Efeito para escutar as conversas do usuário em tempo real no Firestore
+    useEffect(() => {
+        const unsubscribe = ouvirConversasDoUsuario(meuIdUsuario, (listaDeChats) => {
+            setConversas(listaDeChats);
+        });
+
+        return () => unsubscribe();
+    }, [meuIdUsuario]);
+
+    // Função para abrir o chat existente
+    const abrirChat = (chat) => {
+        navigation.navigate('Conversa', {
+            chatId: chat.chatId,
+            usuarioId: meuIdUsuario,
+            contato: {
+                id: chat.id,
+                name: chat.name,
+                title: chat.title,
+                profilePicture: chat.profilePicture,
+            },
+        });
+    };
 
     if (!fontsLoaded) {
         return null;
@@ -78,51 +63,32 @@ export default function Conversas() {
                 <SearchBar />
 
                 <View style={styles.activeNow}>
-                    <Text style={styles.activeText}>Ativos agora</Text>
+                    <Text style={styles.activeText}>Suas Conversas</Text>
                 </View>
 
-                {/* ATIVOS AGORA */}
-                <View style={styles.activeListContainer}>
-                    <FlatList
-                        data={data}
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={(item) => item.name}
-                        contentContainerStyle={{ paddingHorizontal: 12 }}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                style={styles.activeAvatarWrapper}
-                                onPress={() => navigation.navigate('Conversa', { contato: item })}
-                            >
-                                <Image
-                                    source={item.profilePicture}
-                                    style={styles.activeImage}
-                                />
-                                <View style={styles.onlineBadge} />
-                            </TouchableOpacity>
-                        )}
-                    />
-                </View>
-
-                {/* Linha */}
-                <View style={styles.dividerLine} />
-
-                {/* Chats disponíveis */}
+                {/* Lista de Chats vindos do Firebase */}
                 <FlatList
                     style={styles.chatsList}
                     contentContainerStyle={styles.chatsListContent}
-                    data={data}
+                    data={conversas}
                     showsVerticalScrollIndicator={false}
-                    keyExtractor={(item) => item.name}
+                    keyExtractor={(item) => item.chatId}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>Nenhuma conversa iniciada ainda.</Text>
+                            <Text style={styles.emptySubText}>Toque no botão abaixo para iniciar uma nova conversa.</Text>
+                        </View>
+                    }
                     renderItem={({ item }) => {
-                        const isHired = item.hired;
+                        // Você pode definir uma regra visual se a conversa está ativa/contratada
+                        const isHired = true; 
                         return (
                             <TouchableOpacity
                                 style={[
                                     styles.chatCard,
                                     isHired ? styles.chatCardHired : styles.chatCardNormal,
                                 ]}
-                                onPress={() => navigation.navigate('Conversa', { contato: item })}
+                                onPress={() => abrirChat(item)}
                             >
                                 <Image source={item.profilePicture} style={styles.cardAvatar} />
 
@@ -157,6 +123,14 @@ export default function Conversas() {
                 />
             </View>
 
+            {/* Botão Flutuante para Iniciar Nova Conversa */}
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={() => navigation.navigate('BuscaProfissionais')}
+            >
+                <Ionicons name="chatbubbles-outline" size={26} color="#FFF" />
+            </TouchableOpacity>
+
             <NavBar />
         </SafeAreaView>
     );
@@ -176,36 +150,6 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontFamily: 'Montserrat-Bold',
         color: '#000',
-    },
-    activeListContainer: {
-        height: 70,
-    },
-    activeAvatarWrapper: {
-        marginHorizontal: 6,
-        position: 'relative',
-    },
-    activeImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-    },
-    onlineBadge: {
-        position: 'absolute',
-        top: 45,
-        right: 0,
-        width: 14,
-        height: 14,
-        borderRadius: 7,
-        backgroundColor: '#10B981',
-        borderWidth: 2,
-        borderColor: '#FFF',
-    },
-    dividerLine: {
-        width: '92%',
-        height: 2,
-        backgroundColor: paleta.cor.a7,
-        alignSelf: 'center',
-        marginVertical: 10,
     },
     chatsList: {
         flex: 1,
@@ -269,5 +213,40 @@ const styles = StyleSheet.create({
     },
     textDarkSubtle: {
         color: '#4A5568',
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 50,
+        paddingHorizontal: 20,
+    },
+    emptyText: {
+        fontSize: 16,
+        fontFamily: 'Montserrat-Bold',
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    emptySubText: {
+        fontSize: 13,
+        fontFamily: 'Montserrat-Regular',
+        color: '#666',
+        textAlign: 'center',
+    },
+    fab: {
+        position: 'absolute',
+        right: 20,
+        bottom: 90,
+        backgroundColor: paleta.cor.a4 || '#1A56DB',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
     },
 });

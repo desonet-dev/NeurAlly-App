@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -8,56 +8,54 @@ import {
     TouchableOpacity,
     TextInput,
     KeyboardAvoidingView,
-    Platform,
-    SafeAreaView
+    Platform
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import paleta from '../styles/Tema.js';
 import { useFonts } from 'expo-font';
+import { ouvirMensagens, enviarMensagem } from '../services/chatService';
 
 export default function Conversa({ route, navigation }) {
     const [inputText, setInputText] = useState('');
+    const [messages, setMessages] = useState([]);
 
-    const { contato } = route.params || {};
+    // Recebe o contato, o chatId e o ID do usuário logado via route.params
+    const { contato, chatId, usuarioId } = route.params || {};
 
-    const messages = [
-        {
-            id: '1',
-            type: 'message',
-            text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse pretium massa massa, vitae posuere dolor eleifend et. Phasellus pharetra ultrices ultricies. Donec in rhoncus sapien. Sed non lobortis ligula.',
-            time: '01/01/26 12:40',
-            sender: 'user',
-        },
-        {
-            id: '2',
-            type: 'message',
-            text: 'Lorem ipsum dolor sit amet.',
-            time: '01/01/26 12:15',
-            sender: 'other',
-        },
-        {
-            id: '3',
-            type: 'date',
-            text: '15 de junho',
-        },
-        {
-            id: '4',
-            type: 'message',
-            text: 'Quando vai ser a próxima consulta?',
-            time: '15/06/26 11:57',
-            sender: 'user',
-        },
-        {
-            id: '5',
-            type: 'message',
-            text: 'Próxima consulta dia 01/02.',
-            time: '15/06/26 12:03',
-            sender: 'other',
-        },
-    ];
+    // Efeito para escutar as mensagens do Firestore em tempo real
+    useEffect(() => {
+        if (!chatId) return;
+
+        const unsubscribe = ouvirMensagens(chatId, (novasMensagens) => {
+            setMessages(novasMensagens);
+        });
+
+        // Limpa o listener ao sair da tela
+        return () => unsubscribe();
+    }, [chatId]);
+
+    // Função para enviar a mensagem
+    const handleEnviar = async () => {
+        if (inputText.trim() === '' || !chatId || !usuarioId) return;
+
+        const textoParaEnviar = inputText;
+        setInputText(''); // Limpa o input imediatamente para melhor fluidez
+
+        await enviarMensagem(chatId, textoParaEnviar, usuarioId);
+    };
+
+    // Formata o timestamp do Firestore para exibição (ex: "15/06/26 12:03")
+    const formatarHora = (timestamp) => {
+        if (!timestamp) return '';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const dataFormatada = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        const horaFormatada = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        return `${dataFormatada} ${horaFormatada}`;
+    };
 
     const renderItem = ({ item }) => {
+        // Se sua mensagem vier com tipo 'date' do banco ou quiser manter compatibilidade
         if (item.type === 'date') {
             return (
                 <View style={styles.dateContainer}>
@@ -68,15 +66,16 @@ export default function Conversa({ route, navigation }) {
             );
         }
 
-        const isUser = item.sender === 'user';
+        // Verifica se a mensagem foi enviada pelo usuário logado atual
+        const isUser = item.remetenteId === usuarioId;
 
         return (
             <View style={[styles.messageWrapper, isUser ? styles.userWrapper : styles.otherWrapper]}>
                 <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.otherBubble]}>
-                    <Text style={styles.messageText}>{item.text}</Text>
+                    <Text style={styles.messageText}>{item.texto || item.text}</Text>
                 </View>
                 <Text style={[styles.timeText, isUser ? styles.userTime : styles.otherTime]}>
-                    {item.time}
+                    {formatarHora(item.criadoEm)}
                 </Text>
             </View>
         );
@@ -100,9 +99,6 @@ export default function Conversa({ route, navigation }) {
             >
                 {/* Cabeçalho */}
                 <View style={styles.header}>
-                    {/* goBack volta para a lista que abriu esta conversa
-                        (Conversas do cliente ou ConversasPsi do psicólogo),
-                        em vez de forçar sempre a tela do cliente. */}
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={28} color="#FFF" />
                     </TouchableOpacity>
@@ -121,7 +117,7 @@ export default function Conversa({ route, navigation }) {
                     <Text style={styles.headerRole}>{contato?.title || 'Profissional'}</Text>
                 </View>
 
-                {/* Mensagens */}
+                {/* Mensagens em tempo real */}
                 <FlatList
                     data={messages}
                     keyExtractor={(item) => item.id}
@@ -130,7 +126,7 @@ export default function Conversa({ route, navigation }) {
                     showsVerticalScrollIndicator={false}
                 />
 
-                {/* Parte inferior da tela (mensagens) */}
+                {/* Parte inferior da tela (input e botões) */}
                 <View style={styles.inputContainer}>
                     <View style={styles.textInputWrapper}>
                         <TouchableOpacity style={styles.iconButton}>
@@ -151,7 +147,7 @@ export default function Conversa({ route, navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.sendButton}>
+                    <TouchableOpacity style={styles.sendButton} onPress={handleEnviar}>
                         <Ionicons name="send" size={18} color="#FFF" style={{ marginLeft: 3 }} />
                     </TouchableOpacity>
                 </View>
