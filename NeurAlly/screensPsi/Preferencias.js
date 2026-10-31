@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
+import SelectField from '../components/SelectField.js';
+import { TEMAS_APP, IDIOMAS, ABORDAGENS, MODALIDADES } from '../constants/opcoes.js';
 
 export default function PerfilPref({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -18,16 +20,6 @@ export default function PerfilPref({ navigation }) {
 
   if (!fontsLoaded) return null;
 
-  const DropdownField = ({ label, value, onPress }) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity style={styles.inputWrapper} onPress={onPress} activeOpacity={0.7}>
-        <Text style={styles.inputText}>{value}</Text>
-        <Ionicons name="caret-down" size={20} color="#000" />
-      </TouchableOpacity>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.card}>
@@ -41,25 +33,31 @@ export default function PerfilPref({ navigation }) {
         <View style={styles.divider} />
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <DropdownField 
-            label="Tema do aplicativo" 
-            value={tema} 
-            onPress={() => Alert.alert("Tema", "Escolha entre Claro, Escuro ou Padrão do sistema.")}
+          <SelectField
+            label="Tema do aplicativo"
+            value={tema}
+            options={TEMAS_APP}
+            onChange={setTema}
           />
-          <DropdownField 
-            label="Idioma" 
-            value={idioma} 
-            onPress={() => Alert.alert("Idioma", "Selecione o idioma de preferência.")}
+          <SelectField
+            label="Idioma"
+            value={idioma}
+            options={IDIOMAS}
+            onChange={setIdioma}
           />
-          <DropdownField 
-            label="Abordagem clínica principal" 
-            value={abordagem} 
-            onPress={() => Alert.alert("Abordagem", "Selecione sua linha teórica principal (ex: TCC, Psicanálise, Humanista).")}
+          <SelectField
+            label="Abordagem clínica principal"
+            title="Abordagem clínica"
+            value={abordagem}
+            options={ABORDAGENS}
+            onChange={setAbordagem}
           />
-          <DropdownField 
-            label="Modalidade de atendimento preferida" 
-            value={modalidade} 
-            onPress={() => Alert.alert("Modalidade", "Escolha entre atendimentos Online, Presenciais ou Ambos.")}
+          <SelectField
+            label="Modalidade de atendimento preferida"
+            title="Modalidade de atendimento"
+            value={modalidade}
+            options={MODALIDADES}
+            onChange={setModalidade}
           />
         </ScrollView>
       </View>

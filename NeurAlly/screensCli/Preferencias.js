@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
+import SelectField from '../components/SelectField.js';
+import { TEMAS_APP, IDIOMAS, MODALIDADES, TEMAS_INTERESSE } from '../constants/opcoes.js';
 
 export default function Preferencias({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -14,19 +16,9 @@ export default function Preferencias({ navigation }) {
   const [tema, setTema] = useState('Padrão do sistema');
   const [idioma, setIdioma] = useState('Português (Brasil)');
   const [modalidade, setModalidade] = useState('Online');
-  const [interesse, setInteresse] = useState('Burnout');
+  const [interesses, setInteresses] = useState(['Burnout']);
 
   if (!fontsLoaded) return null;
-
-  const DropdownField = ({ label, value, onPress }) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity style={styles.inputWrapper} onPress={onPress} activeOpacity={0.7}>
-        <Text style={styles.inputText}>{value}</Text>
-        <Ionicons name="caret-down" size={20} color="#000" />
-      </TouchableOpacity>
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,28 +35,35 @@ export default function Preferencias({ navigation }) {
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <DropdownField 
-            label="Tema do aplicativo" 
-            value={tema} 
-            onPress={() => Alert.alert("Tema do aplicativo", "Aqui você pode abrir um modal para escolher entre Claro, Escuro ou Padrão do sistema.")} 
+          <SelectField
+            label="Tema do aplicativo"
+            value={tema}
+            options={TEMAS_APP}
+            onChange={setTema}
           />
-          
-          <DropdownField 
-            label="Idioma" 
-            value={idioma} 
-            onPress={() => Alert.alert("Idioma", "Aqui você pode listar e selecionar os idiomas disponíveis.")} 
+
+          <SelectField
+            label="Idioma"
+            value={idioma}
+            options={IDIOMAS}
+            onChange={setIdioma}
           />
-          
-          <DropdownField 
-            label="Modalidade de atendimento preferida" 
-            value={modalidade} 
-            onPress={() => Alert.alert("Modalidade", "Escolha entre Online ou Presencial.")} 
+
+          <SelectField
+            label="Modalidade de atendimento preferida"
+            title="Modalidade de atendimento"
+            value={modalidade}
+            options={MODALIDADES}
+            onChange={setModalidade}
           />
-          
-          <DropdownField 
-            label="Temas de interesse" 
-            value={interesse} 
-            onPress={() => Alert.alert("Temas de interesse", "Selecione seus principais focos ou especialidades de interesse.")} 
+
+          <SelectField
+            label="Temas de interesse"
+            value={interesses}
+            options={TEMAS_INTERESSE}
+            onChange={setInteresses}
+            multiple
+            placeholder="Selecione seus temas de interesse"
           />
 
         </ScrollView>

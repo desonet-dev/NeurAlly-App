@@ -34,6 +34,40 @@ export async function cadastrarUsuario({
   return credencial.user;
 }
 
+// Cria/completa o documento usuarios/{uid}. Usado no primeiro acesso com Google, quando a conta
+// do Firebase Auth já existe mas ainda não há tipo (cliente/psicólogo), CPF etc.
+export async function completarPerfil(uid, {
+  nome,
+  email,
+  tipo,
+  dataNascimento = '',
+  cpf = '',
+  telefone = '',
+  crp = '',
+}) {
+  await setDoc(
+    doc(db, 'usuarios', uid),
+    {
+      nome,
+      email,
+      tipo,
+      dataNascimento,
+      cpf,
+      telefone,
+      ...(tipo === 'psicologo' ? { crp } : {}),
+      criadoEm: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+// Decide para qual tela ir depois de entrar. Sem `tipo` o cadastro está incompleto
+// (o documento pode existir só com os campos de presença online).
+export function rotaInicial(perfil) {
+  if (!perfil?.tipo) return 'CompletarCadastro';
+  return perfil.tipo === 'psicologo' ? 'HomePsi' : 'Home';
+}
+
 export async function entrarComEmailSenha({ email, senha }) {
   const credencial = await signInWithEmailAndPassword(auth, email, senha);
   return credencial.user;

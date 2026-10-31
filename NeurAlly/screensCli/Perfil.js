@@ -66,7 +66,7 @@ export default function Perfil({ navigation }) {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
           
           <View style={styles.avatarContainer}>
-            <Image source={require('../assets/Anderson.png')} style={styles.avatar} />
+            <Image source={require('../assets/perfil.png')} style={styles.avatar} />
             <TouchableOpacity style={styles.editAvatarButton}>
               <MaterialIcons name="edit" size={18} color="#FFF" />
             </TouchableOpacity>
@@ -77,7 +77,7 @@ export default function Perfil({ navigation }) {
 
           <View style={styles.divider} />
 
-          <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PerfilConfig')}>
             <Text style={styles.menuItemText}>Configurações</Text>
             <Ionicons name="settings-sharp" size={20} color="#1A56DB" />
           </TouchableOpacity>

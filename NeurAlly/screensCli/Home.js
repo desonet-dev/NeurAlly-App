@@ -30,24 +30,20 @@ export default function HomeScreen() {
                 showsVerticalScrollIndicator={false}
             >
 
-                {/* Bom dia ao usuário */}
                 <View style={styles.header}>
                     <View>
                         <Text style={styles.greetingText}>Olá,</Text>
                         <Text style={styles.greetingName}>{primeiroNome || 'Maria'}</Text>
                     </View>
                     <Image
-                        source={require('../assets/Anderson.png')}
+                        source={require('../assets/perfil.png')}
                         style={styles.headerAvatar}
                     />
                 </View>
 
-                {/* Barra de pesquisa */}
                 <SearchBar />
 
-                {/* Próxima consulta */}
                 <TouchableOpacity style={styles.professionalCard} activeOpacity={0.8}>
-                    {/* Nome e título do profissional */}
                     <View style={styles.cardTop}>
                         <Image
                             source={require('../assets/Anderson.png')}
@@ -76,12 +72,10 @@ export default function HomeScreen() {
                     </View>
                 </TouchableOpacity>
 
-                {/* Calendário curto de sessões */}
                 <Text style={styles.sectionTitle}>Sessões</Text>
 
                 <SmallCalendar />
 
-                {/* Jogos relaxantes */}
                 <TouchableOpacity style={styles.optionCard} activeOpacity={0.8}>
                     <Text style={styles.optionTitle}>Jogos relaxantes</Text>
                     <Text style={styles.optionDescription}>

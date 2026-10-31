@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Tex
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
+import SelectField from '../components/SelectField.js';
+import { INTERVALOS, BLOQUEIOS } from '../constants/opcoes.js';
 
 export default function DisponibilidadePsi({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -29,7 +31,7 @@ export default function DisponibilidadePsi({ navigation }) {
 
   // Estados para as preferências de intervalo e bloqueio
   const [intervalo, setIntervalo] = useState('10 minutos');
-  const [bloqueio, setBloqueio] = useState('Feriados');
+  const [bloqueios, setBloqueios] = useState(['Feriados']);
 
   if (!fontsLoaded) return null;
 
@@ -50,16 +52,6 @@ export default function DisponibilidadePsi({ navigation }) {
     const novo = { id: String(Date.now()), inicio: '09:00', fim: '17:00' };
     setHorarios([...horarios, novo]);
   };
-
-  const DropdownField = ({ label, value, onPress }) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity style={styles.dropdownWrapper} onPress={onPress} activeOpacity={0.7}>
-        <Text style={styles.inputText}>{value}</Text>
-        <Ionicons name="caret-down" size={20} color="#000" />
-      </TouchableOpacity>
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -122,16 +114,21 @@ export default function DisponibilidadePsi({ navigation }) {
 
           <View style={styles.spacer} />
 
-          <DropdownField 
-            label="Janela de intervalo entre consultas" 
-            value={intervalo} 
-            onPress={() => Alert.alert("Intervalo", "Escolha o tempo de intervalo entre as consultas (ex: 5min, 10min, 15min).")}
+          <SelectField
+            label="Janela de intervalo entre consultas"
+            title="Intervalo entre consultas"
+            value={intervalo}
+            options={INTERVALOS}
+            onChange={setIntervalo}
           />
-          
-          <DropdownField 
-            label="Bloqueio de datas" 
-            value={bloqueio} 
-            onPress={() => Alert.alert("Bloqueio", "Selecione feriados ou dias específicos de folga/férias.")}
+
+          <SelectField
+            label="Bloqueio de datas"
+            value={bloqueios}
+            options={BLOQUEIOS}
+            onChange={setBloqueios}
+            multiple
+            placeholder="Nenhum"
           />
 
         </ScrollView>

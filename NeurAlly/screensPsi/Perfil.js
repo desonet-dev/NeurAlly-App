@@ -78,7 +78,7 @@ export default function PerfilPsi({ navigation }) {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
           <View style={styles.avatarContainer}>
-            <Image source={require('../assets/Anderson.png')} style={styles.avatar} />
+            <Image source={require('../assets/perfil.png')} style={styles.avatar} />
             <TouchableOpacity style={styles.editAvatarButton}>
               <MaterialIcons name="edit" size={18} color="#FFF" />
             </TouchableOpacity>

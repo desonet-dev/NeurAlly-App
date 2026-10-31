@@ -76,6 +76,7 @@ export const ouvirConversasDoUsuario = (userId, callback) => {
       name: 'Dra. Brinquedos',
       title: 'Psiquiatra',
       recentMessage: 'Próxima consulta dia 01/02.',
+      online: true, // apenas para os dados de teste; os reais vêm de presencaService
       profilePicture: require('../assets/Anderson.png'),
     },
     {
@@ -92,6 +93,7 @@ export const ouvirConversasDoUsuario = (userId, callback) => {
       name: 'Dr. Carrinhos',
       title: 'Psicólogo',
       recentMessage: 'Você é noob em casos de trauma?',
+      online: true, // apenas para os dados de teste
       profilePicture: require('../assets/Anderson.png'),
     }
   ];

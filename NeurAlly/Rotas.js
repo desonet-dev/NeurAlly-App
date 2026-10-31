@@ -4,6 +4,7 @@ import LoadingScreen from './screens/Carregamento.js';
 import LoginScreen from './screens/Login.js';
 import CadastroScreen from './screens/Cadastro.js';
 import EsqueciSenhaScreen from './screens/RecSenha.js';
+import CompletarCadastroScreen from './screens/CompletarCadastro.js';
 
 import HomeScreen from './screensCli/Home.js';
 import TriagemScreen from './screensCli/Triagem.js';
@@ -37,6 +38,7 @@ const screens = [
   { name: 'Login', component: LoginScreen },
   { name: 'Cadastro', component: CadastroScreen },
   { name: 'EsqueciSenha', component: EsqueciSenhaScreen },
+  { name: 'CompletarCadastro', component: CompletarCadastroScreen },
 
   { name: 'Home', component: HomeScreen },
   { name: 'Triagem', component: TriagemScreen },

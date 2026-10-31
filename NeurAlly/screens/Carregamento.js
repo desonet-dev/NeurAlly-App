@@ -43,6 +43,11 @@ export default function Carregamento({ navigation }) {
         const timer = setTimeout(() => {
             if (!usuario) {
                 navigation.replace('Login');
+            } else if (!perfil?.tipo) {
+                navigation.replace('CompletarCadastro', {
+                    nome: usuario.displayName || '',
+                    email: usuario.email || '',
+                });
             } else if (perfil?.tipo === 'psicologo') {
                 navigation.replace('HomePsi');
             } else {

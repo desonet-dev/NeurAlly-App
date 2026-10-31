@@ -25,26 +25,21 @@ export default function PerfilProfissional({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Imagem de Fundo (Topo) */}
       <View style={styles.headerImageContainer}>
-        {/* Substitua pela imagem em alta qualidade */}
-        <Image source={require('../assets/Anderson.png')} style={styles.headerImage} resizeMode="cover" />
+        <Image source={require('../assets/profissionalExemplo.png')} style={styles.headerImage} resizeMode="cover" />
         
         <TouchableOpacity style={[styles.backButton, { top: insets.top + 10 }]} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={30} color="#FFF" />
         </TouchableOpacity>
       </View>
 
-      {/* Conteúdo Principal */}
       <ScrollView contentContainerStyle={styles.contentScroll} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         
-        {/* Card Azul Flutuante (Sobrepondo a imagem) */}
         <View style={styles.nameCard}>
           <Text style={styles.nameCardTitle}>{profissional.nome}</Text>
           <Text style={styles.nameCardSubtitle}>{profissional.esp}</Text>
         </View>
 
-        {/* Secão Agenda */}
         <Text style={styles.sectionTitle}>Agenda</Text>
         <View style={styles.daysContainer}>
           {dias.map((d, index) => {
@@ -106,7 +101,7 @@ const styles = StyleSheet.create({
   contentScroll: { paddingHorizontal: 20, paddingBottom: 130 },
   nameCard: {
     backgroundColor: '#6292D6', borderRadius: 15, paddingVertical: 20, paddingHorizontal: 15,
-    alignItems: 'center', marginTop: -40, marginBottom: 30,
+    alignItems: 'center', marginTop: 20, marginBottom: 30,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 5,
   },
   nameCardTitle: { color: '#FFF', fontSize: 22, fontFamily: 'Montserrat-Bold', marginBottom: 5 },

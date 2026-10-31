@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, TextInput } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import paleta from '../styles/Tema.js';
+import SelectField from '../components/SelectField.js';
+import { ESPECIALIDADES, PUBLICO_ALVO } from '../constants/opcoes.js';
 
 export default function ExibicaoPsi({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -11,17 +13,10 @@ export default function ExibicaoPsi({ navigation }) {
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
-  if (!fontsLoaded) return null;
+  const [especialidades, setEspecialidades] = useState([]);
+  const [publicoAlvo, setPublicoAlvo] = useState([]);
 
-  const DropdownField = ({ label, value }) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity style={styles.inputWrapper}>
-        <Text style={styles.inputText}>{value}</Text>
-        <Ionicons name="caret-down" size={20} color="#000" />
-      </TouchableOpacity>
-    </View>
-  );
+  if (!fontsLoaded) return null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -50,8 +45,22 @@ export default function ExibicaoPsi({ navigation }) {
             </View>
           </View>
 
-          <DropdownField label="Especialidades" value="Padrão do sistema" />
-          <DropdownField label="Público-alvo" value="Padrão do sistema" />
+          <SelectField
+            label="Especialidades"
+            value={especialidades}
+            options={ESPECIALIDADES}
+            onChange={setEspecialidades}
+            multiple
+            placeholder="Selecione suas especialidades"
+          />
+          <SelectField
+            label="Público-alvo"
+            value={publicoAlvo}
+            options={PUBLICO_ALVO}
+            onChange={setPublicoAlvo}
+            multiple
+            placeholder="Selecione o público atendido"
+          />
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Vídeo apresentativo</Text>

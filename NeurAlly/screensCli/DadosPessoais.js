@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import paleta from '../styles/Tema.js';
+import EditableField from '../components/EditableField.js';
+import SelectField from '../components/SelectField.js';
+import { MUNICIPIOS } from '../constants/opcoes.js';
 
 export default function DadosPessoais({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -11,7 +13,7 @@ export default function DadosPessoais({ navigation }) {
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
-  // Estados para gerenciar os valores dos inputs
+  // Estados para gerenciar os valores dos campos
   const [nome, setNome] = useState('Carlos Andrade');
   const [nomeSocial, setNomeSocial] = useState('Carlos Andrade');
   const [biografia, setBiografia] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam venenatis dui dignissim finibus dignissim.');
@@ -19,7 +21,7 @@ export default function DadosPessoais({ navigation }) {
   const [telefone, setTelefone] = useState('+55 (11) 9 1234-5678');
   const [senha, setSenha] = useState('***************');
   const [dataNascimento, setDataNascimento] = useState('05/04/1992');
-  const [cpf, setCpf] = useState('123.456.789-01');
+  const [cpf] = useState('123.456.789-01');
   const [cep, setCep] = useState('12345-678');
   const [rua, setRua] = useState('Avenida Aprígio');
   const [municipio, setMunicipio] = useState('Taboão da Serra');
@@ -29,35 +31,11 @@ export default function DadosPessoais({ navigation }) {
 
   if (!fontsLoaded) return null;
 
-  // Componente de input reutilizável e clicável/editável
-  const InputField = ({ label, value, onChangeText, icon, multiline, height = 45, onPress, editable = true }) => (
-    <TouchableOpacity 
-      style={styles.inputContainer} 
-      activeOpacity={onPress ? 0.7 : 1} 
-      onPress={onPress}
-    >
-      <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputWrapper, { height: multiline ? height : 45 }]}>
-        <TextInput 
-          style={[styles.input, multiline && { textAlignVertical: 'top', paddingTop: 10 }]} 
-          value={value} 
-          onChangeText={onChangeText}
-          multiline={multiline}
-          editable={editable && !onPress} // Se tiver onPress, bloqueia o TextInput interno para disparar o clique do container
-          pointerEvents={onPress ? 'none' : 'auto'}
-        />
-        {icon === 'edit' && <MaterialIcons name="edit" size={20} color="#000" />}
-        {icon === 'info' && <MaterialIcons name="info" size={20} color="#000" />}
-        {icon === 'dropdown' && <Ionicons name="caret-down" size={20} color="#000" />}
-      </View>
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.card}>
-          
+
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Ionicons name="chevron-back" size={28} color="#1A56DB" />
@@ -67,66 +45,63 @@ export default function DadosPessoais({ navigation }) {
 
           <View style={styles.divider} />
 
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            
-            <InputField label="Nome" value={nome} onChangeText={setNome} icon="edit" />
-            <InputField label="Nome social" value={nomeSocial} onChangeText={setNomeSocial} icon="edit" />
-            <InputField 
-              label="Biografia" 
-              value={biografia} 
-              onChangeText={setBiografia}
-              icon="edit" 
-              multiline 
-              height={100} 
-            />
-            <InputField label="E-mail" value={email} onChangeText={setEmail} icon="edit" />
-            <InputField label="Telefone" value={telefone} onChangeText={setTelefone} icon="edit" />
-            <InputField label="Senha" value={senha} onChangeText={setSenha} icon="edit" />
-            <InputField label="Data de Nascimento" value={dataNascimento} onChangeText={setDataNascimento} icon="edit" />
-            
+          {/* keyboardShouldPersistTaps="handled" deixa o toque no lápis funcionar com o teclado aberto */}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <EditableField label="Nome" value={nome} onChangeText={setNome} />
+            <EditableField label="Nome social" value={nomeSocial} onChangeText={setNomeSocial} />
+            <EditableField label="Biografia" value={biografia} onChangeText={setBiografia} multiline height={100} />
+            <EditableField label="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" />
+            <EditableField label="Telefone" value={telefone} onChangeText={setTelefone} keyboardType="phone-pad" />
+            <EditableField label="Senha" value={senha} onChangeText={setSenha} secure />
+            <EditableField label="Data de Nascimento" value={dataNascimento} onChangeText={setDataNascimento} />
+
             {/* CPF apenas leitura com aviso */}
-            <InputField 
-              label="CPF" 
-              value={cpf} 
-              icon="info" 
-              editable={false}
-              onPress={() => Alert.alert("Aviso", "O CPF não pode ser alterado.")} 
+            <EditableField
+              label="CPF"
+              value={cpf}
+              locked
+              onLockedPress={() => Alert.alert('Aviso', 'O CPF não pode ser alterado.')}
             />
-            
+
             <View style={styles.row}>
               <View style={[styles.flex1, { marginRight: 10 }]}>
-                <InputField label="CEP" value={cep} onChangeText={setCep} />
+                <EditableField label="CEP" value={cep} onChangeText={setCep} keyboardType="numeric" compact />
               </View>
               <View style={styles.flex2}>
-                <InputField label="Rua" value={rua} onChangeText={setRua} />
+                <EditableField label="Rua" value={rua} onChangeText={setRua} compact />
               </View>
             </View>
 
             <View style={styles.row}>
               <View style={[styles.flex2, { marginRight: 10 }]}>
-                {/* Exemplo de campo tipo select/dropdown clicável */}
-                <InputField 
-                  label="Município" 
-                  value={municipio} 
-                  icon="dropdown" 
-                  onPress={() => Alert.alert("Selecionar Município", "Aqui você pode abrir um modal com a lista de cidades.")}
+                <SelectField
+                  label="Município"
+                  title="Selecionar município"
+                  value={municipio}
+                  options={MUNICIPIOS}
+                  onChange={setMunicipio}
+                  containerStyle={{ marginBottom: 15 }}
                 />
               </View>
               <View style={[styles.flex1, { marginRight: 10 }]}>
-                <InputField label="Nº" value={numero} onChangeText={setNumero} />
+                <EditableField label="Nº" value={numero} onChangeText={setNumero} keyboardType="numeric" compact />
               </View>
               <View style={styles.flex1}>
-                <InputField label="Complemento" value={complemento} onChangeText={setComplemento} />
+                <EditableField label="Complemento" value={complemento} onChangeText={setComplemento} compact />
               </View>
             </View>
 
             <View style={styles.spacerDivider} />
 
-            <InputField label="Contato de emergência" value={contatoEmergencia} onChangeText={setContatoEmergencia} icon="info" />
+            <EditableField label="Contato de emergência" value={contatoEmergencia} onChangeText={setContatoEmergencia} />
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.paymentButton}
-              onPress={() => Alert.alert("Método de Pagamento", "Navegar para a tela de gerenciamento de pagamentos.")}
+              onPress={() => Alert.alert('Método de Pagamento', 'Navegar para a tela de gerenciamento de pagamentos.')}
             >
               <Text style={styles.paymentButtonText}>Método de pagamento</Text>
             </TouchableOpacity>

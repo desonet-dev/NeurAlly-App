@@ -14,12 +14,15 @@ import {
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import paleta from '../styles/Tema.js';
-import { buscarPerfil, entrarComEmailSenha, traduzErroFirebase } from '../services/authService.js';
+import SocialButtons from '../components/SocialButtons.js';
+import { buscarPerfil, entrarComEmailSenha, rotaInicial, traduzErroFirebase } from '../services/authService.js';
+import useLoginGoogle from '../hooks/useLoginGoogle.js';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [entrando, setEntrando] = useState(false);
+    const { entrarComGoogle } = useLoginGoogle(navigation);
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -39,11 +42,14 @@ export default function LoginScreen({ navigation }) {
             const usuario = await entrarComEmailSenha({ email: email.trim(), senha });
             const perfil = await buscarPerfil(usuario.uid);
 
-            if (perfil?.tipo === 'psicologo') {
-                navigation.reset({ index: 0, routes: [{ name: 'HomePsi' }] });
-            } else {
-                navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
-            }
+            const rota = rotaInicial(perfil);
+            navigation.reset({
+                index: 0,
+                routes: [{
+                    name: rota,
+                    params: rota === 'CompletarCadastro' ? { nome: usuario.displayName || '', email: usuario.email || '' } : undefined,
+                }],
+            });
         } catch (erro) {
             Alert.alert('Não foi possível entrar', traduzErroFirebase(erro));
         } finally {
@@ -114,14 +120,7 @@ export default function LoginScreen({ navigation }) {
                 </View>
 
                 {/* Ícones Sociais */}
-                <View style={styles.socialContainer}>
-                    <TouchableOpacity style={styles.socialIcon}>
-                        <Text style={styles.socialTextPlaceholder}>f</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.socialIcon}>
-                        <Text style={[styles.socialTextPlaceholder, { color: '#DB4437' }]}>G</Text>
-                    </TouchableOpacity>
-                </View>
+                <SocialButtons style={{ marginTop: 40 }} onGooglePress={entrarComGoogle} />
 
             </ScrollView>
             </KeyboardAvoidingView>
@@ -211,30 +210,5 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontFamily: 'Montserrat-Regular',
         fontSize: 16,
-    },
-    socialContainer: {
-        flexDirection: 'row',
-        marginTop: 40,
-        gap: 20,
-    },
-    socialIcon: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#FFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
-    },
-    socialTextPlaceholder: {
-        fontSize: 24,
-        fontFamily: 'Montserrat-Bold',
-        color: '#1877F2',
     }
 });

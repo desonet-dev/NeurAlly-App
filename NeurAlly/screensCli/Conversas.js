@@ -13,15 +13,18 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
 import NavBar from '../components/navBarCli.js';
 import SearchBar from '../components/searchBar.js';
+import ContatosOnline from '../components/ContatosOnline.js';
 import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
 import { ouvirConversasDoUsuario } from '../services/chatService';
+import { ouvirContatosOnline } from '../services/presencaService';
 
 export default function Conversas() {
     // ID do usuário logado atual (substitua pelo ID real do Auth ou AsyncStorage)
     const meuIdUsuario = 'OVHfzNDwkZi54ELYFeiy693neo1'; 
 
     const [conversas, setConversas] = useState([]);
+    const [idsOnline, setIdsOnline] = useState([]);
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -38,6 +41,15 @@ export default function Conversas() {
 
         return () => unsubscribe();
     }, [meuIdUsuario]);
+
+    // Escuta em tempo real quem, entre os contatos das conversas, está online agora
+    const idsDosContatos = conversas.map((c) => c.id).join('|');
+    useEffect(() => {
+        const unsubscribe = ouvirContatosOnline(conversas.map((c) => c.id), setIdsOnline);
+        return () => unsubscribe();
+    }, [idsDosContatos]);
+
+    const contatosOnline = conversas.filter((c) => c.online || idsOnline.includes(c.id));
 
     // Função para abrir o chat existente
     const abrirChat = (chat) => {
@@ -61,6 +73,9 @@ export default function Conversas() {
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1, paddingTop: 15 }}>
                 <SearchBar />
+
+                {/* Contatos online agora (bolinha verde) */}
+                <ContatosOnline contatos={contatosOnline} onPress={abrirChat} />
 
                 <View style={styles.activeNow}>
                     <Text style={styles.activeText}>Suas Conversas</Text>

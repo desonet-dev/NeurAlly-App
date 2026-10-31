@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   StyleSheet, Text, View, ScrollView, TouchableOpacity, 
-  SafeAreaView 
+  SafeAreaView, Modal 
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,6 +10,7 @@ import paleta from '../styles/Tema.js';
 
 export default function Pagamento({ navigation }) {
   const [metodo, setMetodo] = useState('cartao');
+  const [agendado, setAgendado] = useState(false);
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -17,6 +18,11 @@ export default function Pagamento({ navigation }) {
   });
 
   if (!fontsLoaded) return null;
+
+  const irParaHome = () => {
+    setAgendado(false);
+    navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+  };
 
   const renderRadio = (isSelected) => (
     <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
@@ -94,12 +100,35 @@ export default function Pagamento({ navigation }) {
 
         <TouchableOpacity
           style={styles.payButton}
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Home' }] })}
+          onPress={() => setAgendado(true)}
         >
-          <Text style={styles.payButtonText}>Pagar</Text>
+          <Text style={styles.payButtonText}>Confirmar</Text>
         </TouchableOpacity>
 
       </ScrollView>
+
+      {/* Modal de confirmação do agendamento */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={agendado}
+        onRequestClose={irParaHome}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalIconContainer}>
+              <Ionicons name="checkmark-circle" size={40} color="#2E9E5B" />
+            </View>
+            <Text style={styles.modalTitle}>Consulta agendada!</Text>
+            <Text style={styles.modalMessage}>
+              Sua consulta foi agendada com sucesso. Você receberá os detalhes na sua agenda.
+            </Text>
+            <TouchableOpacity style={styles.modalButton} onPress={irParaHome}>
+              <Text style={styles.modalButtonText}>Ok</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -125,5 +154,12 @@ const styles = StyleSheet.create({
   radioOuterSelected: { borderColor: '#1A56DB' },
   radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#1A56DB' },
   payButton: { backgroundColor: '#6292D6', borderRadius: 25, paddingVertical: 18, alignItems: 'center', marginTop: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
-  payButtonText: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#FFF' }
+  payButtonText: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#FFF' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContainer: { width: '100%', backgroundColor: '#FFF', borderRadius: 20, padding: 24, alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 },
+  modalIconContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#E6F6EC', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  modalTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: '#1A1A1A', marginBottom: 8 },
+  modalMessage: { fontFamily: 'Montserrat-Regular', fontSize: 14, color: '#5A6B87', textAlign: 'center', marginBottom: 24 },
+  modalButton: { width: '100%', backgroundColor: '#1A56DB', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  modalButtonText: { fontFamily: 'Montserrat-Bold', color: '#FFF', fontSize: 14 }
 });

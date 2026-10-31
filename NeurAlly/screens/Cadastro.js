@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import paleta from '../styles/Tema.js';
+import SocialButtons from '../components/SocialButtons.js';
+import useLoginGoogle from '../hooks/useLoginGoogle.js';
 import { cadastrarUsuario, traduzErroFirebase } from '../services/authService.js';
 
 export default function CadastroScreen({ navigation }) {
@@ -28,6 +30,7 @@ export default function CadastroScreen({ navigation }) {
     const [senha, setSenha] = useState('');
     const [crp, setCrp] = useState('');
     const [cadastrando, setCadastrando] = useState(false);
+    const { entrarComGoogle } = useLoginGoogle(navigation);
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -151,17 +154,8 @@ export default function CadastroScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                {/* Ícones Sociais (Exemplo de placeholders) */}
-                <View style={styles.socialContainer}>
-                    <TouchableOpacity style={styles.socialIcon}>
-                        {/* Substitua pelo ícone/imagem real do Facebook */}
-                        <Text style={styles.socialTextPlaceholder}>F</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.socialIcon}>
-                        {/* Substitua pelo ícone/imagem real do Google */}
-                        <Text style={styles.socialTextPlaceholder}>G</Text>
-                    </TouchableOpacity>
-                </View>
+                {/* Ícones Sociais */}
+                <SocialButtons style={{ marginTop: 30 }} onGooglePress={entrarComGoogle} />
 
             </ScrollView>
             </KeyboardAvoidingView>
@@ -278,28 +272,5 @@ const styles = StyleSheet.create({
     toggleTextActive: {
         color: '#000',
         fontFamily: 'Montserrat-Bold',
-    },
-    socialContainer: {
-        flexDirection: 'row',
-        marginTop: 30,
-        gap: 20,
-    },
-    socialIcon: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#FFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-    },
-    socialTextPlaceholder: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1A56DB',
     }
 });
