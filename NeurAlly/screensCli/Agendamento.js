@@ -4,6 +4,8 @@ import { useFonts } from 'expo-font';
 import NavBar from '../components/navBarCli.js';
 import DynamicCalendar from '../components/DynamicCalendar.js';
 import paleta from '../styles/Tema.js';
+import useConsultas from '../hooks/useConsultas.js';
+import { diaDoMes, mesAbreviado, nomeDoDia } from '../utils/datas.js';
 
 // Função auxiliar para pegar a data atual no formato ISO (AAAA-MM-DD)
 function getHojeISO() {
@@ -17,6 +19,7 @@ function getHojeISO() {
 export default function Agendamento({ navigation }) {
   // Estado para controlar a data selecionada no calendário
   const [selectedDate, setSelectedDate] = useState(getHojeISO());
+  const { proximas, datasComConsulta } = useConsultas();
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -42,7 +45,29 @@ export default function Agendamento({ navigation }) {
           <DynamicCalendar
             selectedDate={selectedDate}
             onDayPress={(day) => setSelectedDate(day.dateString)}
+            datasConsulta={datasComConsulta}
           />
+
+          {proximas.length === 0 ? (
+            <Text style={styles.semConsultas}>Você ainda não tem consultas agendadas.</Text>
+          ) : (
+            <View style={styles.listaConsultas}>
+              {proximas.slice(0, 5).map((consulta) => (
+                <View key={consulta.id} style={styles.consultaItem}>
+                  <View style={styles.consultaData}>
+                    <Text style={styles.consultaDia}>{diaDoMes(consulta.data)}</Text>
+                    <Text style={styles.consultaMes}>{mesAbreviado(consulta.data)}</Text>
+                  </View>
+                  <View style={styles.consultaInfo}>
+                    <Text style={styles.consultaNome} numberOfLines={1}>{consulta.profissionalNome}</Text>
+                    <Text style={styles.consultaDetalhe} numberOfLines={1}>
+                      {nomeDoDia(consulta.data)} · {consulta.horario} · {consulta.modalidade === 'online' ? 'On-line' : 'Presencial'}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
 
         <View style={styles.card}>
@@ -66,6 +91,58 @@ export default function Agendamento({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  semConsultas: {
+    fontSize: 13,
+    fontFamily: 'Montserrat-Regular',
+    color: '#5A6B87',
+    textAlign: 'center',
+    marginTop: 5,
+  },
+  listaConsultas: {
+    marginTop: 5,
+  },
+  consultaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F4FF',
+    borderRadius: 15,
+    padding: 12,
+    marginBottom: 10,
+  },
+  consultaData: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: paleta.cor.a7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  consultaDia: {
+    fontSize: 18,
+    fontFamily: 'Montserrat-Bold',
+    color: '#FFF',
+    lineHeight: 22,
+  },
+  consultaMes: {
+    fontSize: 11,
+    fontFamily: 'Montserrat-Bold',
+    color: '#FFF',
+  },
+  consultaInfo: {
+    flex: 1,
+  },
+  consultaNome: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-Bold',
+    color: '#1A56DB',
+  },
+  consultaDetalhe: {
+    fontSize: 12,
+    fontFamily: 'Montserrat-Regular',
+    color: '#5A6B87',
+    marginTop: 2,
+  },
   container: {
     flex: 1,
     backgroundColor: paleta.cor.fundo

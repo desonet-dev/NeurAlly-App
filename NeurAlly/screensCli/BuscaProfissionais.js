@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
 import NavBar from '../components/navBarCli.js';
 import paleta from '../styles/Tema.js';
+import { listarPsicologos } from '../services/profissionaisService.js';
+
+// Exemplos mostrados enquanto ainda não há psicólogos cadastrados no app.
+const PROFISSIONAIS_EXEMPLO = [
+  { id: '1', nome: 'João Mendonça', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
+  { id: '2', nome: 'Caroline de Jesus', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
+  { id: '3', nome: 'Carla Andrade', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
+];
 
 export default function BuscaProfissionais({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -11,11 +19,20 @@ export default function BuscaProfissionais({ navigation }) {
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
-  const profissionais = [
-    { id: '1', nome: 'João Mendonça', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia', img: require('../assets/Anderson.png') },
-    { id: '2', nome: 'Caroline de Jesus', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia', img: require('../assets/Anderson.png') },
-    { id: '3', nome: 'Carla Andrade', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia', img: require('../assets/Anderson.png') },
-  ];
+  const [profissionais, setProfissionais] = useState(PROFISSIONAIS_EXEMPLO);
+
+  // Psicólogos reais (contas cadastradas como psicólogo). Se não houver nenhum, ficam os exemplos.
+  useEffect(() => {
+    let ativo = true;
+    listarPsicologos()
+      .then((lista) => {
+        if (ativo && lista.length > 0) setProfissionais(lista);
+      })
+      .catch((erro) => console.warn('Não foi possível listar os psicólogos:', erro?.message || erro));
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   if (!fontsLoaded) return null;
 
@@ -23,12 +40,12 @@ export default function BuscaProfissionais({ navigation }) {
     <View style={styles.card}>
       <View style={styles.cardInfo}>
         <Text style={styles.cardName}>{item.nome}</Text>
-        <Text style={styles.cardText}>{item.exp}</Text>
-        <Text style={styles.cardText}>{item.crp}</Text>
+        {!!item.exp && <Text style={styles.cardText}>{item.exp}</Text>}
+        {!!item.crp && <Text style={styles.cardText}>{item.crp}</Text>}
         <Text style={styles.cardTextBold}>{item.esp}</Text>
       </View>
       <View style={styles.cardRight}>
-        <Image source={item.img} style={styles.avatar} />
+        <Image source={item.img || require('../assets/Anderson.png')} style={styles.avatar} />
         {/* Navega para a Tela 3 passando os dados */}
         <TouchableOpacity 
           style={styles.conhecerButton}

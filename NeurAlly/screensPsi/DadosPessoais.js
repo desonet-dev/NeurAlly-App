@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -6,6 +6,7 @@ import paleta from '../styles/Tema.js';
 import EditableField from '../components/EditableField.js';
 import SelectField from '../components/SelectField.js';
 import { MUNICIPIOS } from '../constants/opcoes.js';
+import { useAuth } from '../contexts/AuthContext.js';
 
 export default function PerfilDadosPsi({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -13,20 +14,39 @@ export default function PerfilDadosPsi({ navigation }) {
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
-  // Estados locais para gerenciar os dados do perfil do psicólogo
-  const [nome, setNome] = useState('Dra. Aline Juliana');
-  const [nomeSocial, setNomeSocial] = useState('Dra. Aline');
-  const [biografia, setBiografia] = useState('Psicóloga clínica especialista em TCC, atendendo adultos e adolescentes com foco em ansiedade e trauma.');
-  const [email, setEmail] = useState('aline.juliana@psicologia.com');
-  const [telefone, setTelefone] = useState('+55 (11) 9 8765-4321');
+  const { perfil } = useAuth();
+
+  // Estados locais para gerenciar os dados do perfil do psicólogo (iniciam com os dados da conta)
+  const [nome, setNome] = useState(perfil?.nome || '');
+  const [nomeSocial, setNomeSocial] = useState(perfil?.nomeSocial || '');
+  const [biografia, setBiografia] = useState(perfil?.biografia || '');
+  const [email, setEmail] = useState(perfil?.email || '');
+  const [telefone, setTelefone] = useState(perfil?.telefone || '');
   const [senha, setSenha] = useState('***************');
-  const [dataNascimento, setDataNascimento] = useState('15/08/1985');
-  const [crp] = useState('06/123456');
-  const [cep, setCep] = useState('06767-000');
-  const [rua, setRua] = useState('Rodovia Regis Bittencourt');
-  const [municipio, setMunicipio] = useState('Taboão da Serra');
-  const [numero, setNumero] = useState('450');
-  const [complemento, setComplemento] = useState('Sala 12');
+  const [dataNascimento, setDataNascimento] = useState(perfil?.dataNascimento || '');
+  const [crp, setCrp] = useState(perfil?.crp || '');
+  const [cep, setCep] = useState(perfil?.cep || '');
+  const [rua, setRua] = useState(perfil?.rua || '');
+  const [municipio, setMunicipio] = useState(perfil?.municipio || '');
+  const [numero, setNumero] = useState(perfil?.numero || '');
+  const [complemento, setComplemento] = useState(perfil?.complemento || '');
+
+  // O perfil pode terminar de carregar depois da tela abrir: sincroniza quando ele mudar.
+  useEffect(() => {
+    if (!perfil) return;
+    setNome(perfil.nome || '');
+    setNomeSocial(perfil.nomeSocial || '');
+    setBiografia(perfil.biografia || '');
+    setEmail(perfil.email || '');
+    setTelefone(perfil.telefone || '');
+    setDataNascimento(perfil.dataNascimento || '');
+    setCrp(perfil.crp || '');
+    setCep(perfil.cep || '');
+    setRua(perfil.rua || '');
+    setMunicipio(perfil.municipio || '');
+    setNumero(perfil.numero || '');
+    setComplemento(perfil.complemento || '');
+  }, [perfil]);
 
   if (!fontsLoaded) return null;
 
@@ -60,7 +80,7 @@ export default function PerfilDadosPsi({ navigation }) {
             {/* CRP bloqueado para alteração com aviso */}
             <EditableField
               label="CRP"
-              value={crp}
+              value={crp || 'Não informado'}
               locked
               onLockedPress={() => Alert.alert('Aviso', 'O registro do CRP não pode ser alterado diretamente.')}
             />

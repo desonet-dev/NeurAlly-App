@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import { buscarPerfil, observarAutenticacao, sair as sairService } from '../services/authService.js';
+import { buscarPerfilComTentativas, observarAutenticacao, sair as sairService } from '../services/authService.js';
+import { guardarTipoLocal } from '../services/perfilLocal.js';
+import { publicarPsicologo } from '../services/profissionaisService.js';
 import { definirPresenca, INTERVALO_HEARTBEAT_MS } from '../services/presencaService.js';
 import { sairDoGoogle } from '../services/googleAuthService';
+import { auth } from '../services/firebaseConfig.js';
 
 const AuthContext = createContext({
   usuario: null,
   perfil: null,
+  erroPerfil: false,
   carregando: true,
   sair: async () => {},
   recarregarPerfil: async () => {},
@@ -15,22 +19,35 @@ const AuthContext = createContext({
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [perfil, setPerfil] = useState(null);
+  // true quando NÃO conseguimos ler o perfil (falha de conexão/permissão). É diferente de o perfil
+  // não existir ou estar sem `tipo`: só nesse segundo caso a tela de completar cadastro faz sentido.
+  const [erroPerfil, setErroPerfil] = useState(false);
   const [carregando, setCarregando] = useState(true);
+
+  const carregarPerfil = async (uid) => {
+    try {
+      const perfilAtual = await buscarPerfilComTentativas(uid);
+      setPerfil(perfilAtual);
+      setErroPerfil(false);
+      if (perfilAtual?.tipo) guardarTipoLocal(uid, perfilAtual.tipo);
+      // Psicólogos que se cadastraram antes do diretório existir passam a aparecer na busca.
+      if (perfilAtual?.tipo === 'psicologo') publicarPsicologo(uid, perfilAtual);
+    } catch (erro) {
+      console.warn('Erro ao buscar perfil do usuário:', erro);
+      setPerfil(null);
+      setErroPerfil(true);
+    }
+  };
 
   useEffect(() => {
     const cancelar = observarAutenticacao(async (usuarioAtual) => {
       setUsuario(usuarioAtual);
 
       if (usuarioAtual) {
-        try {
-          const perfilAtual = await buscarPerfil(usuarioAtual.uid);
-          setPerfil(perfilAtual);
-        } catch (erro) {
-          console.warn('Erro ao buscar perfil do usuário:', erro);
-          setPerfil(null);
-        }
+        await carregarPerfil(usuarioAtual.uid);
       } else {
         setPerfil(null);
+        setErroPerfil(false);
       }
 
       setCarregando(false);
@@ -38,6 +55,15 @@ export function AuthProvider({ children }) {
 
     return cancelar;
   }, []);
+
+  // Se a leitura do perfil falhou, continua tentando em segundo plano até conseguir.
+  useEffect(() => {
+    const uid = usuario?.uid;
+    if (!erroPerfil || !uid) return undefined;
+
+    const timer = setInterval(() => carregarPerfil(uid), 10000);
+    return () => clearInterval(timer);
+  }, [erroPerfil, usuario?.uid]);
 
   // Presença online: marca como online enquanto o app está aberto (heartbeat a cada minuto)
   // e como offline quando o app vai para segundo plano.
@@ -76,14 +102,19 @@ export function AuthProvider({ children }) {
     return sairService();
   };
 
+  // Usa o usuário do Firebase diretamente (e não o estado `usuario`) porque logo após o cadastro
+  // o estado do React ainda pode estar desatualizado, e o perfil acabou de ser gravado.
   const recarregarPerfil = async () => {
-    if (!usuario) return;
-    const perfilAtual = await buscarPerfil(usuario.uid);
+    const uid = auth.currentUser?.uid || usuario?.uid;
+    if (!uid) return;
+    const perfilAtual = await buscarPerfilComTentativas(uid);
     setPerfil(perfilAtual);
+    setErroPerfil(false);
+    if (perfilAtual?.tipo) guardarTipoLocal(uid, perfilAtual.tipo);
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, perfil, carregando, sair, recarregarPerfil }}>
+    <AuthContext.Provider value={{ usuario, perfil, erroPerfil, carregando, sair, recarregarPerfil }}>
       {children}
     </AuthContext.Provider>
   );

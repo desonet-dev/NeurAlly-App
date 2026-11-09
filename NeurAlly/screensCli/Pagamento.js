@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { 
   StyleSheet, Text, View, ScrollView, TouchableOpacity, 
-  SafeAreaView, Modal 
+  SafeAreaView, Modal, ActivityIndicator 
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import paleta from '../styles/Tema.js';
+import { agendarConsulta } from '../services/consultasService.js';
+import { formatarDataBR } from '../utils/datas.js';
+import { useAuth } from '../contexts/AuthContext.js';
 
-export default function Pagamento({ navigation }) {
+export default function Pagamento({ navigation, route }) {
+  // Dados escolhidos na tela de agendamento
+  const { profissional, data, horario, modalidade } = route?.params || {};
+  const { perfil } = useAuth();
+
   const [metodo, setMetodo] = useState('cartao');
   const [agendado, setAgendado] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -22,6 +31,43 @@ export default function Pagamento({ navigation }) {
   const irParaHome = () => {
     setAgendado(false);
     navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+  };
+
+  const confirmarPagamento = async () => {
+    if (salvando) return;
+
+    if (!profissional?.nome || !data || !horario) {
+      setErro('Escolha o profissional, o dia e o horário antes de confirmar.');
+      return;
+    }
+
+    setErro('');
+    setSalvando(true);
+    try {
+      await agendarConsulta({
+        clienteNome: perfil?.nome || '',
+        profissionalId: profissional.uid || null,
+        profissionalNome: profissional.nome,
+        profissionalEsp: profissional.esp || '',
+        data,
+        horario,
+        modalidade: modalidade || 'presencial',
+        metodoPagamento: metodo,
+        valor: 20,
+      });
+      setAgendado(true);
+    } catch (e) {
+      console.warn('Erro ao agendar consulta:', e);
+      setErro(
+        e?.code === 'consulta/horario-ocupado'
+          ? 'Esse horário acabou de ser reservado por outra pessoa. Volte e escolha outro horário.'
+          : e?.code === 'permission-denied'
+          ? 'Sem permissão para salvar a consulta. Verifique as regras do Firestore para a coleção consultas.'
+          : 'Não foi possível agendar a consulta. Verifique sua conexão e tente novamente.'
+      );
+    } finally {
+      setSalvando(false);
+    }
   };
 
   const renderRadio = (isSelected) => (
@@ -46,8 +92,13 @@ export default function Pagamento({ navigation }) {
             <Ionicons name="person" size={32} color="#6292D6" />
           </View>
           <View style={styles.doctorInfo}>
-            <Text style={styles.doctorName}>Dr. Thiago</Text>
-            <Text style={styles.doctorSpecialty}>Especialista em traumas</Text>
+            <Text style={styles.doctorName}>{profissional?.nome || 'Profissional'}</Text>
+            {!!profissional?.esp && <Text style={styles.doctorSpecialty}>{profissional.esp}</Text>}
+            {!!data && !!horario && (
+              <Text style={styles.doctorSpecialty}>
+                {formatarDataBR(data)} às {horario} · {modalidade === 'online' ? 'On-line' : 'Presencial'}
+              </Text>
+            )}
           </View>
           <View style={styles.priceBadge}>
             <Text style={styles.priceText}>R$20,00</Text>
@@ -98,11 +149,23 @@ export default function Pagamento({ navigation }) {
           {renderRadio(metodo === 'apple')}
         </TouchableOpacity>
 
+        {!!erro && (
+          <View style={styles.avisoBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
+            <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+            <Text style={styles.avisoTexto}>{erro}</Text>
+          </View>
+        )}
+
         <TouchableOpacity
-          style={styles.payButton}
-          onPress={() => setAgendado(true)}
+          style={[styles.payButton, salvando && { opacity: 0.7 }]}
+          onPress={confirmarPagamento}
+          disabled={salvando}
         >
-          <Text style={styles.payButtonText}>Confirmar</Text>
+          {salvando ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <Text style={styles.payButtonText}>Confirmar</Text>
+          )}
         </TouchableOpacity>
 
       </ScrollView>
@@ -153,6 +216,8 @@ const styles = StyleSheet.create({
   radioOuter: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#B0C4DE', justifyContent: 'center', alignItems: 'center' },
   radioOuterSelected: { borderColor: '#1A56DB' },
   radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#1A56DB' },
+  avisoBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDEDED', borderWidth: 1, borderColor: '#F5C2C2', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 5 },
+  avisoTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#B03030' },
   payButton: { backgroundColor: '#6292D6', borderRadius: 25, paddingVertical: 18, alignItems: 'center', marginTop: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
   payButtonText: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#FFF' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },

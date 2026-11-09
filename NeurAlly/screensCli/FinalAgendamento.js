@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   StyleSheet, Text, View, ScrollView, TouchableOpacity, 
   SafeAreaView, TextInput 
@@ -7,6 +7,9 @@ import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import paleta from '../styles/Tema.js';
+import useConsultas from '../hooks/useConsultas.js';
+import { blocosDaConsulta, hojeISO, inicioDaConsulta } from '../utils/datas.js';
+import { escutarHorariosOcupados } from '../services/consultasService.js';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
@@ -17,11 +20,28 @@ LocaleConfig.locales['pt-br'] = {
 };
 LocaleConfig.defaultLocale = 'pt-br';
 
-export default function FinalAgendamento({ navigation }) {
-  const [selectedDate, setSelectedDate] = useState('2026-08-15');
+export default function FinalAgendamento({ navigation, route }) {
+  // Quando vem da tela do profissional, já chegam o profissional e o horário escolhidos.
+  const profissionalParam = route?.params?.profissional;
+
+  const [selectedDate, setSelectedDate] = useState(hojeISO());
   const [modalidade, setModalidade] = useState('presencial');
-  const [horario, setHorario] = useState('9:00');
-  const [profissional, setProfissional] = useState('');
+  const [horario, setHorario] = useState(route?.params?.horario || '9:00');
+  const [profissional, setProfissional] = useState(profissionalParam?.nome || '');
+  const [aviso, setAviso] = useState('');
+  const { proximas, datasComConsulta } = useConsultas();
+  const [ocupados, setOcupados] = useState(new Set());
+
+  // uid do psicólogo escolhido (só existe para psicólogos reais da busca).
+  const profissionalUid =
+    profissionalParam?.uid && profissionalParam.nome === profissional.trim() ? profissionalParam.uid : undefined;
+
+  // Horários que esse psicólogo já tem reservados no dia escolhido (por qualquer cliente).
+  useEffect(() => {
+    setOcupados(new Set());
+    if (!profissionalUid) return undefined;
+    return escutarHorariosOcupados(profissionalUid, selectedDate, setOcupados);
+  }, [profissionalUid, selectedDate]);
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -31,6 +51,43 @@ export default function FinalAgendamento({ navigation }) {
   if (!fontsLoaded) return null;
 
   const horarios = ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30'];
+
+  const horarioOcupado = (h) => blocosDaConsulta(h).some((bloco) => ocupados.has(bloco));
+  const horarioPassou = (h) => inicioDaConsulta({ data: selectedDate, horario: h }) < new Date();
+
+  const handleConfirmar = () => {
+    const nomeProfissional = profissional.trim();
+
+    if (!nomeProfissional) {
+      setAviso('Escolha um profissional para agendar a consulta.');
+      return;
+    }
+    if (horarioPassou(horario)) {
+      setAviso('Esse horário já passou. Escolha outro dia ou horário.');
+      return;
+    }
+    if (horarioOcupado(horario)) {
+      setAviso('Esse horário já está reservado com este profissional. Escolha outro.');
+      return;
+    }
+    if (proximas.some((c) => c.data === selectedDate && c.horario === horario)) {
+      setAviso('Você já tem uma consulta marcada nesse dia e horário.');
+      return;
+    }
+
+    setAviso('');
+    navigation.navigate('Pagamento', {
+      profissional: {
+        nome: nomeProfissional,
+        esp: profissionalParam?.nome === nomeProfissional ? profissionalParam.esp : '',
+        // uid só existe para psicólogos reais; é ele que faz a consulta aparecer na agenda dele.
+        uid: profissionalParam?.nome === nomeProfissional ? profissionalParam.uid : undefined,
+      },
+      data: selectedDate,
+      horario,
+      modalidade,
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -50,16 +107,20 @@ export default function FinalAgendamento({ navigation }) {
             placeholder="Escolha um profissional" 
             placeholderTextColor="#888"
             value={profissional}
-            onChangeText={setProfissional}
+            onChangeText={(texto) => { setProfissional(texto); setAviso(''); }}
           />
         </View>
 
         <View style={styles.calendarWrapper}>
           <Calendar
-            current={'2026-08-15'}
-            onDayPress={(day) => setSelectedDate(day.dateString)}
+            current={hojeISO()}
+            minDate={hojeISO()}
+            onDayPress={(day) => { setSelectedDate(day.dateString); setAviso(''); }}
             markedDates={{
+              // Dias em que você já tem consulta ficam com um ponto azul.
+              ...Object.fromEntries([...datasComConsulta].map((data) => [data, { marked: true, dotColor: '#4894FE' }])),
               [selectedDate]: {
+                ...(datasComConsulta.has(selectedDate) ? { marked: true, dotColor: '#4894FE' } : {}),
                 selected: true,
                 selectedColor: 'transparent',
                 selectedTextColor: '#6292D6',
@@ -115,6 +176,10 @@ export default function FinalAgendamento({ navigation }) {
           />
         </View>
 
+        {datasComConsulta.size > 0 && (
+          <Text style={styles.legenda}>Os dias com ponto azul já têm consulta marcada.</Text>
+        )}
+
         <Text style={styles.sectionTitle}>Modalidade</Text>
         <View style={styles.modalidadeContainer}>
           <TouchableOpacity 
@@ -137,22 +202,32 @@ export default function FinalAgendamento({ navigation }) {
         <Text style={styles.sectionTitle}>Horários disponíveis</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horariosContainer}>
           {horarios.map((item, index) => {
-            const isSelected = horario === item;
+            const indisponivel = horarioOcupado(item) || horarioPassou(item);
+            const isSelected = horario === item && !indisponivel;
             return (
               <TouchableOpacity 
                 key={index} 
-                style={[styles.horarioPill, isSelected && styles.horarioPillActive]}
-                onPress={() => setHorario(item)}
+                style={[styles.horarioPill, isSelected && styles.horarioPillActive, indisponivel && styles.horarioPillIndisponivel]}
+                onPress={() => { setHorario(item); setAviso(''); }}
+                disabled={indisponivel}
+                accessibilityLabel={indisponivel ? `${item}, indisponível` : item}
               >
-                <Text style={[styles.horarioText, isSelected && styles.horarioTextActive]}>{item}</Text>
+                <Text style={[styles.horarioText, isSelected && styles.horarioTextActive, indisponivel && styles.horarioTextIndisponivel]}>{item}</Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
+        {!!aviso && (
+          <View style={styles.avisoBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
+            <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+            <Text style={styles.avisoTexto}>{aviso}</Text>
+          </View>
+        )}
+
         <TouchableOpacity 
           style={styles.confirmButton}
-          onPress={() => navigation.navigate('Pagamento')}
+          onPress={handleConfirmar}
         >
           <Text style={styles.confirmButtonText}>Confirmar</Text>
         </TouchableOpacity>
@@ -171,6 +246,9 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: '#333' },
   calendarWrapper: { borderRadius: 15, overflow: 'hidden', marginBottom: 20, backgroundColor: '#FFF', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+  legenda: { fontFamily: 'Montserrat-Regular', fontSize: 11, color: '#5A6B87', marginTop: -10, marginBottom: 15, marginLeft: 5 },
+  avisoBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDEDED', borderWidth: 1, borderColor: '#F5C2C2', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 10 },
+  avisoTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#B03030' },
   sectionTitle: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#333', marginBottom: 12 },
   modalidadeContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
   modalidadeCard: { flex: 1, backgroundColor: '#FFF', borderRadius: 15, paddingVertical: 20, alignItems: 'center', marginHorizontal: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 2, borderColor: 'transparent' },
@@ -181,6 +259,8 @@ const styles = StyleSheet.create({
   horariosContainer: { paddingBottom: 20 },
   horarioPill: { backgroundColor: '#FFF', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 20, marginRight: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   horarioPillActive: { backgroundColor: '#FF8C42' },
+  horarioPillIndisponivel: { backgroundColor: '#EEF1F6', elevation: 0, shadowOpacity: 0 },
+  horarioTextIndisponivel: { color: '#A0AABB', textDecorationLine: 'line-through' },
   horarioText: { fontFamily: 'Montserrat-Bold', fontSize: 14, color: '#333' },
   horarioTextActive: { color: '#FFF' },
   confirmButton: { backgroundColor: '#6292D6', borderRadius: 25, paddingVertical: 18, alignItems: 'center', marginTop: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },

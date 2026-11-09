@@ -9,13 +9,14 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 import { useAuth } from '../contexts/AuthContext.js';
+import { lerTipoLocal } from '../services/perfilLocal.js';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function Carregamento({ navigation }) {
     const [isReady, setIsReady] = useState(false);
     const translateX = useSharedValue(300);
-    const { usuario, perfil, carregando: autenticando } = useAuth();
+    const { usuario, perfil, erroPerfil, carregando: autenticando } = useAuth();
 
     useEffect(() => {
         async function prepare() {
@@ -40,23 +41,48 @@ export default function Carregamento({ navigation }) {
     useEffect(() => {
         if (!isReady || autenticando) return;
 
-        const timer = setTimeout(() => {
+        let cancelado = false;
+
+        const timer = setTimeout(async () => {
             if (!usuario) {
                 navigation.replace('Login');
-            } else if (!perfil?.tipo) {
+                return;
+            }
+
+            let tipo = perfil?.tipo;
+
+            // Não conseguimos ler o perfil (conexão instável): NÃO é cadastro incompleto.
+            // Usa o tipo de conta guardado no aparelho; sem ele, pede para entrar de novo.
+            if (!tipo && erroPerfil) {
+                tipo = await lerTipoLocal(usuario.uid);
+                if (cancelado) return;
+                if (!tipo) {
+                    navigation.replace('Login', {
+                        aviso: 'Não foi possível carregar seu perfil. Verifique sua conexão e entre novamente.',
+                    });
+                    return;
+                }
+            }
+
+            if (cancelado) return;
+
+            if (!tipo) {
                 navigation.replace('CompletarCadastro', {
                     nome: usuario.displayName || '',
                     email: usuario.email || '',
                 });
-            } else if (perfil?.tipo === 'psicologo') {
+            } else if (tipo === 'psicologo') {
                 navigation.replace('HomePsi');
             } else {
                 navigation.replace('Home');
             }
         }, 1200);
 
-        return () => clearTimeout(timer);
-    }, [isReady, autenticando, usuario, perfil, navigation]);
+        return () => {
+            cancelado = true;
+            clearTimeout(timer);
+        };
+    }, [isReady, autenticando, usuario, perfil, erroPerfil, navigation]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],

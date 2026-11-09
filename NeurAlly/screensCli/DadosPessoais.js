@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -6,6 +6,7 @@ import paleta from '../styles/Tema.js';
 import EditableField from '../components/EditableField.js';
 import SelectField from '../components/SelectField.js';
 import { MUNICIPIOS } from '../constants/opcoes.js';
+import { useAuth } from '../contexts/AuthContext.js';
 
 export default function DadosPessoais({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -13,21 +14,41 @@ export default function DadosPessoais({ navigation }) {
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
-  // Estados para gerenciar os valores dos campos
-  const [nome, setNome] = useState('Carlos Andrade');
-  const [nomeSocial, setNomeSocial] = useState('Carlos Andrade');
-  const [biografia, setBiografia] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam venenatis dui dignissim finibus dignissim.');
-  const [email, setEmail] = useState('carlosandrade@yahoo.com');
-  const [telefone, setTelefone] = useState('+55 (11) 9 1234-5678');
+  const { perfil } = useAuth();
+
+  // Estados para gerenciar os valores dos campos (iniciam com os dados da conta)
+  const [nome, setNome] = useState(perfil?.nome || '');
+  const [nomeSocial, setNomeSocial] = useState(perfil?.nomeSocial || '');
+  const [biografia, setBiografia] = useState(perfil?.biografia || '');
+  const [email, setEmail] = useState(perfil?.email || '');
+  const [telefone, setTelefone] = useState(perfil?.telefone || '');
   const [senha, setSenha] = useState('***************');
-  const [dataNascimento, setDataNascimento] = useState('05/04/1992');
-  const [cpf] = useState('123.456.789-01');
-  const [cep, setCep] = useState('12345-678');
-  const [rua, setRua] = useState('Avenida Aprígio');
-  const [municipio, setMunicipio] = useState('Taboão da Serra');
-  const [numero, setNumero] = useState('123');
-  const [complemento, setComplemento] = useState('22');
-  const [contatoEmergencia, setContatoEmergencia] = useState('05/04/1992');
+  const [dataNascimento, setDataNascimento] = useState(perfil?.dataNascimento || '');
+  const [cpf, setCpf] = useState(perfil?.cpf || '');
+  const [cep, setCep] = useState(perfil?.cep || '');
+  const [rua, setRua] = useState(perfil?.rua || '');
+  const [municipio, setMunicipio] = useState(perfil?.municipio || '');
+  const [numero, setNumero] = useState(perfil?.numero || '');
+  const [complemento, setComplemento] = useState(perfil?.complemento || '');
+  const [contatoEmergencia, setContatoEmergencia] = useState(perfil?.contatoEmergencia || '');
+
+  // O perfil pode terminar de carregar depois da tela abrir: sincroniza quando ele mudar.
+  useEffect(() => {
+    if (!perfil) return;
+    setNome(perfil.nome || '');
+    setNomeSocial(perfil.nomeSocial || '');
+    setBiografia(perfil.biografia || '');
+    setEmail(perfil.email || '');
+    setTelefone(perfil.telefone || '');
+    setDataNascimento(perfil.dataNascimento || '');
+    setCpf(perfil.cpf || '');
+    setCep(perfil.cep || '');
+    setRua(perfil.rua || '');
+    setMunicipio(perfil.municipio || '');
+    setNumero(perfil.numero || '');
+    setComplemento(perfil.complemento || '');
+    setContatoEmergencia(perfil.contatoEmergencia || '');
+  }, [perfil]);
 
   if (!fontsLoaded) return null;
 
@@ -62,7 +83,7 @@ export default function DadosPessoais({ navigation }) {
             {/* CPF apenas leitura com aviso */}
             <EditableField
               label="CPF"
-              value={cpf}
+              value={cpf || 'Não informado'}
               locked
               onLockedPress={() => Alert.alert('Aviso', 'O CPF não pode ser alterado.')}
             />

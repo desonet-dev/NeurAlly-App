@@ -1,19 +1,17 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 import paleta from '../styles/Tema.js';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
+import { diasDaSemana, hojeISO } from '../utils/datas.js';
 
-const dates = [
-  {dayNum: 1, dayName: 'Segunda', abrv: 'Seg'},
-  {dayNum: 2, dayName: 'Ter', abrv: 'Ter'},
-  {dayNum: 3, dayName: 'Qua', abrv: 'Qua'},
-  {dayNum: 4, dayName: 'Qui', abrv: 'Qui'},
-  {dayNum: 5, dayName: 'Sex', abrv: 'Sex'},
-]
-
-export default function SmallCalendar() {
-  const currentDay = 3;
+// Calendário da semana atual (segunda a domingo).
+//  - Dia com consulta marcada: fica azul.
+//  - Hoje (sem consulta): ganha só um contorno azul.
+//  - Demais dias: normais.
+// `datasConsulta` é um Set com datas AAAA-MM-DD (vem do hook useConsultas).
+export default function SmallCalendar({ datasConsulta = new Set() }) {
+  const navigation = useNavigation();
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -23,16 +21,30 @@ export default function SmallCalendar() {
     return null;
   }
 
+  const semana = diasDaSemana();
+  const hoje = hojeISO();
+
   return (
-  <View style={styles.calendarView}>
-  {dates.map((date) => (
-    <TouchableOpacity style={date.dayNum == currentDay ? styles.selectedDateView : styles.dateView}>
-      <Text style={date.dayNum == currentDay ? styles.selectedTitleText : styles.titleText}> { date.abrv} </Text>
-      <View style={{flex:1}}/>
-      <Text style={date.dayNum == currentDay ? styles.selectedTitleText : styles.titleText}> {date.dayNum} </Text>
-    </TouchableOpacity>
-  ))}
-  </View>)
+    <View style={styles.calendarView}>
+      {semana.map((d) => {
+        const temConsulta = datasConsulta.has(d.iso);
+        const ehHoje = d.iso === hoje;
+
+        return (
+          <TouchableOpacity
+            key={d.iso}
+            style={[styles.dateView, ehHoje && styles.todayDateView, temConsulta && styles.appointmentDateView]}
+            onPress={() => navigation.navigate('Agendamento')}
+            accessibilityLabel={`${d.abrv}, dia ${d.dia}${temConsulta ? ', com consulta marcada' : ''}`}
+          >
+            <Text style={[styles.dayNameText, temConsulta && styles.appointmentText]}>{d.abrv}</Text>
+            <View style={{ flex: 1 }} />
+            <Text style={[styles.dayNumText, temConsulta && styles.appointmentText]}>{d.dia}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -49,28 +61,34 @@ const styles = StyleSheet.create({
   dateView: {
     flex: 1,
     margin: 2,
-    padding: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
   },
-  selectedDateView: {
-    flex: 1,
-    margin: 2,
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
+  todayDateView: {
+    borderColor: paleta.cor.a7,
+  },
+  appointmentDateView: {
     backgroundColor: paleta.cor.a7,
+    borderColor: paleta.cor.a7,
   },
-  titleText: {
-    fontSize: 19,
+  dayNameText: {
+    fontSize: 12,
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
+    color: '#131A22',
   },
-  selectedTitleText: {
-    fontSize: 19,
+  dayNumText: {
+    fontSize: 17,
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
+    color: '#131A22',
+  },
+  appointmentText: {
     color: paleta.cor.branco,
-  }
+  },
 });

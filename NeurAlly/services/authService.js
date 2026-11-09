@@ -7,6 +7,8 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig.js';
+import { guardarTipoLocal } from './perfilLocal.js';
+import { publicarPsicologo } from './profissionaisService.js';
 
 export async function cadastrarUsuario({
   nome,
@@ -30,6 +32,8 @@ export async function cadastrarUsuario({
     ...(tipo === 'psicologo' ? { crp } : {}),
     criadoEm: serverTimestamp(),
   });
+  guardarTipoLocal(credencial.user.uid, tipo);
+  if (tipo === 'psicologo') publicarPsicologo(credencial.user.uid, { nome, crp });
 
   return credencial.user;
 }
@@ -59,6 +63,8 @@ export async function completarPerfil(uid, {
     },
     { merge: true }
   );
+  guardarTipoLocal(uid, tipo);
+  if (tipo === 'psicologo') publicarPsicologo(uid, { nome, crp });
 }
 
 // Decide para qual tela ir depois de entrar. Sem `tipo` o cadastro está incompleto
@@ -106,6 +112,25 @@ export function garantirLogado() {
 export async function buscarPerfil(uid) {
   const snapshot = await getDoc(doc(db, 'usuarios', uid));
   return snapshot.exists() ? snapshot.data() : null;
+}
+
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Igual a buscarPerfil, mas tenta de novo quando a leitura falha por conexão instável
+// (ex.: "client is offline" logo que o app abre). Só desiste depois de algumas tentativas.
+// Erro de leitura NÃO é o mesmo que "perfil sem tipo": quem chama deve tratar os dois casos separados.
+export async function buscarPerfilComTentativas(uid, tentativas = 3) {
+  let ultimoErro;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      return await buscarPerfil(uid);
+    } catch (erro) {
+      ultimoErro = erro;
+      if (erro?.code === 'permission-denied') break; // tentar de novo não resolve
+      if (i < tentativas - 1) await esperar(800 * (i + 1));
+    }
+  }
+  throw ultimoErro;
 }
 
 export function observarAutenticacao(aoMudar) {

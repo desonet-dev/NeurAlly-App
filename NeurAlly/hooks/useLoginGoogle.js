@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { entrarComGoogle } from '../services/googleAuthService';
-import { buscarPerfil, rotaInicial, traduzErroFirebase } from '../services/authService.js';
+import { buscarPerfilComTentativas, rotaInicial, traduzErroFirebase } from '../services/authService.js';
 
 // Alert.alert não aparece no navegador (react-native-web), então usamos window.alert por lá.
 function avisar(titulo, mensagem) {
@@ -46,7 +46,7 @@ export default function useLoginGoogle(navigation) {
       const usuario = await entrarComGoogle();
       if (!usuario) return; // cancelou
 
-      const perfil = await buscarPerfil(usuario.uid);
+      const perfil = await buscarPerfilComTentativas(usuario.uid);
       const rota = rotaInicial(perfil);
 
       // Primeira vez com Google: ainda não existe o tipo de conta (cliente/psicólogo).

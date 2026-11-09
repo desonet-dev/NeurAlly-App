@@ -11,7 +11,10 @@ LocaleConfig.locales['pt-br'] = {
 };
 LocaleConfig.defaultLocale = 'pt-br';
 
-export default function MeuCalendario({ selectedDate, onDayPress, datasComRegistro = new Set() }) {
+// Azul usado para destacar os dias com consulta marcada.
+const COR_CONSULTA = '#4894FE';
+
+export default function MeuCalendario({ selectedDate, onDayPress, datasComRegistro = new Set(), datasConsulta = new Set() }) {
   
   const markedDates = {};
   datasComRegistro.forEach((data) => {
@@ -21,11 +24,23 @@ export default function MeuCalendario({ selectedDate, onDayPress, datasComRegist
     };
   });
   
+  // Dias com consulta: círculo azul preenchido e número branco.
+  datasConsulta.forEach((data) => {
+    markedDates[data] = {
+      ...(markedDates[data] || {}),
+      selected: true,
+      selectedColor: COR_CONSULTA,
+      selectedTextColor: '#FFF',
+    };
+  });
+
+  // Dia tocado: só um contorno, a não ser que ele já tenha consulta (aí continua preenchido).
+  const selecionadoTemConsulta = datasConsulta.has(selectedDate);
   markedDates[selectedDate] = {
     ...(markedDates[selectedDate] || {}),
     selected: true,
-    selectedColor: 'transparent',
-    selectedTextColor: '#6292D6',
+    selectedColor: selecionadoTemConsulta ? COR_CONSULTA : 'transparent',
+    selectedTextColor: selecionadoTemConsulta ? '#FFF' : '#6292D6',
   };
 
   return (

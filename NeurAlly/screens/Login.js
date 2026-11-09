@@ -9,19 +9,22 @@ import {
     Platform,
     ScrollView,
     SafeAreaView,
-    Alert,
     ActivityIndicator,
 } from 'react-native';
 import { useFonts } from 'expo-font';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
 import SocialButtons from '../components/SocialButtons.js';
-import { buscarPerfil, entrarComEmailSenha, rotaInicial, traduzErroFirebase } from '../services/authService.js';
+import { buscarPerfilComTentativas, entrarComEmailSenha, rotaInicial, traduzErroFirebase } from '../services/authService.js';
 import useLoginGoogle from '../hooks/useLoginGoogle.js';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation, route }) {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [entrando, setEntrando] = useState(false);
+    // Aviso mostrado na própria tela (Alert.alert não aparece no navegador/react-native-web).
+    const [aviso, setAviso] = useState(route?.params?.aviso || '');
+    const [campoInvalido, setCampoInvalido] = useState({ email: false, senha: false });
     const { entrarComGoogle } = useLoginGoogle(navigation);
 
     const [fontsLoaded] = useFonts({
@@ -31,16 +34,28 @@ export default function LoginScreen({ navigation }) {
 
     if (!fontsLoaded) return null;
 
+    const limparAviso = () => {
+        setAviso('');
+        setCampoInvalido({ email: false, senha: false });
+    };
+
     const handleEntrar = async () => {
-        if (!email.trim() || !senha) {
-            Alert.alert('Preencha os campos', 'Digite seu e-mail e sua senha para entrar.');
+        const emailVazio = !email.trim();
+        const senhaVazia = !senha;
+
+        if (emailVazio || senhaVazia) {
+            setCampoInvalido({ email: emailVazio, senha: senhaVazia });
+            if (emailVazio && senhaVazia) setAviso('Preencha o e-mail e a senha para entrar.');
+            else if (emailVazio) setAviso('Digite seu e-mail para entrar.');
+            else setAviso('Digite sua senha para entrar.');
             return;
         }
 
+        limparAviso();
         setEntrando(true);
         try {
             const usuario = await entrarComEmailSenha({ email: email.trim(), senha });
-            const perfil = await buscarPerfil(usuario.uid);
+            const perfil = await buscarPerfilComTentativas(usuario.uid);
 
             const rota = rotaInicial(perfil);
             navigation.reset({
@@ -51,7 +66,7 @@ export default function LoginScreen({ navigation }) {
                 }],
             });
         } catch (erro) {
-            Alert.alert('Não foi possível entrar', traduzErroFirebase(erro));
+            setAviso(traduzErroFirebase(erro));
         } finally {
             setEntrando(false);
         }
@@ -69,24 +84,38 @@ export default function LoginScreen({ navigation }) {
                     <Text style={styles.title}>Login</Text>
 
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, campoInvalido.email && styles.inputInvalido]}
                         placeholder="E-mail"
                         placeholderTextColor="#666"
                         keyboardType="email-address"
                         autoCapitalize="none"
                         value={email}
-                        onChangeText={setEmail}
+                        onChangeText={(texto) => {
+                            setEmail(texto);
+                            if (aviso || campoInvalido.email) limparAviso();
+                        }}
                         editable={!entrando}
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, campoInvalido.senha && styles.inputInvalido]}
                         placeholder="Senha"
                         placeholderTextColor="#666"
                         secureTextEntry={true}
                         value={senha}
-                        onChangeText={setSenha}
+                        onChangeText={(texto) => {
+                            setSenha(texto);
+                            if (aviso || campoInvalido.senha) limparAviso();
+                        }}
                         editable={!entrando}
                     />
+
+                    {/* Aviso de erro (campos vazios ou falha no login) */}
+                    {!!aviso && (
+                        <View style={styles.avisoBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
+                            <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+                            <Text style={styles.avisoTexto}>{aviso}</Text>
+                        </View>
+                    )}
 
                     {/* Links de Acesso */}
                     <View style={styles.linksContainer}>
@@ -172,6 +201,28 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
+    },
+    inputInvalido: {
+        borderWidth: 1.5,
+        borderColor: '#D64545',
+    },
+    avisoBox: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FDEDED',
+        borderWidth: 1,
+        borderColor: '#F5C2C2',
+        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        marginTop: 5,
+    },
+    avisoTexto: {
+        flex: 1,
+        fontFamily: 'Montserrat-Regular',
+        fontSize: 12,
+        color: '#B03030',
     },
     linksContainer: {
         width: '100%',

@@ -18,6 +18,7 @@ import paleta from '../styles/Tema.js';
 import SocialButtons from '../components/SocialButtons.js';
 import useLoginGoogle from '../hooks/useLoginGoogle.js';
 import { cadastrarUsuario, traduzErroFirebase } from '../services/authService.js';
+import { useAuth } from '../contexts/AuthContext.js';
 
 export default function CadastroScreen({ navigation }) {
     const [isPsychologist, setIsPsychologist] = useState(false);
@@ -31,6 +32,7 @@ export default function CadastroScreen({ navigation }) {
     const [crp, setCrp] = useState('');
     const [cadastrando, setCadastrando] = useState(false);
     const { entrarComGoogle } = useLoginGoogle(navigation);
+    const { recarregarPerfil } = useAuth();
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -65,6 +67,14 @@ export default function CadastroScreen({ navigation }) {
                 telefone: telefone.trim(),
                 crp: crp.trim(),
             });
+
+            // O Firebase avisa o app da nova conta antes de o perfil ser gravado no Firestore;
+            // recarrega agora para o nome informado no cadastro aparecer nas telas.
+            try {
+                await recarregarPerfil();
+            } catch (e) {
+                console.warn('Não foi possível recarregar o perfil após o cadastro:', e);
+            }
 
             navigation.reset({
                 index: 0,

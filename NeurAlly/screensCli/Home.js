@@ -9,9 +9,13 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
 import { useAuth } from '../contexts/AuthContext.js';
+import useConsultas from '../hooks/useConsultas.js';
+import { formatarDataLonga } from '../utils/datas.js';
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
     const { perfil } = useAuth();
+    const { proximas, datasComConsulta } = useConsultas();
+    const proximaConsulta = proximas[0];
     const primeiroNome = perfil?.nome?.trim().split(' ')[0] || '';
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -43,38 +47,60 @@ export default function HomeScreen() {
 
                 <SearchBar />
 
-                <TouchableOpacity style={styles.professionalCard} activeOpacity={0.8}>
-                    <View style={styles.cardTop}>
-                        <Image
-                            source={require('../assets/Anderson.png')}
-                            style={styles.professionalAvatar}
-                        />
-                        <View style={styles.professionalInfo}>
-                            <Text style={styles.professionalName}>Dr. Cristian Sousa</Text>
-                            <Text style={styles.professionalTitle}>Psicólogo Geral</Text>
+                {proximaConsulta ? (
+                    <TouchableOpacity
+                        style={styles.professionalCard}
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate('Agendamento')}
+                    >
+                        <View style={styles.cardTop}>
+                            <Image
+                                source={require('../assets/Anderson.png')}
+                                style={styles.professionalAvatar}
+                            />
+                            <View style={styles.professionalInfo}>
+                                <Text style={styles.professionalName}>{proximaConsulta.profissionalNome}</Text>
+                                {!!proximaConsulta.profissionalEsp && (
+                                    <Text style={styles.professionalTitle}>{proximaConsulta.profissionalEsp}</Text>
+                                )}
+                            </View>
+                            <Ionicons name="chevron-forward" size={24} color="#FFF" />
                         </View>
-                        <Ionicons name="chevron-forward" size={24} color="#FFF" />
-                    </View>
 
-                    {/* Linha divisória */}
-                    <View style={styles.divider} />
+                        {/* Linha divisória */}
+                        <View style={styles.divider} />
 
-                    {/* Data e hora */}
-                    <View style={styles.cardBottom}>
-                        <View style={styles.dateTimeItem}>
-                            <Ionicons name="calendar-outline" size={18} color={paleta.cor.branco} style={styles.iconSpaced} />
-                            <Text style={styles.dateTimeText}>Domingo, 12 Jun.</Text>
+                        {/* Data e hora da próxima consulta */}
+                        <View style={styles.cardBottom}>
+                            <View style={styles.dateTimeItem}>
+                                <Ionicons name="calendar-outline" size={18} color={paleta.cor.branco} style={styles.iconSpaced} />
+                                <Text style={styles.dateTimeText}>{formatarDataLonga(proximaConsulta.data)}</Text>
+                            </View>
+                            <View style={styles.dateTimeItem}>
+                                <Ionicons name="time-outline" size={18} color={paleta.cor.branco} style={styles.iconSpaced} />
+                                <Text style={styles.dateTimeText}>{proximaConsulta.horario}</Text>
+                            </View>
                         </View>
-                        <View style={styles.dateTimeItem}>
-                            <Ionicons name="time-outline" size={18} color={paleta.cor.branco} style={styles.iconSpaced} />
-                            <Text style={styles.dateTimeText}>11:00 - 12:00</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity
+                        style={styles.professionalCard}
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate('Agendamento')}
+                    >
+                        <View style={styles.cardTop}>
+                            <View style={styles.professionalInfo}>
+                                <Text style={styles.professionalName}>Nenhuma consulta agendada</Text>
+                                <Text style={styles.professionalTitle}>Toque para agendar sua próxima consulta</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={24} color="#FFF" />
                         </View>
-                    </View>
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                )}
 
                 <Text style={styles.sectionTitle}>Sessões</Text>
 
-                <SmallCalendar />
+                <SmallCalendar datasConsulta={datasComConsulta} />
 
                 <TouchableOpacity style={styles.optionCard} activeOpacity={0.8}>
                     <Text style={styles.optionTitle}>Jogos relaxantes</Text>

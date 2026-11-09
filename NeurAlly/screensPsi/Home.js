@@ -5,9 +5,14 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
 import NavBarPsi from '../components/navBarPsi.js';
 import { useAuth } from '../contexts/AuthContext.js';
+import useConsultas from '../hooks/useConsultas.js';
+import { diasDaSemana, faixaDeHorario, formatarDataLonga, hojeISO } from '../utils/datas.js';
 
 export default function HomePsicologo({ navigation }) {
   const { perfil } = useAuth();
+  // Consultas que os clientes marcaram com este psicólogo.
+  const { proximas, datasComConsulta } = useConsultas('profissional');
+  const proximaConsulta = proximas[0];
   const primeiroNome = perfil?.nome?.trim().split(' ')[0] || '';
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -16,13 +21,8 @@ export default function HomePsicologo({ navigation }) {
 
   if (!fontsLoaded) return null;
 
-  const days = [
-    { day: 'Dom', date: '3', active: true },
-    { day: 'Seg', date: '4', active: false },
-    { day: 'Ter', date: '5', active: false },
-    { day: 'Qua', date: '6', active: false },
-    { day: 'Qui', date: '7', active: false },
-  ];
+  const semana = diasDaSemana();
+  const hoje = hojeISO();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,39 +47,57 @@ export default function HomePsicologo({ navigation }) {
           />
         </View>
 
-        <View style={styles.appointmentCard}>
-          <View style={styles.appointmentHeader}>
-            <View style={styles.doctorAvatar}>
-              <Ionicons name="person" size={24} color="#6292D6" />
+        {proximaConsulta ? (
+          <TouchableOpacity style={styles.appointmentCard} activeOpacity={0.8} onPress={() => navigation.navigate('AgendaPsi')}>
+            <View style={styles.appointmentHeader}>
+              <View style={styles.doctorAvatar}>
+                <Ionicons name="person" size={24} color="#6292D6" />
+              </View>
+              <View style={styles.appointmentInfo}>
+                <Text style={styles.doctorName}>{proximaConsulta.clienteNome || 'Paciente'}</Text>
+                <Text style={styles.doctorSpecialty}>
+                  {proximaConsulta.modalidade === 'online' ? 'Consulta on-line' : 'Consulta presencial'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#6292D6" />
             </View>
-            <View style={styles.appointmentInfo}>
-              <Text style={styles.doctorName}>Paciente Carrinhos</Text>
-              <Text style={styles.doctorSpecialty}>Paciente de traumas</Text>
+            <View style={styles.divider} />
+            <View style={styles.appointmentFooter}>
+              <View style={styles.footerItem}>
+                <Ionicons name="calendar-outline" size={16} color="#6292D6" />
+                <Text style={styles.footerText}>{formatarDataLonga(proximaConsulta.data)}</Text>
+              </View>
+              <View style={styles.footerItem}>
+                <Ionicons name="time-outline" size={16} color="#6292D6" />
+                <Text style={styles.footerText}>{faixaDeHorario(proximaConsulta.horario)}</Text>
+              </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#6292D6" />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.appointmentCard}>
+            <Text style={styles.doctorName}>Nenhuma consulta agendada</Text>
+            <Text style={styles.doctorSpecialty}>As consultas marcadas com você aparecem aqui.</Text>
           </View>
-          <View style={styles.divider} />
-          <View style={styles.appointmentFooter}>
-            <View style={styles.footerItem}>
-              <Ionicons name="calendar-outline" size={16} color="#6292D6" />
-              <Text style={styles.footerText}>Domingo, 12 Jun.</Text>
-            </View>
-            <View style={styles.footerItem}>
-              <Ionicons name="time-outline" size={16} color="#6292D6" />
-              <Text style={styles.footerText}>11:00 - 12:00</Text>
-            </View>
-          </View>
-        </View>
+        )}
 
         <Text style={styles.sectionTitle}>Próximas consultas</Text>
 
         <View style={styles.calendarRow}>
-          {days.map((item, index) => (
-            <View key={index} style={[styles.dayBox, item.active && styles.dayBoxActive]}>
-              <Text style={[styles.dayText, item.active && styles.dayTextActive]}>{item.day}</Text>
-              <Text style={[styles.dateText, item.active && styles.dateTextActive]}>{item.date}</Text>
-            </View>
-          ))}
+          {semana.map((item) => {
+            const temConsulta = datasComConsulta.has(item.iso);
+            const ehHoje = item.iso === hoje;
+            return (
+              <TouchableOpacity
+                key={item.iso}
+                style={[styles.dayBox, ehHoje && styles.dayBoxHoje, temConsulta && styles.dayBoxActive]}
+                onPress={() => navigation.navigate('AgendaPsi')}
+                accessibilityLabel={`${item.abrv}, dia ${item.dia}${temConsulta ? ', com consulta' : ''}`}
+              >
+                <Text style={[styles.dayText, temConsulta && styles.dayTextActive]}>{item.abrv}</Text>
+                <Text style={[styles.dateText, temConsulta && styles.dateTextActive]}>{item.dia}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <TouchableOpacity style={styles.orangeCard} onPress={() => navigation.navigate('AnotacoesPsi')}>
@@ -116,8 +134,9 @@ const styles = StyleSheet.create({
   footerItem: { flexDirection: 'row', alignItems: 'center' },
   footerText: { fontFamily: 'Montserrat-Regular', fontSize: 11, color: '#666', marginLeft: 5 },
   sectionTitle: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#333', marginBottom: 10 },
-  calendarRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 15, padding: 15, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  dayBox: { alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10 },
+  calendarRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 15, padding: 8, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  dayBox: { flex: 1, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 2, marginHorizontal: 1, borderRadius: 10, borderWidth: 1.5, borderColor: 'transparent' },
+  dayBoxHoje: { borderColor: '#6292D6' },
   dayBoxActive: { backgroundColor: '#6292D6', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
   dayText: { fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#333', marginBottom: 4 },
   dayTextActive: { color: '#FFF' },
