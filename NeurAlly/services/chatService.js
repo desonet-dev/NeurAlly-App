@@ -12,6 +12,16 @@ import {
   where 
 } from 'firebase/firestore';
 
+// Mais recentes primeiro. Uma conversa que acabou de ser criada/atualizada neste aparelho ainda não
+// tem horário do servidor (null), então vai para o topo.
+const ordenarPorAtualizacao = (docs) => {
+  const quando = (d) => {
+    const t = d.data().ultimaAtualizacao;
+    return t ? (t.toMillis ? t.toMillis() : Number(t) || 0) : Number.MAX_SAFE_INTEGER;
+  };
+  return [...docs].sort((a, b) => quando(b) - quando(a));
+};
+
 export const obterOuCriarChat = async (clienteId, psicologoId) => {
   const chatId = clienteId < psicologoId ? `${clienteId}_${psicologoId}` : `${psicologoId}_${clienteId}`;
   
@@ -99,12 +109,14 @@ export const ouvirConversasDoUsuario = (userId, callback) => {
   ];
 
   const chatsRef = collection(db, 'chats');
-  const q = query(chatsRef, where('participantes', 'array-contains', userId), orderBy('ultimaAtualizacao', 'desc'));
+  // Sem orderBy no Firestore: combinar array-contains com orderBy exigiria criar um índice composto.
+  // A ordenação (mais recente primeiro) é feita aqui, no app.
+  const q = query(chatsRef, where('participantes', 'array-contains', userId));
 
   const unsubscribe = onSnapshot(q, async (snapshot) => {
     const listaChatsFirebase = [];
 
-    for (const docSnap of snapshot.docs) {
+    for (const docSnap of ordenarPorAtualizacao(snapshot.docs)) {
       const chatData = docSnap.data();
       const participantes = chatData.participantes || [];
       const outroId = participantes.find(id => id !== userId);
@@ -209,12 +221,14 @@ export const ouvirConversasDoPsicologo = (userId, callback) => {
   ];
 
   const chatsRef = collection(db, 'chats');
-  const q = query(chatsRef, where('participantes', 'array-contains', userId), orderBy('ultimaAtualizacao', 'desc'));
+  // Sem orderBy no Firestore: combinar array-contains com orderBy exigiria criar um índice composto.
+  // A ordenação (mais recente primeiro) é feita aqui, no app.
+  const q = query(chatsRef, where('participantes', 'array-contains', userId));
 
   const unsubscribe = onSnapshot(q, async (snapshot) => {
     const listaChatsFirebase = [];
 
-    for (const docSnap of snapshot.docs) {
+    for (const docSnap of ordenarPorAtualizacao(snapshot.docs)) {
       const chatData = docSnap.data();
       const participantes = chatData.participantes || [];
       const outroId = participantes.find(id => id !== userId);

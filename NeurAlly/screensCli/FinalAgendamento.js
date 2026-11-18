@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   StyleSheet, Text, View, ScrollView, TouchableOpacity, 
-  SafeAreaView, TextInput 
+  SafeAreaView, TextInput, ActivityIndicator 
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import paleta from '../styles/Tema.js';
 import useConsultas from '../hooks/useConsultas.js';
-import { blocosDaConsulta, hojeISO, inicioDaConsulta } from '../utils/datas.js';
-import { escutarHorariosOcupados } from '../services/consultasService.js';
+import { blocosDaConsulta, formatarDataLonga, HORARIOS_PADRAO, hojeISO, inicioDaConsulta } from '../utils/datas.js';
+import { escutarHorariosOcupados, reagendarConsulta } from '../services/consultasService.js';
+import { filtrarProfissionais } from '../services/profissionaisService.js';
+import useProfissionais from '../hooks/useProfissionais.js';
+import ItemProfissional from '../components/ItemProfissional.js';
+import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
@@ -21,27 +25,44 @@ LocaleConfig.locales['pt-br'] = {
 LocaleConfig.defaultLocale = 'pt-br';
 
 export default function FinalAgendamento({ navigation, route }) {
-  // Quando vem da tela do profissional, já chegam o profissional e o horário escolhidos.
-  const profissionalParam = route?.params?.profissional;
+  // Dois jeitos de chegar aqui:
+  //  - agendar: pelo calendário da tela Agendamento (sem profissional) ou pela tela do profissional
+  //    (já chegam profissional, data e horário escolhidos);
+  //  - reagendar: `reagendar` traz a consulta que está sendo remarcada (o profissional não muda).
+  const reagendando = route?.params?.reagendar || null;
+  const profissionalParam = reagendando
+    ? {
+        nome: reagendando.profissionalNome,
+        esp: reagendando.profissionalEsp || '',
+        uid: reagendando.profissionalId || undefined,
+      }
+    : route?.params?.profissional;
 
-  const [selectedDate, setSelectedDate] = useState(hojeISO());
-  const [modalidade, setModalidade] = useState('presencial');
-  const [horario, setHorario] = useState(route?.params?.horario || '9:00');
-  const [profissional, setProfissional] = useState(profissionalParam?.nome || '');
+  const [selectedDate, setSelectedDate] = useState(reagendando?.data || route?.params?.data || hojeISO());
+  const [modalidade, setModalidade] = useState(reagendando?.modalidade || 'presencial');
+  const [horario, setHorario] = useState(reagendando?.horario || route?.params?.horario || '9:00');
+  const [profissional, setProfissional] = useState(profissionalParam || null);
+  const [busca, setBusca] = useState('');
   const [aviso, setAviso] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const [reagendado, setReagendado] = useState(false);
   const { proximas, datasComConsulta } = useConsultas();
   const [ocupados, setOcupados] = useState(new Set());
 
+  // Profissionais disponíveis para escolher (e a barra de pesquisa que filtra a lista).
+  const { profissionais, carregando: carregandoProfissionais } = useProfissionais();
+  const filtrados = useMemo(() => filtrarProfissionais(profissionais, busca), [profissionais, busca]);
+
   // uid do psicólogo escolhido (só existe para psicólogos reais da busca).
-  const profissionalUid =
-    profissionalParam?.uid && profissionalParam.nome === profissional.trim() ? profissionalParam.uid : undefined;
+  const profissionalUid = profissional?.uid;
 
   // Horários que esse psicólogo já tem reservados no dia escolhido (por qualquer cliente).
+  // Ao reagendar, os horários da própria consulta não contam como ocupados.
   useEffect(() => {
     setOcupados(new Set());
     if (!profissionalUid) return undefined;
-    return escutarHorariosOcupados(profissionalUid, selectedDate, setOcupados);
-  }, [profissionalUid, selectedDate]);
+    return escutarHorariosOcupados(profissionalUid, selectedDate, setOcupados, undefined, reagendando?.id);
+  }, [profissionalUid, selectedDate, reagendando?.id]);
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -50,15 +71,21 @@ export default function FinalAgendamento({ navigation, route }) {
 
   if (!fontsLoaded) return null;
 
-  const horarios = ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30'];
+  const horarios = HORARIOS_PADRAO;
 
   const horarioOcupado = (h) => blocosDaConsulta(h).some((bloco) => ocupados.has(bloco));
   const horarioPassou = (h) => inicioDaConsulta({ data: selectedDate, horario: h }) < new Date();
 
-  const handleConfirmar = () => {
-    const nomeProfissional = profissional.trim();
+  const escolherProfissional = (escolhido) => {
+    setProfissional(escolhido);
+    setBusca('');
+    setAviso('');
+  };
 
-    if (!nomeProfissional) {
+  const handleConfirmar = async () => {
+    if (salvando) return;
+
+    if (!profissional?.nome) {
       setAviso('Escolha um profissional para agendar a consulta.');
       return;
     }
@@ -70,18 +97,45 @@ export default function FinalAgendamento({ navigation, route }) {
       setAviso('Esse horário já está reservado com este profissional. Escolha outro.');
       return;
     }
-    if (proximas.some((c) => c.data === selectedDate && c.horario === horario)) {
+    if (proximas.some((c) => c.id !== reagendando?.id && c.data === selectedDate && c.horario === horario)) {
       setAviso('Você já tem uma consulta marcada nesse dia e horário.');
+      return;
+    }
+
+    // Reagendamento: grava direto (o pagamento já foi feito ao marcar a consulta).
+    if (reagendando) {
+      if (selectedDate === reagendando.data && horario === reagendando.horario && modalidade === reagendando.modalidade) {
+        setAviso('Escolha um dia ou horário diferente do atual para reagendar.');
+        return;
+      }
+
+      setAviso('');
+      setSalvando(true);
+      try {
+        await reagendarConsulta(reagendando, { data: selectedDate, horario, modalidade });
+        setReagendado(true);
+      } catch (e) {
+        console.warn('Erro ao reagendar consulta:', e);
+        setAviso(
+          e?.code === 'consulta/horario-ocupado'
+            ? 'Esse horário acabou de ser reservado por outra pessoa. Escolha outro.'
+            : e?.code === 'permission-denied'
+            ? 'Sem permissão para reagendar. Atualize as regras do Firestore (arquivo firestore.rules do projeto).'
+            : 'Não foi possível reagendar a consulta. Verifique sua conexão e tente novamente.'
+        );
+      } finally {
+        setSalvando(false);
+      }
       return;
     }
 
     setAviso('');
     navigation.navigate('Pagamento', {
       profissional: {
-        nome: nomeProfissional,
-        esp: profissionalParam?.nome === nomeProfissional ? profissionalParam.esp : '',
+        nome: profissional.nome,
+        esp: profissional.esp || '',
         // uid só existe para psicólogos reais; é ele que faz a consulta aparecer na agenda dele.
-        uid: profissionalParam?.nome === nomeProfissional ? profissionalParam.uid : undefined,
+        uid: profissional.uid,
       },
       data: selectedDate,
       horario,
@@ -97,19 +151,59 @@ export default function FinalAgendamento({ navigation, route }) {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={28} color="#1A56DB" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Agendamento</Text>
+          <Text style={styles.headerTitle}>{reagendando ? 'Reagendar consulta' : 'Agendamento'}</Text>
         </View>
 
-        <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
-          <TextInput 
-            style={styles.searchInput} 
-            placeholder="Escolha um profissional" 
-            placeholderTextColor="#888"
-            value={profissional}
-            onChangeText={(texto) => { setProfissional(texto); setAviso(''); }}
-          />
-        </View>
+        {reagendando && (
+          <View style={styles.atualBox}>
+            <Ionicons name="calendar-outline" size={18} color="#1A56DB" style={{ marginRight: 8 }} />
+            <Text style={styles.atualTexto}>
+              Consulta atual: {formatarDataLonga(reagendando.data)} às {reagendando.horario}
+            </Text>
+          </View>
+        )}
+
+        <Text style={styles.sectionTitle}>Profissional</Text>
+        {profissional ? (
+          <View>
+            <ItemProfissional profissional={profissional} selecionado />
+            {!reagendando && (
+              <TouchableOpacity onPress={() => { setProfissional(null); setAviso(''); }} style={styles.trocarBotao}>
+                <Text style={styles.trocarTexto}>Trocar profissional</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <View style={styles.pickerWrapper}>
+            <View style={styles.searchContainer}>
+              <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
+              <TextInput 
+                style={styles.searchInput} 
+                placeholder="Procure por um profissional" 
+                placeholderTextColor="#888"
+                value={busca}
+                onChangeText={setBusca}
+                autoCorrect={false}
+                returnKeyType="search"
+              />
+              {busca.length > 0 && (
+                <TouchableOpacity onPress={() => setBusca('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityLabel="Limpar busca">
+                  <Ionicons name="close-circle" size={20} color="#999" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {carregandoProfissionais ? (
+              <ActivityIndicator color="#6292D6" style={{ marginVertical: 20 }} />
+            ) : filtrados.length === 0 ? (
+              <Text style={styles.semResultado}>Nenhum profissional encontrado para "{busca.trim()}".</Text>
+            ) : (
+              filtrados.map((p) => (
+                <ItemProfissional key={p.id} profissional={p} onPress={escolherProfissional} />
+              ))
+            )}
+          </View>
+        )}
 
         <View style={styles.calendarWrapper}>
           <Calendar
@@ -226,13 +320,26 @@ export default function FinalAgendamento({ navigation, route }) {
         )}
 
         <TouchableOpacity 
-          style={styles.confirmButton}
+          style={[styles.confirmButton, salvando && { opacity: 0.7 }]}
           onPress={handleConfirmar}
+          disabled={salvando}
         >
-          <Text style={styles.confirmButtonText}>Confirmar</Text>
+          {salvando ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <Text style={styles.confirmButtonText}>{reagendando ? 'Confirmar novo horário' : 'Confirmar'}</Text>
+          )}
         </TouchableOpacity>
 
       </ScrollView>
+
+      <ModalConfirmacao
+        visivel={reagendado}
+        tipo="sucesso"
+        titulo="Consulta reagendada!"
+        mensagem={`Sua consulta foi remarcada para ${formatarDataLonga(selectedDate)} às ${horario}.`}
+        onConfirmar={() => { setReagendado(false); navigation.navigate('Agendamento'); }}
+      />
     </SafeAreaView>
   );
 }
@@ -242,7 +349,13 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   headerTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: '#1A56DB', marginLeft: 10 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 25, paddingHorizontal: 15, height: 50, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  pickerWrapper: { marginBottom: 20 },
+  trocarBotao: { alignSelf: 'flex-end', marginTop: -2, marginBottom: 16 },
+  trocarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: '#1A56DB' },
+  semResultado: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: '#5A6B87', textAlign: 'center', marginVertical: 16 },
+  atualBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E3F2FD', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 16 },
+  atualTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#1A56DB' },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 25, paddingHorizontal: 15, height: 50, marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: '#333' },
   calendarWrapper: { borderRadius: 15, overflow: 'hidden', marginBottom: 20, backgroundColor: '#FFF', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },

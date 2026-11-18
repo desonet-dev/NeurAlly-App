@@ -68,8 +68,6 @@ export default function CadastroScreen({ navigation }) {
                 crp: crp.trim(),
             });
 
-            // O Firebase avisa o app da nova conta antes de o perfil ser gravado no Firestore;
-            // recarrega agora para o nome informado no cadastro aparecer nas telas.
             try {
                 await recarregarPerfil();
             } catch (e) {

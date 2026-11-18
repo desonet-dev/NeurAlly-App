@@ -1,27 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
 import NavBar from '../components/navBarCli.js';
 import paleta from '../styles/Tema.js';
+import { escutarHorariosOcupados } from '../services/consultasService.js';
+import { blocosDaConsulta, HORARIOS_PADRAO, horarioJaPassou, nomeDoDia, proximosDias } from '../utils/datas.js';
+
+// Quantos dias à frente o cliente pode escolher (contando a partir de hoje).
+const DIAS_NA_AGENDA = 14;
 
 export default function PerfilProfissional({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const profissional = route?.params?.profissional || { nome: 'Dr. Thiago', esp: 'Especialista em traumas' };
   
-  const [selectedDay, setSelectedDay] = useState('Ter');
-  const [selectedTime, setSelectedTime] = useState('9:00');
+  // Os dias vêm da data de hoje (mudam sozinhos a cada dia em que o app é aberto).
+  const dias = useMemo(() => proximosDias(DIAS_NA_AGENDA), []);
+  const [selectedDay, setSelectedDay] = useState(dias[0].iso);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [ocupados, setOcupados] = useState(new Set());
+
+  // Horários que esse psicólogo já tem reservados no dia escolhido (por qualquer cliente).
+  useEffect(() => {
+    setOcupados(new Set());
+    if (!profissional.uid) return undefined;
+    return escutarHorariosOcupados(profissional.uid, selectedDay, setOcupados);
+  }, [profissional.uid, selectedDay]);
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
-  if (!fontsLoaded) return null;
+  const horarios = HORARIOS_PADRAO;
+  const indisponivel = (h) =>
+    horarioJaPassou(selectedDay, h) || blocosDaConsulta(h).some((bloco) => ocupados.has(bloco));
+  const livres = horarios.filter((h) => !indisponivel(h));
 
-  const dias = [{ day: 'Dom', num: '3' }, { day: 'Seg', num: '4' }, { day: 'Ter', num: '5' }, { day: 'Qua', num: '6' }, { day: 'Qui', num: '7' }];
-  const horarios = ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30'];
+  // Se o horário escolhido deixou de estar livre (mudou o dia, alguém reservou...), escolhe o primeiro livre.
+  const horarioEscolhido = selectedTime && !indisponivel(selectedTime) ? selectedTime : livres[0] || null;
+
+  if (!fontsLoaded) return null;
 
   return (
     <View style={styles.container}>
@@ -41,46 +61,60 @@ export default function PerfilProfissional({ route, navigation }) {
         </View>
 
         <Text style={styles.sectionTitle}>Agenda</Text>
-        <View style={styles.daysContainer}>
-          {dias.map((d, index) => {
-            const isActive = selectedDay === d.day;
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.daysScroll}
+          contentContainerStyle={styles.daysContainer}
+        >
+          {dias.map((d) => {
+            const isActive = selectedDay === d.iso;
             return (
-              <TouchableOpacity 
-                key={index} 
+              <TouchableOpacity
+                key={d.iso}
                 style={[styles.dayCard, isActive && styles.dayCardActive]}
-                onPress={() => setSelectedDay(d.day)}
+                onPress={() => setSelectedDay(d.iso)}
+                accessibilityLabel={`${d.hoje ? 'Hoje, ' : ''}${nomeDoDia(d.iso)}, ${d.dia} de ${d.mes}`}
               >
-                <Text style={[styles.dayText, isActive && styles.textWhite]}>{d.day}</Text>
-                <Text style={[styles.dayNum, isActive && styles.textWhite]}>{d.num}</Text>
+                <Text style={[styles.dayText, isActive && styles.textWhite]}>{d.hoje ? 'Hoje' : d.abrv}</Text>
+                <Text style={[styles.dayNum, isActive && styles.textWhite]}>{d.dia}</Text>
+                <Text style={[styles.dayMes, isActive && styles.textWhite]}>{d.mes}</Text>
               </TouchableOpacity>
             );
           })}
-        </View>
+        </ScrollView>
 
-        {/* Seçāo Horários */}
+        {/* Seção Horários */}
         <Text style={styles.sectionTitle}>Horários disponíveis</Text>
         <View style={styles.timesContainer}>
-          {horarios.map((time, index) => {
-            const isActive = selectedTime === time;
+          {horarios.map((time) => {
+            const bloqueado = indisponivel(time);
+            const isActive = horarioEscolhido === time;
             return (
-              <TouchableOpacity 
-                key={index} 
-                style={[styles.timePill, isActive && styles.timePillActive]}
+              <TouchableOpacity
+                key={time}
+                style={[styles.timePill, isActive && styles.timePillActive, bloqueado && styles.timePillIndisponivel]}
                 onPress={() => setSelectedTime(time)}
+                disabled={bloqueado}
+                accessibilityLabel={bloqueado ? `${time}, indisponível` : time}
               >
-                <Text style={[styles.timeText, isActive && styles.textWhite]}>{time}</Text>
+                <Text style={[styles.timeText, isActive && styles.textWhite, bloqueado && styles.timeTextIndisponivel]}>{time}</Text>
               </TouchableOpacity>
             );
           })}
         </View>
+        {livres.length === 0 && (
+          <Text style={styles.semHorarios}>Não há horários livres neste dia. Escolha outro dia.</Text>
+        )}
 
         {/* Botão Confirmar */}
         <TouchableOpacity
-          style={styles.confirmButton}
+          style={[styles.confirmButton, !horarioEscolhido && styles.confirmButtonDisabled]}
+          disabled={!horarioEscolhido}
           onPress={() => navigation.navigate('FinalAgendamento', {
             profissional,
-            dia: selectedDay,
-            horario: selectedTime,
+            data: selectedDay,
+            horario: horarioEscolhido,
           })}
         >
           <Text style={styles.confirmButtonText}>Confirmar</Text>
@@ -109,18 +143,24 @@ const styles = StyleSheet.create({
   
   sectionTitle: { fontSize: 15, fontFamily: 'Montserrat-Bold', color: '#1A1A1A', marginBottom: 15, marginTop: 10 },
   
-  daysContainer: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 20, padding: 15, marginBottom: 30, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  dayCard: { alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12 },
+  daysScroll: { marginHorizontal: -20, marginBottom: 30, flexGrow: 0 },
+  daysContainer: { paddingHorizontal: 20, paddingVertical: 4, gap: 10 },
+  dayCard: { alignItems: 'center', minWidth: 64, paddingVertical: 12, paddingHorizontal: 10, borderRadius: 16, backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
   dayCardActive: { backgroundColor: '#6292D6' },
-  dayText: { fontSize: 14, fontFamily: 'Montserrat-Bold', color: '#333', marginBottom: 5 },
-  dayNum: { fontSize: 16, fontFamily: 'Montserrat-Regular', color: '#333' },
+  dayText: { fontSize: 13, fontFamily: 'Montserrat-Bold', color: '#333', marginBottom: 4 },
+  dayNum: { fontSize: 18, fontFamily: 'Montserrat-Bold', color: '#333' },
+  dayMes: { fontSize: 11, fontFamily: 'Montserrat-Regular', color: '#777', marginTop: 2 },
   
   timesContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 40 },
   timePill: { backgroundColor: '#FFF', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
   timePillActive: { backgroundColor: '#FF8C42' },
+  timePillIndisponivel: { backgroundColor: '#EEF1F6', elevation: 0, shadowOpacity: 0 },
+  timeTextIndisponivel: { color: '#A0AABB', textDecorationLine: 'line-through' },
+  semHorarios: { fontSize: 12, fontFamily: 'Montserrat-Regular', color: '#B03030', marginTop: -30, marginBottom: 30 },
   timeText: { fontSize: 13, fontFamily: 'Montserrat-Bold', color: '#999' },
   textWhite: { color: '#FFF' },
   
   confirmButton: { backgroundColor: '#6292D6', paddingVertical: 15, borderRadius: 30, alignItems: 'center', width: '90%', alignSelf: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
+  confirmButtonDisabled: { opacity: 0.5 },
   confirmButtonText: { color: '#FFF', fontSize: 16, fontFamily: 'Montserrat-Bold' },
 });

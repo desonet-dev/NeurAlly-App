@@ -4,11 +4,11 @@ import { consultaEhFutura } from '../utils/datas.js';
 
 // Entrega as consultas do usuário logado, sempre atualizadas.
 // papel: 'cliente' (padrão, consultas que ele marcou) ou 'profissional' (consultas marcadas com ele).
-//  - consultas: todas
+//  - consultas: todas as consultas ativas (as canceladas ficam de fora)
 //  - proximas: só as que ainda não passaram, em ordem
 //  - datasComConsulta: Set com as datas (AAAA-MM-DD) das próximas consultas, para destacar nos calendários
 export default function useConsultas(papel = 'cliente') {
-  const [consultas, setConsultas] = useState([]);
+  const [todas, setTodas] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
@@ -20,7 +20,7 @@ export default function useConsultas(papel = 'cliente') {
       papel,
       (lista) => {
         if (!ativo) return;
-        setConsultas(lista);
+        setTodas(lista);
         setErro(null);
         setCarregando(false);
       },
@@ -46,8 +46,10 @@ export default function useConsultas(papel = 'cliente') {
     };
   }, [papel]);
 
+  // Consultas canceladas não aparecem em calendários, agendas nem lembretes.
+  const consultas = useMemo(() => todas.filter((c) => c.status !== 'cancelada'), [todas]);
   const proximas = useMemo(() => consultas.filter((c) => consultaEhFutura(c)), [consultas]);
   const datasComConsulta = useMemo(() => new Set(proximas.map((c) => c.data)), [proximas]);
 
-  return { consultas, proximas, datasComConsulta, carregando, erro };
+  return { consultas, todas, proximas, datasComConsulta, carregando, erro };
 }

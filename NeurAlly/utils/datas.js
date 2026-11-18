@@ -100,3 +100,25 @@ export function diasDaSemana(base = new Date()) {
     return { iso: paraISO(d), abrv: DIAS_ABREV[d.getDay()], dia: d.getDate() };
   });
 }
+
+// Horários oferecidos para marcar consulta (cada consulta ocupa 2 blocos de 30 min).
+export const HORARIOS_PADRAO = ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30'];
+
+// Os próximos `quantidade` dias a partir de hoje (hoje incluído), sempre calculados na hora.
+// Cada item: { iso: '2026-11-16', abrv: 'Seg', dia: 16, mes: 'Nov', hoje: true|false }
+export function proximosDias(quantidade = 14, base = new Date()) {
+  return Array.from({ length: quantidade }, (_, i) => {
+    const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
+    return { iso: paraISO(d), abrv: DIAS_ABREV[d.getDay()], dia: d.getDate(), mes: MESES_ABREV[d.getMonth()], hoje: i === 0 };
+  });
+}
+
+// O horário "9:00" do dia `iso` já passou?
+export function horarioJaPassou(iso, horario, agora = new Date()) {
+  return inicioDaConsulta({ data: iso, horario }) < agora;
+}
+
+// Chave de cada bloco de 30 min reservado (mesmo formato usado nas reservas do Firestore).
+export function chaveDeBloco(data, bloco) {
+  return `${data}_${bloco.replace(':', '')}`;
+}

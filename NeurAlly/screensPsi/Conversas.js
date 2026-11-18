@@ -9,17 +9,37 @@ import {
     SafeAreaView,
 } from 'react-native';
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import paleta from '../styles/Tema.js';
 import NavBarPsi from '../components/navBarPsi.js';
+import NovaConversaModal from '../components/NovaConversaModal.js';
+import { useAuth } from '../contexts/AuthContext.js';
+import useConsultas from '../hooks/useConsultas.js';
 import SearchBar from '../components/searchBar.js';
 import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
-import { ouvirConversasDoPsicologo } from '../services/chatService';
+import { ouvirConversasDoPsicologo, obterOuCriarChat } from '../services/chatService';
 
 export default function ConversasPsi() {
-    const meuIdPsicologo = 'OVHfzNDwkZi54ELYFeiy693neo1'; 
+    const { usuario } = useAuth();
+    const meuIdPsicologo = usuario?.uid;
 
     const [conversas, setConversas] = useState([]);
+
+    // Nova conversa: pacientes que já marcaram consulta com este psicólogo.
+    const [novaConversaAberta, setNovaConversaAberta] = useState(false);
+    const [abrindoConversa, setAbrindoConversa] = useState(false);
+    const [erroNovaConversa, setErroNovaConversa] = useState('');
+    const { todas: consultasDoPsicologo, carregando: carregandoPacientes } = useConsultas('profissional');
+    const pacientes = React.useMemo(() => {
+        const porId = new Map();
+        consultasDoPsicologo.forEach((c) => {
+            if (c.clienteId && !porId.has(c.clienteId)) {
+                porId.set(c.clienteId, { id: c.clienteId, uid: c.clienteId, nome: c.clienteNome || 'Paciente', esp: 'Paciente' });
+            }
+        });
+        return [...porId.values()].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    }, [consultasDoPsicologo]);
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -29,6 +49,7 @@ export default function ConversasPsi() {
     const navigation = useNavigation();
 
     useEffect(() => {
+        if (!meuIdPsicologo) return undefined;
         const unsubscribe = ouvirConversasDoPsicologo(meuIdPsicologo, (listaDeChats) => {
             setConversas(listaDeChats);
         });
@@ -48,6 +69,35 @@ export default function ConversasPsi() {
                 profilePicture: chat.profilePicture,
             },
         });
+    };
+
+    const iniciarConversa = async (paciente) => {
+        if (abrindoConversa || !meuIdPsicologo) return;
+        setErroNovaConversa('');
+        setAbrindoConversa(true);
+        try {
+            const chatId = await obterOuCriarChat(meuIdPsicologo, paciente.uid);
+            setNovaConversaAberta(false);
+            navigation.navigate('Conversa', {
+                chatId,
+                usuarioId: meuIdPsicologo,
+                contato: {
+                    id: paciente.uid,
+                    name: paciente.nome,
+                    title: 'Paciente',
+                    profilePicture: require('../assets/Anderson.png'),
+                },
+            });
+        } catch (erro) {
+            console.warn('Erro ao iniciar conversa:', erro);
+            setErroNovaConversa(
+                erro?.code === 'permission-denied'
+                    ? 'Sem permissão para criar a conversa. Atualize as regras do Firestore (arquivo firestore.rules do projeto).'
+                    : 'Não foi possível iniciar a conversa. Verifique sua conexão e tente novamente.'
+            );
+        } finally {
+            setAbrindoConversa(false);
+        }
     };
 
     if (!fontsLoaded) {
@@ -135,6 +185,28 @@ export default function ConversasPsi() {
                     }}
                 />
             </View>
+
+            {/* Botão Flutuante para Iniciar Nova Conversa */}
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={() => { setErroNovaConversa(''); setNovaConversaAberta(true); }}
+                accessibilityLabel="Iniciar nova conversa"
+            >
+                <Ionicons name="chatbubbles-outline" size={26} color="#FFF" />
+            </TouchableOpacity>
+
+            <NovaConversaModal
+                visivel={novaConversaAberta}
+                onFechar={() => setNovaConversaAberta(false)}
+                titulo="Nova conversa"
+                placeholder="Procure por um paciente"
+                vazio="Os pacientes que marcarem consulta com você aparecem aqui para você iniciar uma conversa."
+                opcoes={pacientes}
+                carregando={carregandoPacientes}
+                ocupado={abrindoConversa}
+                erro={erroNovaConversa}
+                onSelecionar={iniciarConversa}
+            />
 
             <NavBarPsi />
         </SafeAreaView>
@@ -248,5 +320,21 @@ const styles = StyleSheet.create({
     },
     textDarkSubtle: {
         color: '#4A5568',
+    },
+    fab: {
+        position: 'absolute',
+        right: 20,
+        bottom: 90,
+        backgroundColor: paleta.cor.a4 || '#1A56DB',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
     },
 });

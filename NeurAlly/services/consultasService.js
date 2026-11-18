@@ -83,16 +83,7 @@ export async function agendarConsulta({
     await lote.commit();
   } catch (erro) {
     // Se a reserva já existia, as regras recusam o lote: confirma se foi isso para avisar direito.
-    if (blocos.length > 0) {
-      for (const bloco of blocos) {
-        try {
-          const existente = await getDoc(doc(db, RESERVAS, idDaReserva(profissionalId, data, bloco)));
-          if (existente.exists()) throw erroHorarioOcupado();
-        } catch (e) {
-          if (e?.code === 'consulta/horario-ocupado') throw e;
-        }
-      }
-    }
+    await lancarSeHorarioOcupado(blocos.map((bloco) => idDaReserva(profissionalId, data, bloco)));
     throw erro;
   }
 
@@ -124,13 +115,108 @@ export async function escutarConsultas(papel, aoAtualizar, aoFalhar) {
 
 // Escuta os blocos de 30 min já ocupados de um psicólogo num dia. Devolve um Set de "HH:MM"
 // e a função para parar de escutar.
-export function escutarHorariosOcupados(profissionalId, data, aoAtualizar, aoFalhar) {
+// `ignorarConsultaId`: ao reagendar, os blocos da própria consulta não contam como ocupados.
+export function escutarHorariosOcupados(profissionalId, data, aoAtualizar, aoFalhar, ignorarConsultaId = null) {
   return onSnapshot(
     query(collection(db, RESERVAS), where('profissionalId', '==', profissionalId), where('data', '==', data)),
-    (snapshot) => aoAtualizar(new Set(snapshot.docs.map((d) => d.data().bloco))),
+    (snapshot) =>
+      aoAtualizar(
+        new Set(
+          snapshot.docs
+            .filter((d) => !ignorarConsultaId || d.data().consultaId !== ignorarConsultaId)
+            .map((d) => d.data().bloco)
+        )
+      ),
     (erro) => {
       console.warn('Erro ao escutar horários ocupados:', erro);
       if (aoFalhar) aoFalhar(erro);
     }
   );
+}
+
+// Confere se algum dos ids de reserva já existe (alguém reservou antes) e, se sim, lança o erro
+// 'consulta/horario-ocupado'. Usado quando o lote de gravação é recusado pelas regras.
+async function lancarSeHorarioOcupado(idsDeReserva) {
+  for (const id of idsDeReserva) {
+    try {
+      const existente = await getDoc(doc(db, RESERVAS, id));
+      if (existente.exists()) throw erroHorarioOcupado();
+    } catch (e) {
+      if (e?.code === 'consulta/horario-ocupado') throw e;
+    }
+  }
+}
+
+/**
+ * Cancela uma consulta: marca como 'cancelada' e libera os horários reservados na agenda do
+ * psicólogo (assim outra pessoa já pode marcar aquele horário). Tudo ou nada.
+ *  - `consulta`: objeto vindo do useConsultas (precisa de id, profissionalId, horario).
+ *  - `por`: 'cliente' ou 'profissional' (quem cancelou).
+ */
+export async function cancelarConsulta(consulta, por = 'cliente') {
+  await garantirLogado();
+  if (!consulta?.id) throw new Error('Consulta inválida.');
+
+  const lote = writeBatch(db);
+  lote.update(doc(db, COLECAO, consulta.id), {
+    status: 'cancelada',
+    canceladaPor: por,
+    canceladaEm: serverTimestamp(),
+  });
+
+  if (consulta.profissionalId) {
+    blocosDaConsulta(consulta.horario).forEach((bloco) => {
+      lote.delete(doc(db, RESERVAS, idDaReserva(consulta.profissionalId, consulta.data, bloco)));
+    });
+  }
+
+  await lote.commit();
+}
+
+/**
+ * Reagenda uma consulta para outro dia/horário (e, se quiser, outra modalidade).
+ * Libera os blocos antigos e reserva os novos no mesmo lote; se o novo horário já estiver
+ * ocupado, nada muda e lança 'consulta/horario-ocupado'.
+ */
+export async function reagendarConsulta(consulta, { data, horario, modalidade }) {
+  await garantirLogado();
+  if (!consulta?.id) throw new Error('Consulta inválida.');
+
+  const profissionalId = consulta.profissionalId || null;
+  const idsAntigos = profissionalId
+    ? blocosDaConsulta(consulta.horario).map((b) => idDaReserva(profissionalId, consulta.data, b))
+    : [];
+  const blocosNovos = profissionalId ? blocosDaConsulta(horario) : [];
+  const idsNovos = blocosNovos.map((b) => idDaReserva(profissionalId, data, b));
+
+  // Blocos que continuam sendo da consulta (ex.: 9:00 -> 9:30 mantém o bloco 9:30) não são
+  // apagados nem recriados; só liberamos o que sobrou e reservamos o que é novo.
+  const aLiberar = idsAntigos.filter((id) => !idsNovos.includes(id));
+  const aReservar = blocosNovos.filter((_, i) => !idsAntigos.includes(idsNovos[i]));
+
+  const lote = writeBatch(db);
+  lote.update(doc(db, COLECAO, consulta.id), {
+    data,
+    horario,
+    modalidade: modalidade || consulta.modalidade,
+    reagendadaEm: serverTimestamp(),
+  });
+  aLiberar.forEach((id) => lote.delete(doc(db, RESERVAS, id)));
+  aReservar.forEach((bloco) => {
+    lote.set(doc(db, RESERVAS, idDaReserva(profissionalId, data, bloco)), {
+      profissionalId,
+      data,
+      bloco,
+      clienteId: consulta.clienteId,
+      consultaId: consulta.id,
+      criadoEm: serverTimestamp(),
+    });
+  });
+
+  try {
+    await lote.commit();
+  } catch (erro) {
+    await lancarSeHorarioOcupado(aReservar.map((b) => idDaReserva(profissionalId, data, b)));
+    throw erro;
+  }
 }

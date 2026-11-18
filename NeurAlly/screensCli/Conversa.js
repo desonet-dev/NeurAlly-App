@@ -10,6 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import paleta from '../styles/Tema.js';
@@ -19,11 +20,10 @@ import { ouvirMensagens, enviarMensagem } from '../services/chatService';
 export default function Conversa({ route, navigation }) {
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState([]);
+    const insets = useSafeAreaInsets();
 
-    // Recebe o contato, o chatId e o ID do usuário logado via route.params
     const { contato, chatId, usuarioId } = route.params || {};
 
-    // Efeito para escutar as mensagens do Firestore em tempo real
     useEffect(() => {
         if (!chatId) return;
 
@@ -35,17 +35,15 @@ export default function Conversa({ route, navigation }) {
         return () => unsubscribe();
     }, [chatId]);
 
-    // Função para enviar a mensagem
     const handleEnviar = async () => {
         if (inputText.trim() === '' || !chatId || !usuarioId) return;
 
         const textoParaEnviar = inputText;
-        setInputText(''); // Limpa o input imediatamente para melhor fluidez
+        setInputText('');
 
         await enviarMensagem(chatId, textoParaEnviar, usuarioId);
     };
 
-    // Formata o timestamp do Firestore para exibição (ex: "15/06/26 12:03")
     const formatarHora = (timestamp) => {
         if (!timestamp) return '';
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -55,7 +53,6 @@ export default function Conversa({ route, navigation }) {
     };
 
     const renderItem = ({ item }) => {
-        // Se sua mensagem vier com tipo 'date' do banco ou quiser manter compatibilidade
         if (item.type === 'date') {
             return (
                 <View style={styles.dateContainer}>
@@ -127,7 +124,7 @@ export default function Conversa({ route, navigation }) {
                 />
 
                 {/* Parte inferior da tela (input e botões) */}
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, { paddingBottom: 10 + insets.bottom }]}>
                     <View style={styles.textInputWrapper}>
                         <TouchableOpacity style={styles.iconButton}>
                             <Feather name="smile" size={22} color="#555" />
@@ -268,7 +265,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 10,
         backgroundColor: '#FFF',
-        marginBottom: 40,
     },
     textInputWrapper: {
         flex: 1,

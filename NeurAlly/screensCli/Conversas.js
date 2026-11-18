@@ -16,15 +16,25 @@ import SearchBar from '../components/searchBar.js';
 import ContatosOnline from '../components/ContatosOnline.js';
 import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
-import { ouvirConversasDoUsuario } from '../services/chatService';
+import { ouvirConversasDoUsuario, obterOuCriarChat } from '../services/chatService';
 import { ouvirContatosOnline } from '../services/presencaService';
+import { useAuth } from '../contexts/AuthContext.js';
+import useProfissionais from '../hooks/useProfissionais.js';
+import NovaConversaModal from '../components/NovaConversaModal.js';
 
 export default function Conversas() {
-    // ID do usuário logado atual (substitua pelo ID real do Auth ou AsyncStorage)
-    const meuIdUsuario = 'OVHfzNDwkZi54ELYFeiy693neo1'; 
+    // ID do usuário logado atual
+    const { usuario } = useAuth();
+    const meuIdUsuario = usuario?.uid;
 
     const [conversas, setConversas] = useState([]);
     const [idsOnline, setIdsOnline] = useState([]);
+
+    // Nova conversa: janela com os profissionais disponíveis para iniciar o chat.
+    const [novaConversaAberta, setNovaConversaAberta] = useState(false);
+    const [abrindoConversa, setAbrindoConversa] = useState(false);
+    const [erroNovaConversa, setErroNovaConversa] = useState('');
+    const { profissionais, carregando: carregandoProfissionais } = useProfissionais();
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -35,6 +45,7 @@ export default function Conversas() {
 
     // Efeito para escutar as conversas do usuário em tempo real no Firestore
     useEffect(() => {
+        if (!meuIdUsuario) return undefined;
         const unsubscribe = ouvirConversasDoUsuario(meuIdUsuario, (listaDeChats) => {
             setConversas(listaDeChats);
         });
@@ -63,6 +74,51 @@ export default function Conversas() {
                 profilePicture: chat.profilePicture,
             },
         });
+    };
+
+    // Escolheu um profissional na janela de nova conversa: cria (ou reaproveita) o chat e abre.
+    const iniciarConversa = async (profissional) => {
+        if (abrindoConversa) return;
+
+        if (!profissional.uid) {
+            setErroNovaConversa('Este profissional é apenas um exemplo (ainda não tem conta no app), então não dá para conversar com ele.');
+            return;
+        }
+        if (!meuIdUsuario) {
+            setErroNovaConversa('Entre na sua conta para iniciar uma conversa.');
+            return;
+        }
+
+        setErroNovaConversa('');
+        setAbrindoConversa(true);
+        try {
+            const chatId = await obterOuCriarChat(meuIdUsuario, profissional.uid);
+            setNovaConversaAberta(false);
+            navigation.navigate('Conversa', {
+                chatId,
+                usuarioId: meuIdUsuario,
+                contato: {
+                    id: profissional.uid,
+                    name: profissional.nome,
+                    title: 'Psicólogo',
+                    profilePicture: profissional.img || require('../assets/Anderson.png'),
+                },
+            });
+        } catch (erro) {
+            console.warn('Erro ao iniciar conversa:', erro);
+            setErroNovaConversa(
+                erro?.code === 'permission-denied'
+                    ? 'Sem permissão para criar a conversa. Atualize as regras do Firestore (arquivo firestore.rules do projeto).'
+                    : 'Não foi possível iniciar a conversa. Verifique sua conexão e tente novamente.'
+            );
+        } finally {
+            setAbrindoConversa(false);
+        }
+    };
+
+    const abrirNovaConversa = () => {
+        setErroNovaConversa('');
+        setNovaConversaAberta(true);
     };
 
     if (!fontsLoaded) {
@@ -141,10 +197,23 @@ export default function Conversas() {
             {/* Botão Flutuante para Iniciar Nova Conversa */}
             <TouchableOpacity
                 style={styles.fab}
-                onPress={() => navigation.navigate('BuscaProfissionais')}
+                onPress={abrirNovaConversa}
+                accessibilityLabel="Iniciar nova conversa"
             >
                 <Ionicons name="chatbubbles-outline" size={26} color="#FFF" />
             </TouchableOpacity>
+
+            <NovaConversaModal
+                visivel={novaConversaAberta}
+                onFechar={() => setNovaConversaAberta(false)}
+                titulo="Nova conversa"
+                placeholder="Procure por um profissional"
+                opcoes={profissionais}
+                carregando={carregandoProfissionais}
+                ocupado={abrindoConversa}
+                erro={erroNovaConversa}
+                onSelecionar={iniciarConversa}
+            />
 
             <NavBar />
         </SafeAreaView>

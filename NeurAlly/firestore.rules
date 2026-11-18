@@ -22,20 +22,44 @@ service cloud.firestore {
     }
 
     // Consultas: o cliente que marcou e o psicólogo escolhido conseguem ler.
+    // Atualização (cancelar/reagendar) só em consultas ainda 'agendada':
+    //  - o cliente pode cancelar e reagendar (data, horário e modalidade);
+    //  - o psicólogo só pode cancelar.
+    // Ninguém troca o cliente nem o psicólogo da consulta.
     match /consultas/{consultaId} {
       allow create: if request.auth != null
         && request.resource.data.clienteId == request.auth.uid;
       allow read: if request.auth != null
         && (resource.data.clienteId == request.auth.uid
             || resource.data.profissionalId == request.auth.uid);
+      allow update: if request.auth != null
+        && resource.data.status == 'agendada'
+        && request.resource.data.clienteId == resource.data.clienteId
+        && request.resource.data.profissionalId == resource.data.profissionalId
+        && (
+          (resource.data.clienteId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['status', 'canceladaPor', 'canceladaEm', 'data', 'horario', 'modalidade', 'reagendadaEm']))
+          ||
+          (resource.data.profissionalId == request.auth.uid
+            && request.resource.data.status == 'cancelada'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['status', 'canceladaPor', 'canceladaEm']))
+        );
     }
 
-    // Reservas de horário (1 por bloco de 30 min). Só podem ser criadas, nunca alteradas:
-    // se o bloco já existe, a gravação é recusada e ninguém marca o mesmo horário duas vezes.
+    // Reservas de horário (1 por bloco de 30 min). Só podem ser criadas ou apagadas, nunca
+    // alteradas: se o bloco já existe, a gravação é recusada e ninguém marca o mesmo horário duas
+    // vezes. Quem reservou (cliente) ou o dono da agenda (psicólogo) pode liberar o bloco ao
+    // cancelar ou reagendar a consulta.
     match /reservas/{reservaId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
         && request.resource.data.clienteId == request.auth.uid;
+      allow delete: if request.auth != null
+        && (resource == null
+            || resource.data.clienteId == request.auth.uid
+            || resource.data.profissionalId == request.auth.uid);
     }
 
     // Conversas

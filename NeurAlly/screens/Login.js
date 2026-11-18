@@ -22,7 +22,6 @@ export default function LoginScreen({ navigation, route }) {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [entrando, setEntrando] = useState(false);
-    // Aviso mostrado na própria tela (Alert.alert não aparece no navegador/react-native-web).
     const [aviso, setAviso] = useState(route?.params?.aviso || '');
     const [campoInvalido, setCampoInvalido] = useState({ email: false, senha: false });
     const { entrarComGoogle } = useLoginGoogle(navigation);

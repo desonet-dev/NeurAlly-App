@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
 import NavBar from '../components/navBarCli.js';
 import DynamicCalendar from '../components/DynamicCalendar.js';
 import paleta from '../styles/Tema.js';
 import useConsultas from '../hooks/useConsultas.js';
-import { diaDoMes, mesAbreviado, nomeDoDia } from '../utils/datas.js';
+import { diaDoMes, formatarDataLonga, mesAbreviado, nomeDoDia } from '../utils/datas.js';
+import { cancelarConsulta } from '../services/consultasService.js';
+import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
-// Função auxiliar para pegar a data atual no formato ISO (AAAA-MM-DD)
 function getHojeISO() {
   const hoje = new Date();
   const ano = hoje.getFullYear();
@@ -17,9 +19,13 @@ function getHojeISO() {
 }
 
 export default function Agendamento({ navigation }) {
-  // Estado para controlar a data selecionada no calendário
   const [selectedDate, setSelectedDate] = useState(getHojeISO());
   const { proximas, datasComConsulta } = useConsultas();
+
+  const [paraCancelar, setParaCancelar] = useState(null);
+  const [cancelando, setCancelando] = useState(false);
+  const [cancelada, setCancelada] = useState(false);
+  const [erroAcao, setErroAcao] = useState('');
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -27,6 +33,27 @@ export default function Agendamento({ navigation }) {
   });
 
   if (!fontsLoaded) return null;
+
+  const confirmarCancelamento = async () => {
+    if (!paraCancelar || cancelando) return;
+    setCancelando(true);
+    setErroAcao('');
+    try {
+      await cancelarConsulta(paraCancelar, 'cliente');
+      setParaCancelar(null);
+      setCancelada(true);
+    } catch (e) {
+      console.warn('Erro ao cancelar consulta:', e);
+      setParaCancelar(null);
+      setErroAcao(
+        e?.code === 'permission-denied'
+          ? 'Sem permissão para cancelar. Atualize as regras do Firestore (arquivo firestore.rules do projeto).'
+          : 'Não foi possível cancelar a consulta. Verifique sua conexão e tente novamente.'
+      );
+    } finally {
+      setCancelando(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -52,20 +79,48 @@ export default function Agendamento({ navigation }) {
             <Text style={styles.semConsultas}>Você ainda não tem consultas agendadas.</Text>
           ) : (
             <View style={styles.listaConsultas}>
-              {proximas.slice(0, 5).map((consulta) => (
+              {proximas.map((consulta) => (
                 <View key={consulta.id} style={styles.consultaItem}>
-                  <View style={styles.consultaData}>
-                    <Text style={styles.consultaDia}>{diaDoMes(consulta.data)}</Text>
-                    <Text style={styles.consultaMes}>{mesAbreviado(consulta.data)}</Text>
+                  <View style={styles.consultaLinha}>
+                    <View style={styles.consultaData}>
+                      <Text style={styles.consultaDia}>{diaDoMes(consulta.data)}</Text>
+                      <Text style={styles.consultaMes}>{mesAbreviado(consulta.data)}</Text>
+                    </View>
+                    <View style={styles.consultaInfo}>
+                      <Text style={styles.consultaNome} numberOfLines={1}>{consulta.profissionalNome}</Text>
+                      <Text style={styles.consultaDetalhe} numberOfLines={1}>
+                        {nomeDoDia(consulta.data)} · {consulta.horario} · {consulta.modalidade === 'online' ? 'On-line' : 'Presencial'}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.consultaInfo}>
-                    <Text style={styles.consultaNome} numberOfLines={1}>{consulta.profissionalNome}</Text>
-                    <Text style={styles.consultaDetalhe} numberOfLines={1}>
-                      {nomeDoDia(consulta.data)} · {consulta.horario} · {consulta.modalidade === 'online' ? 'On-line' : 'Presencial'}
-                    </Text>
+
+                  <View style={styles.acoes}>
+                    <TouchableOpacity
+                      style={[styles.acaoBotao, styles.acaoReagendar]}
+                      onPress={() => navigation.navigate('FinalAgendamento', { reagendar: consulta })}
+                      accessibilityLabel={`Reagendar consulta com ${consulta.profissionalNome}`}
+                    >
+                      <Ionicons name="calendar-outline" size={16} color="#1A56DB" style={{ marginRight: 6 }} />
+                      <Text style={styles.acaoReagendarTexto}>Reagendar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.acaoBotao, styles.acaoCancelar]}
+                      onPress={() => { setErroAcao(''); setParaCancelar(consulta); }}
+                      accessibilityLabel={`Cancelar consulta com ${consulta.profissionalNome}`}
+                    >
+                      <Ionicons name="close-circle-outline" size={16} color="#D64545" style={{ marginRight: 6 }} />
+                      <Text style={styles.acaoCancelarTexto}>Cancelar</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               ))}
+            </View>
+          )}
+
+          {!!erroAcao && (
+            <View style={styles.erroBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
+              <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+              <Text style={styles.erroTexto}>{erroAcao}</Text>
             </View>
           )}
         </View>
@@ -86,6 +141,30 @@ export default function Agendamento({ navigation }) {
 
       </ScrollView>
       <NavBar />
+
+      <ModalConfirmacao
+        visivel={!!paraCancelar}
+        tipo="perigo"
+        titulo="Cancelar consulta?"
+        mensagem={
+          paraCancelar
+            ? `Sua consulta com ${paraCancelar.profissionalNome} em ${formatarDataLonga(paraCancelar.data)} às ${paraCancelar.horario} será cancelada e o horário ficará livre para outras pessoas.`
+            : ''
+        }
+        textoConfirmar="Sim, cancelar"
+        textoCancelar="Voltar"
+        carregando={cancelando}
+        onConfirmar={confirmarCancelamento}
+        onCancelar={() => setParaCancelar(null)}
+      />
+
+      <ModalConfirmacao
+        visivel={cancelada}
+        tipo="sucesso"
+        titulo="Consulta cancelada"
+        mensagem="Sua consulta foi cancelada. Você pode agendar um novo horário quando quiser."
+        onConfirmar={() => setCancelada(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -102,13 +181,35 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   consultaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#F0F4FF',
     borderRadius: 15,
     padding: 12,
     marginBottom: 10,
   },
+  consultaLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  acoes: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 12,
+  },
+  acaoBotao: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  acaoReagendar: { backgroundColor: '#FFF', borderColor: '#1A56DB' },
+  acaoReagendarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: '#1A56DB' },
+  acaoCancelar: { backgroundColor: '#FFF', borderColor: '#D64545' },
+  acaoCancelarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: '#D64545' },
+  erroBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDEDED', borderWidth: 1, borderColor: '#F5C2C2', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 5 },
+  erroTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#B03030' },
   consultaData: {
     width: 52,
     height: 52,

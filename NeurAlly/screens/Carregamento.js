@@ -51,8 +51,6 @@ export default function Carregamento({ navigation }) {
 
             let tipo = perfil?.tipo;
 
-            // Não conseguimos ler o perfil (conexão instável): NÃO é cadastro incompleto.
-            // Usa o tipo de conta guardado no aparelho; sem ele, pede para entrar de novo.
             if (!tipo && erroPerfil) {
                 tipo = await lerTipoLocal(usuario.uid);
                 if (cancelado) return;

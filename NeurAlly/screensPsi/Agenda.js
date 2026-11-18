@@ -5,7 +5,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import NavBarPsi from '../components/navBarPsi.js';
 import paleta from '../styles/Tema.js';
 import useConsultas from '../hooks/useConsultas.js';
-import { diasDaSemana, faixaDeHorario, formatarDataLonga, hojeISO, mesAbreviado } from '../utils/datas.js';
+import { consultaEhFutura, diasDaSemana, faixaDeHorario, formatarDataLonga, hojeISO, mesAbreviado } from '../utils/datas.js';
+import { cancelarConsulta } from '../services/consultasService.js';
+import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
 // Data base de uma semana: hoje + (offset * 7 dias). Offset 0 = semana atual.
 function baseDaSemana(offset) {
@@ -20,12 +22,39 @@ export default function AgendaPsi({ navigation }) {
   // Consultas que os clientes marcaram com este psicólogo.
   const { consultas, carregando, erro } = useConsultas('profissional');
 
+  // Cancelamento de uma consulta pelo psicólogo.
+  const [paraCancelar, setParaCancelar] = useState(null);
+  const [cancelando, setCancelando] = useState(false);
+  const [cancelada, setCancelada] = useState(false);
+  const [erroCancelar, setErroCancelar] = useState('');
+
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
   });
 
   if (!fontsLoaded) return null;
+
+  const confirmarCancelamento = async () => {
+    if (!paraCancelar || cancelando) return;
+    setCancelando(true);
+    setErroCancelar('');
+    try {
+      await cancelarConsulta(paraCancelar, 'profissional');
+      setParaCancelar(null);
+      setCancelada(true);
+    } catch (e) {
+      console.warn('Erro ao cancelar consulta:', e);
+      setParaCancelar(null);
+      setErroCancelar(
+        e?.code === 'permission-denied'
+          ? 'Sem permissão para cancelar. Atualize as regras do Firestore (arquivo firestore.rules do projeto).'
+          : 'Não foi possível cancelar a consulta. Verifique sua conexão e tente novamente.'
+      );
+    } finally {
+      setCancelando(false);
+    }
+  };
 
   const semana = diasDaSemana(baseDaSemana(semanaOffset));
   const datasComConsulta = new Set(consultas.map((c) => c.data));
@@ -119,9 +148,26 @@ export default function AgendaPsi({ navigation }) {
               <View style={styles.cardFooter}>
                 <Ionicons name="time-outline" size={16} color="#6292D6" />
                 <Text style={styles.horarioText}>{faixaDeHorario(consulta.horario)}</Text>
+                {consultaEhFutura(consulta) && (
+                  <TouchableOpacity
+                    style={styles.cancelarBotao}
+                    onPress={() => { setErroCancelar(''); setParaCancelar(consulta); }}
+                    accessibilityLabel={`Cancelar consulta com ${consulta.clienteNome || 'paciente'}`}
+                  >
+                    <Ionicons name="close-circle-outline" size={16} color="#D64545" style={{ marginRight: 4 }} />
+                    <Text style={styles.cancelarTexto}>Cancelar</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           ))
+        )}
+
+        {!!erroCancelar && (
+          <View style={styles.erroBox}>
+            <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+            <Text style={styles.erroTexto}>{erroCancelar}</Text>
+          </View>
         )}
 
         <TouchableOpacity
@@ -135,6 +181,30 @@ export default function AgendaPsi({ navigation }) {
       </ScrollView>
 
       <NavBarPsi />
+
+      <ModalConfirmacao
+        visivel={!!paraCancelar}
+        tipo="perigo"
+        titulo="Cancelar consulta?"
+        mensagem={
+          paraCancelar
+            ? `A consulta com ${paraCancelar.clienteNome || 'o paciente'} em ${formatarDataLonga(paraCancelar.data)} às ${paraCancelar.horario} será cancelada e o horário ficará livre na sua agenda.`
+            : ''
+        }
+        textoConfirmar="Sim, cancelar"
+        textoCancelar="Voltar"
+        carregando={cancelando}
+        onConfirmar={confirmarCancelamento}
+        onCancelar={() => setParaCancelar(null)}
+      />
+
+      <ModalConfirmacao
+        visivel={cancelada}
+        tipo="sucesso"
+        titulo="Consulta cancelada"
+        mensagem="A consulta foi cancelada e o horário voltou a ficar livre."
+        onConfirmar={() => setCancelada(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -166,7 +236,9 @@ const styles = StyleSheet.create({
   consultaTipo: { fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#666' },
   divider: { height: 1, backgroundColor: '#EEE', marginVertical: 10 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 5 },
-  horarioText: { fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#666', marginLeft: 6 },
+  horarioText: { fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#666', marginLeft: 6, flex: 1 },
+  cancelarBotao: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4, paddingHorizontal: 8 },
+  cancelarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: '#D64545' },
   avisoContainer: { paddingVertical: 30, alignItems: 'center' },
   avisoTexto: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: '#5A6B87', textAlign: 'center' },
   erroBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDEDED', borderWidth: 1, borderColor: '#F5C2C2', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 15 },

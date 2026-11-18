@@ -32,3 +32,46 @@ export async function listarPsicologos() {
     };
   });
 }
+
+// Exemplos mostrados enquanto ainda não há psicólogos cadastrados no app (não têm uid, então
+// não dão acesso a uma agenda nem a uma conversa de verdade).
+export const PROFISSIONAIS_EXEMPLO = [
+  { id: '1', nome: 'João Mendonça', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
+  { id: '2', nome: 'Caroline de Jesus', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
+  { id: '3', nome: 'Carla Andrade', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
+];
+
+// Lista os profissionais disponíveis: os psicólogos cadastrados de verdade; se não houver nenhum
+// (ou se a leitura falhar), cai nos exemplos para as telas nunca ficarem vazias.
+export async function carregarProfissionais() {
+  try {
+    const lista = await listarPsicologos();
+    if (lista.length > 0) {
+      return lista.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    }
+  } catch (erro) {
+    console.warn('Não foi possível listar os psicólogos:', erro?.message || erro);
+  }
+  return PROFISSIONAIS_EXEMPLO;
+}
+
+// "João Mendonça" -> "joao mendonca": busca sem diferenciar maiúsculas nem acentos.
+export function normalizarTexto(texto) {
+  return String(texto || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+// Filtra pelo que a pessoa digitou na barra de pesquisa (nome, especialidade ou CRP).
+// Todas as palavras digitadas precisam aparecer em algum desses campos.
+export function filtrarProfissionais(lista, busca) {
+  const palavras = normalizarTexto(busca).split(/\s+/).filter(Boolean);
+  if (palavras.length === 0) return lista;
+
+  return lista.filter((p) => {
+    const texto = normalizarTexto(`${p.nome} ${p.esp} ${p.crp}`);
+    return palavras.every((palavra) => texto.includes(palavra));
+  });
+}

@@ -1,19 +1,3 @@
-// ============================================================================
-// SERVIÇO DE ANOTAÇÕES DO PSICÓLOGO (Firebase Firestore)
-// ============================================================================
-// Anotações que o profissional faz sobre atendimentos/pacientes.
-//
-// Estrutura salva no Firestore:
-//   usuarios/{uid}/anotacoes/{anotacaoId}
-//     - titulo: string
-//     - texto: string
-//     - paciente: string (nome do paciente, opcional)
-//     - criadoEm: timestamp do servidor (usado para ordenar)
-//
-// As regras de segurança do Firestore (veja FIREBASE_SETUP.md) garantem
-// que cada profissional só acessa as próprias anotações.
-// ============================================================================
-
 import {
   collection,
   addDoc,

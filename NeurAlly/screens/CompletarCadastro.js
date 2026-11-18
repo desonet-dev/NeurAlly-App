@@ -18,8 +18,6 @@ import { auth } from '../services/firebaseConfig.js';
 import { completarPerfil, traduzErroFirebase } from '../services/authService.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
-// Tela de primeiro acesso: aparece quando a pessoa entrou (ex.: com Google) mas ainda
-// não escolheu se é cliente ou psicólogo. Cria o documento usuarios/{uid}.
 function avisar(titulo, mensagem) {
     if (Platform.OS === 'web') {
         window.alert(`${titulo}\n\n${mensagem}`);
