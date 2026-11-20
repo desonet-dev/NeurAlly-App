@@ -11,9 +11,11 @@ import Animated, {
 import { useAuth } from '../contexts/AuthContext.js';
 import { lerTipoLocal } from '../services/perfilLocal.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 SplashScreen.preventAutoHideAsync();
 
 export default function Carregamento({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
     const [isReady, setIsReady] = useState(false);
     const translateX = useSharedValue(300);
     const { usuario, perfil, erroPerfil, carregando: autenticando } = useAuth();
@@ -51,6 +53,8 @@ export default function Carregamento({ navigation }) {
 
             let tipo = perfil?.tipo;
 
+            // Não conseguimos ler o perfil (conexão instável): NÃO é cadastro incompleto.
+            // Usa o tipo de conta guardado no aparelho; sem ele, pede para entrar de novo.
             if (!tipo && erroPerfil) {
                 tipo = await lerTipoLocal(usuario.uid);
                 if (cancelado) return;
@@ -98,10 +102,10 @@ export default function Carregamento({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+        backgroundColor: cor.bg('#FFF'),
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'row',
@@ -109,8 +113,8 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
-        borderColor: '#00F',
+        color: cor.fg('#000'),
+        borderColor: cor.bd('#00F'),
         borderRadius: 10,
     },
     image: {

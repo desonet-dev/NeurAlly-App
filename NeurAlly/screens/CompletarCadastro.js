@@ -13,11 +13,13 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { useFonts } from 'expo-font';
-import paleta from '../styles/Tema.js';
 import { auth } from '../services/firebaseConfig.js';
 import { completarPerfil, traduzErroFirebase } from '../services/authService.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
+// Tela de primeiro acesso: aparece quando a pessoa entrou (ex.: com Google) mas ainda
+// não escolheu se é cliente ou psicólogo. Cria o documento usuarios/{uid}.
 function avisar(titulo, mensagem) {
     if (Platform.OS === 'web') {
         window.alert(`${titulo}\n\n${mensagem}`);
@@ -27,6 +29,7 @@ function avisar(titulo, mensagem) {
 }
 
 export default function CompletarCadastroScreen({ navigation, route }) {
+  const [styles, cor] = useEstilos(criarStyles);
     const { recarregarPerfil, sair } = useAuth();
 
     const [isPsychologist, setIsPsychologist] = useState(false);
@@ -105,17 +108,17 @@ export default function CompletarCadastroScreen({ navigation, route }) {
                         <Text style={styles.title}>Quase lá!</Text>
                         <Text style={styles.subtitle}>Complete seu cadastro para continuar.</Text>
 
-                        <TextInput style={styles.input} placeholder="Nome" placeholderTextColor="#666" value={nome} onChangeText={setNome} editable={!salvando} />
-                        <TextInput style={[styles.input, styles.inputBloqueado]} placeholder="E-mail" placeholderTextColor="#666" value={email} editable={false} />
-                        <TextInput style={styles.input} placeholder="Data de nascimento" placeholderTextColor="#666" value={dataNascimento} onChangeText={setDataNascimento} editable={!salvando} />
-                        <TextInput style={styles.input} placeholder="CPF" placeholderTextColor="#666" keyboardType="numeric" value={cpf} onChangeText={setCpf} editable={!salvando} />
-                        <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor="#666" keyboardType="phone-pad" value={telefone} onChangeText={setTelefone} editable={!salvando} />
+                        <TextInput style={styles.input} placeholder="Nome" placeholderTextColor={cor.fg("#666")} value={nome} onChangeText={setNome} editable={!salvando} />
+                        <TextInput style={[styles.input, styles.inputBloqueado]} placeholder="E-mail" placeholderTextColor={cor.fg("#666")} value={email} editable={false} />
+                        <TextInput style={styles.input} placeholder="Data de nascimento" placeholderTextColor={cor.fg("#666")} value={dataNascimento} onChangeText={setDataNascimento} editable={!salvando} />
+                        <TextInput style={styles.input} placeholder="CPF" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" value={cpf} onChangeText={setCpf} editable={!salvando} />
+                        <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor={cor.fg("#666")} keyboardType="phone-pad" value={telefone} onChangeText={setTelefone} editable={!salvando} />
 
                         {isPsychologist && (
                             <TextInput
                                 style={styles.input}
                                 placeholder="Número de inscrição no CRP"
-                                placeholderTextColor="#666"
+                                placeholderTextColor={cor.fg("#666")}
                                 value={crp}
                                 onChangeText={setCrp}
                                 editable={!salvando}
@@ -128,7 +131,7 @@ export default function CompletarCadastroScreen({ navigation, route }) {
                             disabled={salvando}
                         >
                             {salvando ? (
-                                <ActivityIndicator size="small" color="#FFF" />
+                                <ActivityIndicator size="small" color={cor.fg("#FFF")} />
                             ) : (
                                 <Text style={styles.submitButtonText}>Concluir</Text>
                             )}
@@ -168,10 +171,10 @@ export default function CompletarCadastroScreen({ navigation, route }) {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.fundoAuth,
+        backgroundColor: cor.bg('#FFF'),
     },
     scrollContent: {
         paddingHorizontal: 20,
@@ -180,7 +183,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     card: {
-        backgroundColor: paleta.cor.fundoCard,
+        backgroundColor: cor.bg('#9EBDF0'),
         width: '100%',
         borderRadius: 15,
         padding: 25,
@@ -194,19 +197,19 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontFamily: 'Montserrat-Regular',
-        color: '#000',
+        color: cor.fg('#000'),
         marginBottom: 6,
     },
     subtitle: {
         fontSize: 13,
         fontFamily: 'Montserrat-Regular',
-        color: '#333',
+        color: cor.fg('#333'),
         marginBottom: 20,
         textAlign: 'center',
     },
     input: {
         width: '100%',
-        backgroundColor: paleta.cor.fundoAuth,
+        backgroundColor: cor.bg('#FFF'),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,
@@ -220,10 +223,10 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
     },
     inputBloqueado: {
-        color: '#777',
+        color: cor.fg('#777'),
     },
     submitButton: {
-        backgroundColor: '#2563EB',
+        backgroundColor: cor.bg('#2563EB'),
         paddingVertical: 12,
         paddingHorizontal: 30,
         borderRadius: 8,
@@ -237,14 +240,14 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     submitButtonText: {
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         fontFamily: 'Montserrat-Regular',
         fontSize: 16,
     },
     toggleContainer: {
         flexDirection: 'row',
         marginTop: 30,
-        backgroundColor: '#F0F0F0',
+        backgroundColor: cor.bg('#F0F0F0'),
         borderRadius: 25,
         padding: 4,
         width: '90%',
@@ -261,15 +264,15 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     toggleActive: {
-        backgroundColor: paleta.cor.fundoCard,
+        backgroundColor: cor.bg('#9EBDF0'),
     },
     toggleText: {
         fontFamily: 'Montserrat-Regular',
         fontSize: 14,
-        color: '#555',
+        color: cor.fg('#555'),
     },
     toggleTextActive: {
-        color: '#000',
+        color: cor.fg('#000'),
         fontFamily: 'Montserrat-Bold',
     },
     outraConta: {
@@ -278,6 +281,6 @@ const styles = StyleSheet.create({
     textLinkBold: {
         fontFamily: 'Montserrat-Bold',
         fontSize: 12,
-        color: '#1A56DB',
+        color: cor.fg('#1A56DB'),
     },
 });

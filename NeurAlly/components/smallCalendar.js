@@ -1,16 +1,17 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
-import paleta from '../styles/Tema.js';
 import { useNavigation } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { diasDaSemana, hojeISO } from '../utils/datas.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 // Calendário da semana atual (segunda a domingo).
 //  - Dia com consulta marcada: fica azul.
 //  - Hoje (sem consulta): ganha só um contorno azul.
 //  - Demais dias: normais.
 // `datasConsulta` é um Set com datas AAAA-MM-DD (vem do hook useConsultas).
 export default function SmallCalendar({ datasConsulta = new Set() }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const navigation = useNavigation();
 
   const [fontsLoaded] = useFonts({
@@ -47,16 +48,16 @@ export default function SmallCalendar({ datasConsulta = new Set() }) {
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   calendarView: {
     height: 87,
     flexDirection: 'row',
-    backgroundColor: paleta.cor.branco,
+    backgroundColor: cor.bg('#FFF'),
     marginHorizontal: 20,
     marginBottom: 35,
     borderRadius: 20,
     borderBottomWidth: 5,
-    borderColor: paleta.cor.cinza,
+    borderColor: cor.bd('#D8D8D8'),
   },
   dateView: {
     flex: 1,
@@ -70,25 +71,25 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   todayDateView: {
-    borderColor: paleta.cor.a7,
+    borderColor: cor.bd('#4894FE'),
   },
   appointmentDateView: {
-    backgroundColor: paleta.cor.a7,
-    borderColor: paleta.cor.a7,
+    backgroundColor: cor.bg('#4894FE'),
+    borderColor: cor.bd('#4894FE'),
   },
   dayNameText: {
     fontSize: 12,
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
-    color: '#131A22',
+    color: cor.fg('#131A22'),
   },
   dayNumText: {
     fontSize: 17,
     fontFamily: 'Montserrat-Bold',
     textAlign: 'center',
-    color: '#131A22',
+    color: cor.fg('#131A22'),
   },
   appointmentText: {
-    color: paleta.cor.branco,
+    color: cor.fg('#FFF'),
   },
 });

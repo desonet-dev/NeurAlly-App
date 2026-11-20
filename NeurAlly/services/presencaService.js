@@ -17,8 +17,15 @@ import {
 export const INTERVALO_HEARTBEAT_MS = 60 * 1000;
 export const TEMPO_LIMITE_ONLINE_MS = 3 * 60 * 1000;
 
+// Durante a exclusão da conta a presença é pausada: senão uma atualização atrasada recriaria o
+// documento do usuário logo depois de apagado.
+let presencaPausada = false;
+export function pausarPresenca(pausar) {
+  presencaPausada = !!pausar;
+}
+
 export async function definirPresenca(uid, online) {
-  if (!uid) return;
+  if (!uid || presencaPausada) return;
   try {
     await setDoc(
       doc(db, 'usuarios', uid),

@@ -7,10 +7,11 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { useFonts } from 'expo-font';
-import paleta from '../styles/Tema.js';
 import NavBar from '../components/navBarCli.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function TriagemScreen() {
+  const [styles, cor] = useEstilos(criarStyles);
     const [val, setVal] = useState(90);
     const [questao, setQuestao] = useState(0);
     const [resposta, setResposta] = useState("");
@@ -32,9 +33,9 @@ export default function TriagemScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+        backgroundColor: cor.bg('#FFF'),
     },
 });

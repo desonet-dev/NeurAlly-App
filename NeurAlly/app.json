@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "../assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -34,6 +34,12 @@
         "expo-notifications",
         {
           "color": "#6196DA"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O NeurAlly acessa suas fotos para você escolher a foto de perfil."
         }
       ]
     ]

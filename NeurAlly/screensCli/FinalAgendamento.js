@@ -6,7 +6,6 @@ import {
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
-import paleta from '../styles/Tema.js';
 import useConsultas from '../hooks/useConsultas.js';
 import { blocosDaConsulta, formatarDataLonga, HORARIOS_PADRAO, hojeISO, inicioDaConsulta } from '../utils/datas.js';
 import { escutarHorariosOcupados, reagendarConsulta } from '../services/consultasService.js';
@@ -15,6 +14,7 @@ import useProfissionais from '../hooks/useProfissionais.js';
 import ItemProfissional from '../components/ItemProfissional.js';
 import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
   monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
@@ -25,6 +25,7 @@ LocaleConfig.locales['pt-br'] = {
 LocaleConfig.defaultLocale = 'pt-br';
 
 export default function FinalAgendamento({ navigation, route }) {
+  const [styles, cor] = useEstilos(criarStyles);
   // Dois jeitos de chegar aqui:
   //  - agendar: pelo calendário da tela Agendamento (sem profissional) ou pela tela do profissional
   //    (já chegam profissional, data e horário escolhidos);
@@ -149,14 +150,14 @@ export default function FinalAgendamento({ navigation, route }) {
         
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={28} color="#1A56DB" />
+            <Ionicons name="chevron-back" size={28} color={cor.fg("#1A56DB")} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{reagendando ? 'Reagendar consulta' : 'Agendamento'}</Text>
         </View>
 
         {reagendando && (
           <View style={styles.atualBox}>
-            <Ionicons name="calendar-outline" size={18} color="#1A56DB" style={{ marginRight: 8 }} />
+            <Ionicons name="calendar-outline" size={18} color={cor.fg("#1A56DB")} style={{ marginRight: 8 }} />
             <Text style={styles.atualTexto}>
               Consulta atual: {formatarDataLonga(reagendando.data)} às {reagendando.horario}
             </Text>
@@ -176,11 +177,11 @@ export default function FinalAgendamento({ navigation, route }) {
         ) : (
           <View style={styles.pickerWrapper}>
             <View style={styles.searchContainer}>
-              <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
+              <Ionicons name="search-outline" size={20} color={cor.fg("#888")} style={styles.searchIcon} />
               <TextInput 
                 style={styles.searchInput} 
                 placeholder="Procure por um profissional" 
-                placeholderTextColor="#888"
+                placeholderTextColor={cor.fg("#888")}
                 value={busca}
                 onChangeText={setBusca}
                 autoCorrect={false}
@@ -188,13 +189,13 @@ export default function FinalAgendamento({ navigation, route }) {
               />
               {busca.length > 0 && (
                 <TouchableOpacity onPress={() => setBusca('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityLabel="Limpar busca">
-                  <Ionicons name="close-circle" size={20} color="#999" />
+                  <Ionicons name="close-circle" size={20} color={cor.fg("#999")} />
                 </TouchableOpacity>
               )}
             </View>
 
             {carregandoProfissionais ? (
-              <ActivityIndicator color="#6292D6" style={{ marginVertical: 20 }} />
+              <ActivityIndicator color={cor.fg("#6292D6")} style={{ marginVertical: 20 }} />
             ) : filtrados.length === 0 ? (
               <Text style={styles.semResultado}>Nenhum profissional encontrado para "{busca.trim()}".</Text>
             ) : (
@@ -212,24 +213,24 @@ export default function FinalAgendamento({ navigation, route }) {
             onDayPress={(day) => { setSelectedDate(day.dateString); setAviso(''); }}
             markedDates={{
               // Dias em que você já tem consulta ficam com um ponto azul.
-              ...Object.fromEntries([...datasComConsulta].map((data) => [data, { marked: true, dotColor: '#4894FE' }])),
+              ...Object.fromEntries([...datasComConsulta].map((data) => [data, { marked: true, dotColor: cor.fg('#4894FE') }])),
               [selectedDate]: {
-                ...(datasComConsulta.has(selectedDate) ? { marked: true, dotColor: '#4894FE' } : {}),
+                ...(datasComConsulta.has(selectedDate) ? { marked: true, dotColor: cor.fg('#4894FE') } : {}),
                 selected: true,
                 selectedColor: 'transparent',
-                selectedTextColor: '#6292D6',
+                selectedTextColor: cor.fg('#6292D6'),
               }
             }}
             theme={{
-              calendarBackground: '#FFF',
-              textSectionTitleColor: '#FFF',
+              calendarBackground: cor.bg('#FFF'),
+              textSectionTitleColor: cor.fg('#FFF'),
               selectedDayBackgroundColor: 'transparent',
-              selectedDayTextColor: '#6292D6',
-              todayTextColor: '#6292D6',
-              dayTextColor: '#333',
-              textDisabledColor: '#FFB890',
-              arrowColor: '#FFF',
-              monthTextColor: '#FFF',
+              selectedDayTextColor: cor.fg('#6292D6'),
+              todayTextColor: cor.fg('#6292D6'),
+              dayTextColor: cor.fg('#333'),
+              textDisabledColor: cor.fg('#FFB890'),
+              arrowColor: cor.fg('#FFF'),
+              monthTextColor: cor.fg('#FFF'),
               textDayFontFamily: 'Montserrat-Regular',
               textMonthFontFamily: 'Montserrat-Bold',
               textDayHeaderFontFamily: 'Montserrat-Regular',
@@ -238,14 +239,14 @@ export default function FinalAgendamento({ navigation, route }) {
               textDayHeaderFontSize: 12,
               'stylesheet.calendar.header': {
                 header: {
-                  backgroundColor: '#6292D6',
+                  backgroundColor: cor.bg('#6292D6'),
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   paddingVertical: 10,
                 },
                 dayHeader: {
-                  color: '#FFF',
+                  color: cor.fg('#FFF'),
                   fontFamily: 'Montserrat-Regular',
                   fontSize: 12,
                   marginTop: 10,
@@ -255,13 +256,13 @@ export default function FinalAgendamento({ navigation, route }) {
                   marginTop: 0,
                   flexDirection: 'row',
                   justifyContent: 'space-between',
-                  backgroundColor: '#6292D6',
+                  backgroundColor: cor.bg('#6292D6'),
                   paddingHorizontal: 10,
                 }
               },
               'stylesheet.day.basic': {
                 selected: {
-                  borderColor: '#6292D6',
+                  borderColor: cor.bd('#6292D6'),
                   borderWidth: 1.5,
                   borderRadius: 20,
                 }
@@ -314,7 +315,7 @@ export default function FinalAgendamento({ navigation, route }) {
 
         {!!aviso && (
           <View style={styles.avisoBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
-            <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+            <Ionicons name="alert-circle" size={18} color={cor.fg("#D64545")} style={{ marginRight: 8 }} />
             <Text style={styles.avisoTexto}>{aviso}</Text>
           </View>
         )}
@@ -325,7 +326,7 @@ export default function FinalAgendamento({ navigation, route }) {
           disabled={salvando}
         >
           {salvando ? (
-            <ActivityIndicator size="small" color="#FFF" />
+            <ActivityIndicator size="small" color={cor.fg("#FFF")} />
           ) : (
             <Text style={styles.confirmButtonText}>{reagendando ? 'Confirmar novo horário' : 'Confirmar'}</Text>
           )}
@@ -344,38 +345,38 @@ export default function FinalAgendamento({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+const criarStyles = (cor) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   scrollContent: { padding: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  headerTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: '#1A56DB', marginLeft: 10 },
+  headerTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: cor.fg('#1A56DB'), marginLeft: 10 },
   pickerWrapper: { marginBottom: 20 },
   trocarBotao: { alignSelf: 'flex-end', marginTop: -2, marginBottom: 16 },
-  trocarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: '#1A56DB' },
-  semResultado: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: '#5A6B87', textAlign: 'center', marginVertical: 16 },
-  atualBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E3F2FD', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 16 },
-  atualTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#1A56DB' },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 25, paddingHorizontal: 15, height: 50, marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  trocarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: cor.fg('#1A56DB') },
+  semResultado: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: cor.fg('#5A6B87'), textAlign: 'center', marginVertical: 16 },
+  atualBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#E3F2FD'), borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 16 },
+  atualTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#1A56DB') },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 15, height: 50, marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: '#333' },
-  calendarWrapper: { borderRadius: 15, overflow: 'hidden', marginBottom: 20, backgroundColor: '#FFF', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-  legenda: { fontFamily: 'Montserrat-Regular', fontSize: 11, color: '#5A6B87', marginTop: -10, marginBottom: 15, marginLeft: 5 },
-  avisoBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDEDED', borderWidth: 1, borderColor: '#F5C2C2', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 10 },
-  avisoTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#B03030' },
-  sectionTitle: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#333', marginBottom: 12 },
+  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: cor.fg('#333') },
+  calendarWrapper: { borderRadius: 15, overflow: 'hidden', marginBottom: 20, backgroundColor: cor.bg('#FFF'), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+  legenda: { fontFamily: 'Montserrat-Regular', fontSize: 11, color: cor.fg('#5A6B87'), marginTop: -10, marginBottom: 15, marginLeft: 5 },
+  avisoBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FDEDED'), borderWidth: 1, borderColor: cor.bd('#F5C2C2'), borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 10 },
+  avisoTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#B03030') },
+  sectionTitle: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: cor.fg('#333'), marginBottom: 12 },
   modalidadeContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  modalidadeCard: { flex: 1, backgroundColor: '#FFF', borderRadius: 15, paddingVertical: 20, alignItems: 'center', marginHorizontal: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 2, borderColor: 'transparent' },
-  modalidadeCardActive: { backgroundColor: '#FFF', borderColor: '#1A56DB' },
-  modalidadeText: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#1A56DB', marginBottom: 5 },
-  modalidadePrice: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#1A56DB' },
-  modalidadeTextActive: { color: '#1A56DB' },
+  modalidadeCard: { flex: 1, backgroundColor: cor.bg('#FFF'), borderRadius: 15, paddingVertical: 20, alignItems: 'center', marginHorizontal: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 2, borderColor: 'transparent' },
+  modalidadeCardActive: { backgroundColor: cor.bg('#FFF'), borderColor: cor.bd('#1A56DB') },
+  modalidadeText: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: cor.fg('#1A56DB'), marginBottom: 5 },
+  modalidadePrice: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: cor.fg('#1A56DB') },
+  modalidadeTextActive: { color: cor.fg('#1A56DB') },
   horariosContainer: { paddingBottom: 20 },
-  horarioPill: { backgroundColor: '#FFF', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 20, marginRight: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
-  horarioPillActive: { backgroundColor: '#FF8C42' },
-  horarioPillIndisponivel: { backgroundColor: '#EEF1F6', elevation: 0, shadowOpacity: 0 },
-  horarioTextIndisponivel: { color: '#A0AABB', textDecorationLine: 'line-through' },
-  horarioText: { fontFamily: 'Montserrat-Bold', fontSize: 14, color: '#333' },
-  horarioTextActive: { color: '#FFF' },
-  confirmButton: { backgroundColor: '#6292D6', borderRadius: 25, paddingVertical: 18, alignItems: 'center', marginTop: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
-  confirmButtonText: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#FFF' }
+  horarioPill: { backgroundColor: cor.bg('#FFF'), paddingVertical: 12, paddingHorizontal: 20, borderRadius: 20, marginRight: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  horarioPillActive: { backgroundColor: cor.bg('#FF8C42') },
+  horarioPillIndisponivel: { backgroundColor: cor.bg('#EEF1F6'), elevation: 0, shadowOpacity: 0 },
+  horarioTextIndisponivel: { color: cor.fg('#A0AABB'), textDecorationLine: 'line-through' },
+  horarioText: { fontFamily: 'Montserrat-Bold', fontSize: 14, color: cor.fg('#333') },
+  horarioTextActive: { color: cor.fg('#FFF') },
+  confirmButton: { backgroundColor: cor.bg('#6292D6'), borderRadius: 25, paddingVertical: 18, alignItems: 'center', marginTop: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
+  confirmButtonText: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: cor.fg('#FFF') }
 });

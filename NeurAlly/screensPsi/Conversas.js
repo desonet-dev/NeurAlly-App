@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import NavBarPsi from '../components/navBarPsi.js';
 import NovaConversaModal from '../components/NovaConversaModal.js';
 import { useAuth } from '../contexts/AuthContext.js';
@@ -20,7 +19,9 @@ import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
 import { ouvirConversasDoPsicologo, obterOuCriarChat } from '../services/chatService';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function ConversasPsi() {
+  const [styles, cor] = useEstilos(criarStyles);
     const { usuario } = useAuth();
     const meuIdPsicologo = usuario?.uid;
 
@@ -192,7 +193,7 @@ export default function ConversasPsi() {
                 onPress={() => { setErroNovaConversa(''); setNovaConversaAberta(true); }}
                 accessibilityLabel="Iniciar nova conversa"
             >
-                <Ionicons name="chatbubbles-outline" size={26} color="#FFF" />
+                <Ionicons name="chatbubbles-outline" size={26} color={cor.fg("#FFF")} />
             </TouchableOpacity>
 
             <NovaConversaModal
@@ -213,10 +214,10 @@ export default function ConversasPsi() {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.fundo,
+        backgroundColor: cor.bg('#E4F0F8'),
     },
     activeNow: {
         marginHorizontal: 16,
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
     activeText: {
         fontSize: 22,
         fontFamily: 'Montserrat-Bold',
-        color: '#000',
+        color: cor.fg('#000'),
     },
     activeListContainer: {
         height: 70,
@@ -247,14 +248,14 @@ const styles = StyleSheet.create({
         width: 14,
         height: 14,
         borderRadius: 7,
-        backgroundColor: '#10B981',
+        backgroundColor: cor.bg('#10B981'),
         borderWidth: 2,
-        borderColor: '#FFF',
+        borderColor: cor.bd('#FFF'),
     },
     dividerLine: {
         width: '92%',
         height: 2,
-        backgroundColor: paleta.cor.a7,
+        backgroundColor: cor.bg('#4894FE'),
         alignSelf: 'center',
         marginVertical: 10,
     },
@@ -274,10 +275,10 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     chatCardHired: {
-        backgroundColor: paleta.cor.a4,
+        backgroundColor: cor.bg('#6196DA'),
     },
     chatCardNormal: {
-        backgroundColor: paleta.cor.a1,
+        backgroundColor: cor.bg('#F2F2FF'),
     },
     cardAvatar: {
         width: 55,
@@ -298,13 +299,13 @@ const styles = StyleSheet.create({
     cardName: {
         fontSize: 16,
         fontFamily: 'Montserrat-Bold',
-        color: '#1A1A1A',
+        color: cor.fg('#1A1A1A'),
         flex: 1,
     },
     cardTitle: {
         fontSize: 13,
         fontFamily: 'Montserrat-Bold',
-        color: '#4A5568',
+        color: cor.fg('#4A5568'),
         marginLeft: 8,
     },
     cardMessage: {
@@ -312,20 +313,20 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Regular',
     },
     textWhite: {
-        color: '#FFFFFF',
+        color: cor.fg('#FFFFFF'),
         fontFamily: 'Montserrat-Bold',
     },
     textWhiteSubtle: {
-        color: '#EAF2FF',
+        color: cor.fg('#EAF2FF'),
     },
     textDarkSubtle: {
-        color: '#4A5568',
+        color: cor.fg('#4A5568'),
     },
     fab: {
         position: 'absolute',
         right: 20,
         bottom: 90,
-        backgroundColor: paleta.cor.a4 || '#1A56DB',
+        backgroundColor: cor.bg('#6196DA') || cor.bg('#1A56DB'),
         width: 60,
         height: 60,
         borderRadius: 30,

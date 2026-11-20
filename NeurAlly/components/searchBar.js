@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 
-import paleta from '../styles/Tema.js';
 import Entypo from '@expo/vector-icons/Entypo';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 const dates = [
   {dayNum: 1, dayName: 'Segunda', abrv: 'Seg'},
   {dayNum: 2, dayName: 'Ter', abrv: 'Ter'},
@@ -14,6 +14,7 @@ const dates = [
 ]
 
 export default function SearchBar({ placeholder = 'Procure por um profissional' }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -24,19 +25,19 @@ export default function SearchBar({ placeholder = 'Procure por um profissional' 
   return (
   <View style={styles.searchView}>
     <TouchableOpacity>
-      <Entypo name="magnifying-glass" size={30} color='#CCC' />
+      <Entypo name="magnifying-glass" size={30} color={cor.fg('#CCC')} />
     </TouchableOpacity>
-    <TextInput style={styles.textInput} placeholder={placeholder} placeholderTextColor='#AAA'>
+    <TextInput style={styles.textInput} placeholder={placeholder} placeholderTextColor={cor.fg('#AAA')}>
 
     </TextInput>
   </View>)
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   searchView: {
     height: 56,
     flexDirection: 'row',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: cor.bg('#FAFAFA'),
     marginHorizontal: 20,
     marginBottom: 35,
     borderRadius: 20,
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
     fontFamily: 'Montserrat-Regular',
-    color: paleta.cor.preto,
+    color: cor.fg('#000'),
     fontSize: 15,
   },
 });

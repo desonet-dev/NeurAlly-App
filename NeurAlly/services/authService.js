@@ -1,9 +1,12 @@
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updatePassword,
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig.js';
@@ -87,6 +90,24 @@ export function recuperarSenha({ email }) {
   return sendPasswordResetEmail(auth, email);
 }
 
+// A conta tem senha própria (e-mail/senha)? Contas criadas só com o Google não têm.
+export function contaUsaSenha() {
+  return !!auth.currentUser?.providerData?.some((p) => p.providerId === 'password');
+}
+
+// Confirma a senha atual (o Firebase exige login recente para operações sensíveis).
+export async function confirmarSenhaAtual(senhaAtual) {
+  const usuario = auth.currentUser;
+  if (!usuario?.email) throw Object.assign(new Error('Nenhum usuario logado.'), { code: 'auth/no-current-user' });
+  await reauthenticateWithCredential(usuario, EmailAuthProvider.credential(usuario.email, senhaAtual));
+}
+
+// Troca a senha: confirma a atual e grava a nova.
+export async function alterarSenha({ senhaAtual, novaSenha }) {
+  await confirmarSenhaAtual(senhaAtual);
+  await updatePassword(auth.currentUser, novaSenha);
+}
+
 /**
  * Espera a confirmacao do Firebase de que existe alguem logado e devolve
  * o uid. Usado pelos servicos de dados (diario, anotacoes) antes de ler
@@ -152,6 +173,8 @@ export function traduzErroFirebase(erro) {
       return 'Já existe uma conta cadastrada com esse e-mail.';
     case 'auth/weak-password':
       return 'A senha precisa ter pelo menos 6 caracteres.';
+    case 'auth/requires-recent-login':
+      return 'Por segurança, saia da conta, entre novamente e tente de novo.';
     case 'auth/network-request-failed':
       return 'Falha de conexão. Verifique sua internet e tente novamente.';
     case 'auth/configuration-not-found':

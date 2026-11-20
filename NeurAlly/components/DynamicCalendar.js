@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
   monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
@@ -11,16 +12,16 @@ LocaleConfig.locales['pt-br'] = {
 };
 LocaleConfig.defaultLocale = 'pt-br';
 
-// Azul usado para destacar os dias com consulta marcada.
-const COR_CONSULTA = '#4894FE';
-
 export default function MeuCalendario({ selectedDate, onDayPress, datasComRegistro = new Set(), datasConsulta = new Set() }) {
-  
+  const [styles, cor] = useEstilos(criarStyles);
+  // Azul usado para destacar os dias com consulta marcada.
+  const COR_CONSULTA = cor.bg('#4894FE');
+
   const markedDates = {};
   datasComRegistro.forEach((data) => {
     markedDates[data] = {
       ...(markedDates[data] || {}),
-      dots: [{ key: 'registro', color: '#FF8C42' }],
+      dots: [{ key: 'registro', color: cor.fg('#FF8C42') }],
     };
   });
   
@@ -30,7 +31,7 @@ export default function MeuCalendario({ selectedDate, onDayPress, datasComRegist
       ...(markedDates[data] || {}),
       selected: true,
       selectedColor: COR_CONSULTA,
-      selectedTextColor: '#FFF',
+      selectedTextColor: cor.fg('#FFF'),
     };
   });
 
@@ -40,30 +41,31 @@ export default function MeuCalendario({ selectedDate, onDayPress, datasComRegist
     ...(markedDates[selectedDate] || {}),
     selected: true,
     selectedColor: selecionadoTemConsulta ? COR_CONSULTA : 'transparent',
-    selectedTextColor: selecionadoTemConsulta ? '#FFF' : '#6292D6',
+    selectedTextColor: selecionadoTemConsulta ? cor.fg('#FFF') : cor.fg('#6292D6'),
   };
 
   return (
     <View style={styles.calendarWrapper}>
       <Calendar
+        key={cor.escuro ? 'escuro' : 'claro'}
         current={selectedDate}
         markingType={'multi-dot'}
         markedDates={markedDates}
         onDayPress={onDayPress}
         style={styles.calendarStyle}
         theme={{
-          calendarBackground: '#FFF',
-          textSectionTitleColor: '#FFF',
-          textSectionTitleDisabledColor: '#FFF',
+          calendarBackground: cor.bg('#FFF'),
+          textSectionTitleColor: cor.fg('#FFF'),
+          textSectionTitleDisabledColor: cor.fg('#FFF'),
           selectedDayBackgroundColor: 'transparent',
-          selectedDayTextColor: '#6292D6',
-          todayTextColor: '#6292D6',
-          dayTextColor: '#333',
-          textDisabledColor: '#FFB890',
-          dotColor: '#FF8C42',
-          selectedDotColor: '#FF8C42',
-          arrowColor: '#FFF',
-          monthTextColor: '#FFF',
+          selectedDayTextColor: cor.fg('#6292D6'),
+          todayTextColor: cor.fg('#6292D6'),
+          dayTextColor: cor.fg('#333'),
+          textDisabledColor: cor.fg('#FFB890'),
+          dotColor: cor.fg('#FF8C42'),
+          selectedDotColor: cor.fg('#FF8C42'),
+          arrowColor: cor.fg('#FFF'),
+          monthTextColor: cor.fg('#FFF'),
           textDayFontFamily: 'Montserrat-Regular',
           textMonthFontFamily: 'Montserrat-Bold',
           textDayHeaderFontFamily: 'Montserrat-Regular',
@@ -72,7 +74,7 @@ export default function MeuCalendario({ selectedDate, onDayPress, datasComRegist
           textDayHeaderFontSize: 12,
           'stylesheet.calendar.header': {
             header: {
-              backgroundColor: '#6292D6',
+              backgroundColor: cor.bg('#6292D6'),
               flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -80,7 +82,7 @@ export default function MeuCalendario({ selectedDate, onDayPress, datasComRegist
               paddingHorizontal: 10,
             },
             dayHeader: {
-              color: '#FFF',
+              color: cor.fg('#FFF'),
               fontFamily: 'Montserrat-Regular',
               fontSize: 12,
               marginTop: 10,
@@ -90,13 +92,13 @@ export default function MeuCalendario({ selectedDate, onDayPress, datasComRegist
               marginTop: 0,
               flexDirection: 'row',
               justifyContent: 'space-around',
-              backgroundColor: '#6292D6',
+              backgroundColor: cor.bg('#6292D6'),
               paddingBottom: 5,
             }
           },
           'stylesheet.day.multiDot': {
             selected: {
-              borderColor: '#6292D6',
+              borderColor: cor.bd('#6292D6'),
               borderWidth: 1.5,
               borderRadius: 20,
             }
@@ -107,12 +109,12 @@ export default function MeuCalendario({ selectedDate, onDayPress, datasComRegist
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   calendarWrapper: {
     borderRadius: 15,
     overflow: 'hidden',
     marginBottom: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: cor.bg('#FFF'),
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

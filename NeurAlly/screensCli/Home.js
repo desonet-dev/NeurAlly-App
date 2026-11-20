@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, SafeAreaView } from 'react-native';
 
-import paleta from '../styles/Tema.js';
 import NavBar from '../components/navBarCli.js';
 import SmallCalendar from '../components/smallCalendar.js';
 import SearchBar from '../components/searchBar.js';
@@ -9,11 +8,15 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
 import { useAuth } from '../contexts/AuthContext.js';
+import { useOrigemDaFoto } from '../hooks/useFotoPerfil.js';
 import useConsultas from '../hooks/useConsultas.js';
 import { formatarDataLonga } from '../utils/datas.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function HomeScreen({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
     const { perfil } = useAuth();
+    const fotoPerfil = useOrigemDaFoto();
     const { proximas, datasComConsulta } = useConsultas();
     const proximaConsulta = proximas[0];
     const primeiroNome = perfil?.nome?.trim().split(' ')[0] || '';
@@ -39,10 +42,14 @@ export default function HomeScreen({ navigation }) {
                         <Text style={styles.greetingText}>Olá,</Text>
                         <Text style={styles.greetingName}>{primeiroNome || 'Maria'}</Text>
                     </View>
-                    <Image
-                        source={require('../assets/perfil.png')}
-                        style={styles.headerAvatar}
-                    />
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Perfil')}
+                        accessibilityRole="button"
+                        accessibilityLabel="Abrir meu perfil"
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                        <Image source={fotoPerfil} style={styles.headerAvatar} />
+                    </TouchableOpacity>
                 </View>
 
                 <SearchBar />
@@ -64,7 +71,7 @@ export default function HomeScreen({ navigation }) {
                                     <Text style={styles.professionalTitle}>{proximaConsulta.profissionalEsp}</Text>
                                 )}
                             </View>
-                            <Ionicons name="chevron-forward" size={24} color="#FFF" />
+                            <Ionicons name="chevron-forward" size={24} color={cor.fg("#FFF")} />
                         </View>
 
                         {/* Linha divisória */}
@@ -73,11 +80,11 @@ export default function HomeScreen({ navigation }) {
                         {/* Data e hora da próxima consulta */}
                         <View style={styles.cardBottom}>
                             <View style={styles.dateTimeItem}>
-                                <Ionicons name="calendar-outline" size={18} color={paleta.cor.branco} style={styles.iconSpaced} />
+                                <Ionicons name="calendar-outline" size={18} color={cor.fg('#FFF')} style={styles.iconSpaced} />
                                 <Text style={styles.dateTimeText}>{formatarDataLonga(proximaConsulta.data)}</Text>
                             </View>
                             <View style={styles.dateTimeItem}>
-                                <Ionicons name="time-outline" size={18} color={paleta.cor.branco} style={styles.iconSpaced} />
+                                <Ionicons name="time-outline" size={18} color={cor.fg('#FFF')} style={styles.iconSpaced} />
                                 <Text style={styles.dateTimeText}>{proximaConsulta.horario}</Text>
                             </View>
                         </View>
@@ -93,7 +100,7 @@ export default function HomeScreen({ navigation }) {
                                 <Text style={styles.professionalName}>Nenhuma consulta agendada</Text>
                                 <Text style={styles.professionalTitle}>Toque para agendar sua próxima consulta</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={24} color="#FFF" />
+                            <Ionicons name="chevron-forward" size={24} color={cor.fg("#FFF")} />
                         </View>
                     </TouchableOpacity>
                 )}
@@ -109,7 +116,7 @@ export default function HomeScreen({ navigation }) {
                     </Text>
 
                     <View style={styles.optionIconContainer}>
-                        <Entypo name="chevron-right" size={28} color={paleta.cor.branco} />
+                        <Entypo name="chevron-right" size={28} color={cor.fg('#FFF')} />
                     </View>
                 </TouchableOpacity>
 
@@ -119,10 +126,10 @@ export default function HomeScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.fundo,
+        backgroundColor: cor.bg('#E4F0F8'),
     },
     mainView: {
         paddingBottom: 110,
@@ -138,22 +145,22 @@ const styles = StyleSheet.create({
     greetingText: {
         fontSize: 16,
         fontFamily: 'Montserrat-Regular',
-        color: '#6B7A93',
+        color: cor.fg('#6B7A93'),
     },
     greetingName: {
         fontSize: 24,
         fontFamily: 'Montserrat-Bold',
-        color: '#131A22',
+        color: cor.fg('#131A22'),
         marginTop: 2,
     },
     headerAvatar: {
         width: 55,
         height: 55,
         borderRadius: 27.5,
-        backgroundColor: '#E5E5E5',
+        backgroundColor: cor.bg('#E5E5E5'),
     },
     professionalCard: {
-        backgroundColor: paleta.cor.a7,
+        backgroundColor: cor.bg('#4894FE'),
         borderRadius: 20,
         padding: 18,
         marginBottom: 30,
@@ -181,12 +188,12 @@ const styles = StyleSheet.create({
     professionalName: {
         fontSize: 16,
         fontFamily: 'Montserrat-Bold',
-        color: '#FFFFFF',
+        color: cor.fg('#FFFFFF'),
     },
     professionalTitle: {
         fontSize: 14,
         fontFamily: 'Montserrat-Regular',
-        color: '#E0EAFF',
+        color: cor.fg('#E0EAFF'),
         marginTop: 2,
     },
     divider: {
@@ -209,17 +216,17 @@ const styles = StyleSheet.create({
     dateTimeText: {
         fontSize: 13,
         fontFamily: 'Montserrat-Regular',
-        color: '#FFFFFF',
+        color: cor.fg('#FFFFFF'),
     },
     sectionTitle: {
         fontSize: 18,
         fontFamily: 'Montserrat-Bold',
-        color: '#131A22',
+        color: cor.fg('#131A22'),
         marginBottom: 15,
         marginHorizontal: 20,
     },
     optionCard: {
-        backgroundColor: paleta.cor.a3,
+        backgroundColor: cor.bg('#99BCEE'),
         borderRadius: 20,
         padding: 24,
         marginBottom: 10,
@@ -228,13 +235,13 @@ const styles = StyleSheet.create({
     optionTitle: {
         fontSize: 20,
         fontFamily: 'Montserrat-Bold',
-        color: paleta.cor.branco,
+        color: cor.fg('#FFF'),
         marginBottom: 10,
     },
     optionDescription: {
         fontSize: 14,
         fontFamily: 'Montserrat-Regular',
-        color: paleta.cor.branco,
+        color: cor.fg('#FFF'),
         lineHeight: 20,
         paddingRight: 20,
     },

@@ -13,15 +13,17 @@ import {
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import SocialButtons from '../components/SocialButtons.js';
 import { buscarPerfilComTentativas, entrarComEmailSenha, rotaInicial, traduzErroFirebase } from '../services/authService.js';
 import useLoginGoogle from '../hooks/useLoginGoogle.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function LoginScreen({ navigation, route }) {
+  const [styles, cor] = useEstilos(criarStyles);
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [entrando, setEntrando] = useState(false);
+    // Aviso mostrado na própria tela (Alert.alert não aparece no navegador/react-native-web).
     const [aviso, setAviso] = useState(route?.params?.aviso || '');
     const [campoInvalido, setCampoInvalido] = useState({ email: false, senha: false });
     const { entrarComGoogle } = useLoginGoogle(navigation);
@@ -85,7 +87,7 @@ export default function LoginScreen({ navigation, route }) {
                     <TextInput
                         style={[styles.input, campoInvalido.email && styles.inputInvalido]}
                         placeholder="E-mail"
-                        placeholderTextColor="#666"
+                        placeholderTextColor={cor.fg("#666")}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         value={email}
@@ -98,7 +100,7 @@ export default function LoginScreen({ navigation, route }) {
                     <TextInput
                         style={[styles.input, campoInvalido.senha && styles.inputInvalido]}
                         placeholder="Senha"
-                        placeholderTextColor="#666"
+                        placeholderTextColor={cor.fg("#666")}
                         secureTextEntry={true}
                         value={senha}
                         onChangeText={(texto) => {
@@ -111,7 +113,7 @@ export default function LoginScreen({ navigation, route }) {
                     {/* Aviso de erro (campos vazios ou falha no login) */}
                     {!!aviso && (
                         <View style={styles.avisoBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
-                            <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+                            <Ionicons name="alert-circle" size={18} color={cor.fg("#D64545")} style={{ marginRight: 8 }} />
                             <Text style={styles.avisoTexto}>{aviso}</Text>
                         </View>
                     )}
@@ -140,7 +142,7 @@ export default function LoginScreen({ navigation, route }) {
                         disabled={entrando}
                     >
                         {entrando ? (
-                            <ActivityIndicator size="small" color="#FFF" />
+                            <ActivityIndicator size="small" color={cor.fg("#FFF")} />
                         ) : (
                             <Text style={styles.submitButtonText}>Entrar</Text>
                         )}
@@ -156,10 +158,10 @@ export default function LoginScreen({ navigation, route }) {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.fundoAuth,
+        backgroundColor: cor.bg('#FFF'),
     },
     scrollContent: {
         paddingHorizontal: 20,
@@ -168,7 +170,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     card: {
-        backgroundColor: paleta.cor.fundoCard,
+        backgroundColor: cor.bg('#9EBDF0'),
         width: '100%',
         borderRadius: 15,
         padding: 25,
@@ -183,12 +185,12 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontFamily: 'Montserrat-Regular',
-        color: '#000',
+        color: cor.fg('#000'),
         marginBottom: 30,
     },
     input: {
         width: '100%',
-        backgroundColor: paleta.cor.fundoAuth,
+        backgroundColor: cor.bg('#FFF'),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,
@@ -203,15 +205,15 @@ const styles = StyleSheet.create({
     },
     inputInvalido: {
         borderWidth: 1.5,
-        borderColor: '#D64545',
+        borderColor: cor.bd('#D64545'),
     },
     avisoBox: {
         width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FDEDED',
+        backgroundColor: cor.bg('#FDEDED'),
         borderWidth: 1,
-        borderColor: '#F5C2C2',
+        borderColor: cor.bd('#F5C2C2'),
         borderRadius: 8,
         paddingVertical: 10,
         paddingHorizontal: 12,
@@ -221,7 +223,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontFamily: 'Montserrat-Regular',
         fontSize: 12,
-        color: '#B03030',
+        color: cor.fg('#B03030'),
     },
     linksContainer: {
         width: '100%',
@@ -237,15 +239,15 @@ const styles = StyleSheet.create({
     textLink: {
         fontFamily: 'Montserrat-Regular',
         fontSize: 12,
-        color: '#333',
+        color: cor.fg('#333'),
     },
     textLinkBold: {
         fontFamily: 'Montserrat-Bold',
         fontSize: 12,
-        color: '#1A56DB',
+        color: cor.fg('#1A56DB'),
     },
     submitButton: {
-        backgroundColor: '#2563EB',
+        backgroundColor: cor.bg('#2563EB'),
         paddingVertical: 12,
         paddingHorizontal: 40,
         borderRadius: 8,
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     submitButtonText: {
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         fontFamily: 'Montserrat-Regular',
         fontSize: 16,
     }

@@ -12,9 +12,9 @@ import {
 import { useState, useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import { salvarTriagem, buscarTriagem } from '../services/triagemService.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 const QUESTOES = [
     {
         id: 'motivo',
@@ -116,6 +116,7 @@ function formatarData(timestamp) {
 }
 
 export default function TriagemScreen({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
     const [etapa, setEtapa] = useState('inicio'); // 'inicio' | 'perguntas' | 'fim'
     const [indice, setIndice] = useState(0);
     const [respostas, setRespostas] = useState(Array(TOTAL).fill(null));
@@ -229,13 +230,13 @@ export default function TriagemScreen({ navigation }) {
             <SafeAreaView style={styles.container}>
                 <View style={styles.topBar}>
                     <TouchableOpacity onPress={sairDaTriagem} hitSlop={12}>
-                        <Ionicons name="chevron-back" size={28} color={paleta.cor.a6} />
+                        <Ionicons name="chevron-back" size={28} color={cor.fg('#2A59C2')} />
                     </TouchableOpacity>
                 </View>
 
                 <ScrollView contentContainerStyle={styles.centerContent} showsVerticalScrollIndicator={false}>
                     <View style={styles.heroIcon}>
-                        <Ionicons name="clipboard-outline" size={52} color="#FFF" />
+                        <Ionicons name="clipboard-outline" size={52} color={cor.fg("#FFF")} />
                     </View>
 
                     <Text style={styles.heroTitle}>Triagem inicial</Text>
@@ -246,15 +247,15 @@ export default function TriagemScreen({ navigation }) {
 
                     <View style={styles.infoCard}>
                         <View style={styles.infoRow}>
-                            <Ionicons name="time-outline" size={22} color={paleta.cor.a6} />
+                            <Ionicons name="time-outline" size={22} color={cor.fg('#2A59C2')} />
                             <Text style={styles.infoText}>{TOTAL} perguntas, cerca de 2 minutos.</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Ionicons name="lock-closed-outline" size={22} color={paleta.cor.a6} />
+                            <Ionicons name="lock-closed-outline" size={22} color={cor.fg('#2A59C2')} />
                             <Text style={styles.infoText}>Suas respostas ficam salvas apenas na sua conta.</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Ionicons name="refresh-outline" size={22} color={paleta.cor.a6} />
+                            <Ionicons name="refresh-outline" size={22} color={cor.fg('#2A59C2')} />
                             <Text style={styles.infoText}>Você pode refazer a triagem quando quiser.</Text>
                         </View>
                     </View>
@@ -290,8 +291,8 @@ export default function TriagemScreen({ navigation }) {
         return (
             <SafeAreaView style={styles.container}>
                 <ScrollView contentContainerStyle={styles.centerContent} showsVerticalScrollIndicator={false}>
-                    <View style={[styles.heroIcon, { backgroundColor: '#3FAE7A' }]}>
-                        <Ionicons name="checkmark" size={56} color="#FFF" />
+                    <View style={[styles.heroIcon, { backgroundColor: cor.bg('#3FAE7A') }]}>
+                        <Ionicons name="checkmark" size={56} color={cor.fg("#FFF")} />
                     </View>
 
                     <Text style={styles.heroTitle}>Triagem concluída!</Text>
@@ -303,7 +304,7 @@ export default function TriagemScreen({ navigation }) {
                     {mostrarAjudaImediata && (
                         <View style={styles.alertCard}>
                             <View style={styles.alertHeader}>
-                                <Ionicons name="heart" size={20} color="#D64545" />
+                                <Ionicons name="heart" size={20} color={cor.fg("#D64545")} />
                                 <Text style={styles.alertTitle}>Precisa de ajuda agora?</Text>
                             </View>
                             <Text style={styles.alertText}>
@@ -342,7 +343,7 @@ export default function TriagemScreen({ navigation }) {
 
                     {salvando && (
                         <View style={styles.statusRow}>
-                            <ActivityIndicator size="small" color={paleta.cor.a6} />
+                            <ActivityIndicator size="small" color={cor.fg('#2A59C2')} />
                             <Text style={styles.statusText}>Salvando suas respostas...</Text>
                         </View>
                     )}
@@ -384,7 +385,7 @@ export default function TriagemScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
             <View style={styles.questionHeader}>
                 <TouchableOpacity onPress={voltarQuestao} hitSlop={12}>
-                    <Ionicons name="chevron-back" size={28} color={paleta.cor.a6} />
+                    <Ionicons name="chevron-back" size={28} color={cor.fg('#2A59C2')} />
                 </TouchableOpacity>
 
                 <View style={styles.progressBar}>
@@ -392,7 +393,7 @@ export default function TriagemScreen({ navigation }) {
                 </View>
 
                 <TouchableOpacity onPress={sairDaTriagem} hitSlop={12}>
-                    <Ionicons name="close" size={26} color="#777" />
+                    <Ionicons name="close" size={26} color={cor.fg("#777")} />
                 </TouchableOpacity>
             </View>
 
@@ -435,10 +436,10 @@ export default function TriagemScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+        backgroundColor: cor.bg('#FFF'),
     },
 
     /* Perguntas */
@@ -454,18 +455,18 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         borderRadius: 100,
         overflow: 'hidden',
-        backgroundColor: paleta.cor.a1,
+        backgroundColor: cor.bg('#F2F2FF'),
     },
     progressFill: {
         height: '100%',
         borderRadius: 100,
-        backgroundColor: paleta.cor.a4,
+        backgroundColor: cor.bg('#6196DA'),
     },
     progressText: {
         marginLeft: 20,
         marginTop: 6,
         fontSize: 14,
-        color: '#777',
+        color: cor.fg('#777'),
         fontFamily: 'Montserrat-Bold',
     },
     mainView: {
@@ -489,9 +490,9 @@ const styles = StyleSheet.create({
         marginVertical: 8,
         marginHorizontal: 15,
         borderRadius: 20,
-        backgroundColor: paleta.cor.a1,
+        backgroundColor: cor.bg('#F2F2FF'),
         borderBottomWidth: 5,
-        borderColor: paleta.cor.a3,
+        borderColor: cor.bd('#99BCEE'),
         justifyContent: 'center',
     },
     chosenAnswerView: {
@@ -499,9 +500,9 @@ const styles = StyleSheet.create({
         marginVertical: 8,
         marginHorizontal: 15,
         borderRadius: 20,
-        backgroundColor: paleta.cor.a3,
+        backgroundColor: cor.bg('#99BCEE'),
         borderBottomWidth: 5,
-        borderColor: paleta.cor.a4,
+        borderColor: cor.bd('#6196DA'),
         justifyContent: 'center',
     },
     answerText: {
@@ -512,7 +513,7 @@ const styles = StyleSheet.create({
     chosenAnswerText: {
         fontSize: 18,
         margin: 10,
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         fontFamily: 'Montserrat-Bold',
     },
 
@@ -524,7 +525,7 @@ const styles = StyleSheet.create({
     },
     sendButton: {
         height: 56,
-        backgroundColor: paleta.cor.a4,
+        backgroundColor: cor.bg('#6196DA'),
         borderRadius: 50,
         justifyContent: 'center',
         alignItems: 'center',
@@ -534,7 +535,7 @@ const styles = StyleSheet.create({
     },
     sendText: {
         fontSize: 20,
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         fontFamily: 'Montserrat-Bold',
     },
     secondaryButton: {
@@ -545,7 +546,7 @@ const styles = StyleSheet.create({
     },
     secondaryText: {
         fontSize: 15,
-        color: paleta.cor.a6,
+        color: cor.fg('#2A59C2'),
         fontFamily: 'Montserrat-Bold',
     },
 
@@ -565,14 +566,14 @@ const styles = StyleSheet.create({
         width: 104,
         height: 104,
         borderRadius: 52,
-        backgroundColor: paleta.cor.a4,
+        backgroundColor: cor.bg('#6196DA'),
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 24,
     },
     heroTitle: {
         fontSize: 26,
-        color: '#131A22',
+        color: cor.fg('#131A22'),
         textAlign: 'center',
         marginBottom: 10,
         fontFamily: 'Montserrat-Bold',
@@ -580,14 +581,14 @@ const styles = StyleSheet.create({
     heroText: {
         fontSize: 15,
         lineHeight: 22,
-        color: '#5A6B87',
+        color: cor.fg('#5A6B87'),
         textAlign: 'center',
         marginBottom: 24,
         fontFamily: 'Montserrat-Regular',
     },
     infoCard: {
         width: '100%',
-        backgroundColor: paleta.cor.a1,
+        backgroundColor: cor.bg('#F2F2FF'),
         borderRadius: 20,
         padding: 18,
         marginBottom: 16,
@@ -601,13 +602,13 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 12,
         fontSize: 14,
-        color: '#333',
+        color: cor.fg('#333'),
         fontFamily: 'Montserrat-Regular',
     },
     disclaimer: {
         fontSize: 12,
         lineHeight: 18,
-        color: '#777',
+        color: cor.fg('#777'),
         textAlign: 'center',
         fontFamily: 'Montserrat-Regular',
     },
@@ -615,37 +616,37 @@ const styles = StyleSheet.create({
         marginTop: 14,
         fontSize: 12,
         lineHeight: 18,
-        color: paleta.cor.a6,
+        color: cor.fg('#2A59C2'),
         textAlign: 'center',
         fontFamily: 'Montserrat-Bold',
     },
     summaryCard: {
         width: '100%',
-        backgroundColor: paleta.cor.a1,
+        backgroundColor: cor.bg('#F2F2FF'),
         borderRadius: 20,
         padding: 18,
         marginBottom: 16,
     },
     summaryTitle: {
         fontSize: 16,
-        color: '#131A22',
+        color: cor.fg('#131A22'),
         marginBottom: 8,
         fontFamily: 'Montserrat-Bold',
     },
     summaryRow: {
         paddingVertical: 8,
         borderTopWidth: 1,
-        borderColor: paleta.cor.a2,
+        borderColor: cor.bd('#D4E6F1'),
     },
     summaryLabel: {
         fontSize: 11,
-        color: paleta.cor.a6,
+        color: cor.fg('#2A59C2'),
         marginBottom: 2,
         fontFamily: 'Montserrat-Bold',
     },
     summaryValue: {
         fontSize: 14,
-        color: '#333',
+        color: cor.fg('#333'),
         fontFamily: 'Montserrat-Regular',
     },
     statusRow: {
@@ -656,12 +657,12 @@ const styles = StyleSheet.create({
     statusText: {
         marginLeft: 8,
         fontSize: 13,
-        color: '#5A6B87',
+        color: cor.fg('#5A6B87'),
         fontFamily: 'Montserrat-Regular',
     },
     errorCard: {
         width: '100%',
-        backgroundColor: '#FDEDED',
+        backgroundColor: cor.bg('#FDEDED'),
         borderRadius: 16,
         padding: 14,
         alignItems: 'center',
@@ -669,20 +670,20 @@ const styles = StyleSheet.create({
     errorText: {
         fontSize: 13,
         lineHeight: 19,
-        color: '#D64545',
+        color: cor.fg('#D64545'),
         textAlign: 'center',
         fontFamily: 'Montserrat-Regular',
     },
     errorLink: {
         marginTop: 8,
         fontSize: 14,
-        color: '#D64545',
+        color: cor.fg('#D64545'),
         textDecorationLine: 'underline',
         fontFamily: 'Montserrat-Bold',
     },
     alertCard: {
         width: '100%',
-        backgroundColor: '#FDEDED',
+        backgroundColor: cor.bg('#FDEDED'),
         borderRadius: 20,
         padding: 18,
         marginBottom: 16,
@@ -695,13 +696,13 @@ const styles = StyleSheet.create({
     alertTitle: {
         marginLeft: 8,
         fontSize: 15,
-        color: '#D64545',
+        color: cor.fg('#D64545'),
         fontFamily: 'Montserrat-Bold',
     },
     alertText: {
         fontSize: 13,
         lineHeight: 19,
-        color: '#5A2A2A',
+        color: cor.fg('#5A2A2A'),
         marginBottom: 12,
         fontFamily: 'Montserrat-Regular',
     },
@@ -710,14 +711,14 @@ const styles = StyleSheet.create({
     },
     alertButton: {
         flex: 1,
-        backgroundColor: '#D64545',
+        backgroundColor: cor.bg('#D64545'),
         borderRadius: 12,
         paddingVertical: 12,
         alignItems: 'center',
         marginRight: 8,
     },
     alertButtonText: {
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         fontSize: 14,
         fontFamily: 'Montserrat-Bold',
     },

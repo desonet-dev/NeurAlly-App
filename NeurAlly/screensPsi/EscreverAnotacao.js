@@ -5,10 +5,11 @@ import {
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import { adicionarAnotacao, atualizarAnotacao } from '../services/anotacoesService.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function EscreverAnotacaoPsi({ navigation, route }) {
+  const [styles, cor] = useEstilos(criarStyles);
   // Quando a tela recebe uma anotacao por parametro, estamos editando;
   // sem parametro, estamos criando uma nova.
   const anotacaoExistente = route?.params?.anotacao || null;
@@ -70,7 +71,7 @@ export default function EscreverAnotacaoPsi({ navigation, route }) {
           <TextInput
             style={styles.inputTitle}
             placeholder="Título da anotação"
-            placeholderTextColor="#888"
+            placeholderTextColor={cor.fg("#888")}
             value={titulo}
             onChangeText={setTitulo}
             editable={!salvando}
@@ -79,7 +80,7 @@ export default function EscreverAnotacaoPsi({ navigation, route }) {
           <TextInput
             style={styles.inputTitle}
             placeholder="Paciente (opcional)"
-            placeholderTextColor="#888"
+            placeholderTextColor={cor.fg("#888")}
             value={paciente}
             onChangeText={setPaciente}
             editable={!salvando}
@@ -88,7 +89,7 @@ export default function EscreverAnotacaoPsi({ navigation, route }) {
           <TextInput
             style={styles.inputBody}
             placeholder="Escreva sua anotação aqui..."
-            placeholderTextColor="#888"
+            placeholderTextColor={cor.fg("#888")}
             multiline={true}
             textAlignVertical="top"
             value={texto}
@@ -103,7 +104,7 @@ export default function EscreverAnotacaoPsi({ navigation, route }) {
               disabled={salvando}
             >
               {salvando ? (
-                <ActivityIndicator size="small" color="#FFF" />
+                <ActivityIndicator size="small" color={cor.fg("#FFF")} />
               ) : (
                 <Text style={styles.submitButtonText}>Salvar</Text>
               )}
@@ -114,7 +115,7 @@ export default function EscreverAnotacaoPsi({ navigation, route }) {
               onPress={() => navigation.goBack()}
               disabled={salvando}
             >
-              <Ionicons name="close" size={30} color="#FFF" />
+              <Ionicons name="close" size={30} color={cor.fg("#FFF")} />
             </TouchableOpacity>
           </View>
 
@@ -124,15 +125,15 @@ export default function EscreverAnotacaoPsi({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+const criarStyles = (cor) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  pageTitle: { fontFamily: 'Montserrat-Bold', fontSize: 24, color: '#1A1A1A', marginBottom: 20 },
-  inputTitle: { backgroundColor: '#FFF', borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
-  inputBody: { backgroundColor: '#FFF', borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 200, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  pageTitle: { fontFamily: 'Montserrat-Bold', fontSize: 24, color: cor.fg('#1A1A1A'), marginBottom: 20 },
+  inputTitle: { backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  inputBody: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 200, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   actionButtonsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 20 },
-  submitButton: { backgroundColor: '#6292D6', paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3, minWidth: 120, alignItems: 'center' },
+  submitButton: { backgroundColor: cor.bg('#6292D6'), paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3, minWidth: 120, alignItems: 'center' },
   submitButtonDisabled: { opacity: 0.7 },
-  submitButtonText: { color: '#FFF', fontSize: 16, fontFamily: 'Montserrat-Bold' },
-  cancelButton: { backgroundColor: '#FF8C42', width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 }
+  submitButtonText: { color: cor.fg('#FFF'), fontSize: 16, fontFamily: 'Montserrat-Bold' },
+  cancelButton: { backgroundColor: cor.bg('#FF8C42'), width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 }
 });

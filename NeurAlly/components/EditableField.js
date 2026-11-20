@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 // Campo de texto bloqueado por padrão. Só fica editável depois de tocar no lápis
 // e volta a ficar bloqueado quando perde o foco (toque fora / fechar o teclado).
 //
@@ -26,6 +27,7 @@ export default function EditableField({
   compact = false,
   containerStyle,
 }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [editando, setEditando] = useState(false);
   const inputRef = useRef(null);
 
@@ -48,7 +50,7 @@ export default function EditableField({
           onPress={onLockedPress}
         >
           <Text style={styles.textoBloqueado} numberOfLines={1}>{value}</Text>
-          <MaterialIcons name="info" size={compact ? 16 : 20} color="#000" />
+          <MaterialIcons name="info" size={compact ? 16 : 20} color={cor.fg("#000")} />
         </TouchableOpacity>
       </View>
     );
@@ -82,20 +84,20 @@ export default function EditableField({
           accessibilityRole="button"
           accessibilityLabel={`Editar ${label}`}
         >
-          <MaterialIcons name="edit" size={compact ? 16 : 20} color={editando ? '#1A56DB' : '#000'} />
+          <MaterialIcons name="edit" size={compact ? 16 : 20} color={editando ? cor.fg('#1A56DB') : cor.fg('#000')} />
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   container: { marginBottom: 15 },
-  label: { fontFamily: 'Montserrat-Bold', fontSize: 10, color: '#1A56DB', marginBottom: 5, marginLeft: 5 },
+  label: { fontFamily: 'Montserrat-Bold', fontSize: 10, color: cor.fg('#1A56DB'), marginBottom: 5, marginLeft: 5 },
   wrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F4FF',
+    backgroundColor: cor.bg('#F0F4FF'),
     borderRadius: 12,
     paddingHorizontal: 15,
     borderWidth: 1.5,
@@ -107,15 +109,15 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   wrapperCompact: { paddingHorizontal: 10 },
-  wrapperEditando: { borderColor: '#1A56DB', backgroundColor: '#FFF' },
+  wrapperEditando: { borderColor: cor.bd('#1A56DB'), backgroundColor: cor.bg('#FFF') },
   input: {
     flex: 1,
     fontFamily: 'Montserrat-Regular',
     fontSize: 12,
-    color: '#333',
+    color: cor.fg('#333'),
     marginRight: 8,
     height: '100%',
   },
   inputMultiline: { textAlignVertical: 'top', paddingTop: 10 },
-  textoBloqueado: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#333', marginRight: 8 },
+  textoBloqueado: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#333'), marginRight: 8 },
 });

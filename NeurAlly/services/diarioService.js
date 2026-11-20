@@ -1,10 +1,12 @@
 import {
   collection,
   addDoc,
+  getDocs,
   query,
   where,
   onSnapshot,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebaseConfig.js';
 import { garantirLogado } from './authService.js';
@@ -68,4 +70,21 @@ export async function escutarDatasComRegistro(aoAtualizar, aoFalhar) {
       if (aoFalhar) aoFalhar(erro);
     }
   );
+}
+
+/**
+ * Apaga TODOS os registros do diário emocional de quem está logado (não dá para desfazer).
+ * Devolve quantos registros foram excluídos.
+ */
+export async function excluirTodosRegistros() {
+  const uid = await garantirLogado();
+  const itens = await getDocs(colecaoDoUsuario(uid));
+
+  // Lotes de até 400 (o limite do Firestore é 500 operações por lote).
+  for (let i = 0; i < itens.docs.length; i += 400) {
+    const lote = writeBatch(db);
+    itens.docs.slice(i, i + 400).forEach((d) => lote.delete(d.ref));
+    await lote.commit();
+  }
+  return itens.docs.length;
 }

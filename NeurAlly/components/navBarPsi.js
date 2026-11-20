@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import paleta from '../styles/Tema.js';
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -9,6 +8,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 const buttons = [
     { name: "Home", icon: "home", label: "Início", library: Feather },
     { name: "Notas", icon: "note-edit-outline", label: "Notas", library: MaterialCommunityIcons },
@@ -46,6 +46,7 @@ const screens = {
 }
 
 export default function NavBarPsi() {
+  const [styles, cor] = useEstilos(criarStyles);
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
@@ -75,7 +76,7 @@ export default function NavBarPsi() {
                         <IconComponent
                             name={button.icon}
                             size={25}
-                            color={telaAtual(button.name) ? paleta.cor.a4 : paleta.cor.cinzaescuro}
+                            color={telaAtual(button.name) ? cor.fg('#6196DA') : cor.fg('#8696BB')}
                         />
                     </View>
                     {telaAtual(button.name) && (
@@ -90,7 +91,7 @@ export default function NavBarPsi() {
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   barBackground: {
     position: 'absolute',
     left: 10,
@@ -98,11 +99,11 @@ const styles = StyleSheet.create({
     height: 70,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+    backgroundColor: cor.escuro ? 'rgba(28, 35, 48, 0.92)' : 'rgba(255, 255, 255, 0.55)',
     paddingHorizontal: 10,
     borderRadius: 35,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderColor: cor.escuro ? 'rgba(255, 255, 255, 0.10)' : 'rgba(255, 255, 255, 0.6)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -114,14 +115,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
     alignContent: 'center',
     justifyContent: 'center',
-    color: paleta.cor.branco,
+    color: cor.fg('#FFF'),
   },
   chosenBarOption: {
     marginVertical: 13,
     paddingLeft: 10,
     paddingRight: 5,
-    color: paleta.cor.branco,
-    backgroundColor: 'rgba(228, 236, 255, 0.85)',
+    color: cor.fg('#FFF'),
+    backgroundColor: cor.escuro ? 'rgba(143, 182, 242, 0.20)' : 'rgba(228, 236, 255, 0.85)',
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
     fontSize: 14,
     textAlign: 'center',
-    color: paleta.cor.a4,
+    color: cor.fg('#6196DA'),
     fontWeight: 'bold',
   },
   barImage: {

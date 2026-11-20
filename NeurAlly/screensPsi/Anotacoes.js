@@ -6,9 +6,9 @@ import {
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import NavBarPsi from '../components/navBarPsi.js';
-import paleta from '../styles/Tema.js';
 import { escutarAnotacoes, removerAnotacao } from '../services/anotacoesService.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 // Converte o timestamp do Firestore em algo como "16/09/2026 14:30".
 function formatarData(criadoEm) {
   if (!criadoEm?.toDate) return '';
@@ -21,6 +21,7 @@ function formatarData(criadoEm) {
 }
 
 export default function AnotacoesPsi({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [anotacoes, setAnotacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
@@ -92,7 +93,7 @@ export default function AnotacoesPsi({ navigation }) {
         </Text>
 
         {carregando && (
-          <ActivityIndicator size="small" color={paleta.cor.a5} style={{ marginTop: 20 }} />
+          <ActivityIndicator size="small" color={cor.fg('#4A77D4')} style={{ marginTop: 20 }} />
         )}
 
         {!carregando && erro && (
@@ -126,7 +127,7 @@ export default function AnotacoesPsi({ navigation }) {
                 )}
               </View>
               <TouchableOpacity onPress={() => confirmarRemocao(item)} hitSlop={10}>
-                <Ionicons name="trash-outline" size={20} color="#D64545" />
+                <Ionicons name="trash-outline" size={20} color={cor.fg("#D64545")} />
               </TouchableOpacity>
             </View>
             <Text style={styles.cardText}>{item.texto}</Text>
@@ -142,7 +143,7 @@ export default function AnotacoesPsi({ navigation }) {
         style={styles.fab}
         onPress={() => navigation.navigate('EscreverAnotacaoPsi')}
       >
-        <Ionicons name="add" size={32} color="#FFF" />
+        <Ionicons name="add" size={32} color={cor.fg("#FFF")} />
       </TouchableOpacity>
 
       <NavBarPsi />
@@ -150,18 +151,18 @@ export default function AnotacoesPsi({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+const criarStyles = (cor) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   scrollContent: { padding: 20, paddingBottom: 130 },
-  pageTitle: { fontFamily: 'Montserrat-Bold', fontSize: 24, color: '#1A1A1A', marginBottom: 4 },
-  pageSubtitle: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: '#5A6B87', marginBottom: 20 },
-  card: { backgroundColor: '#FFF', borderRadius: 15, padding: 20, marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  pageTitle: { fontFamily: 'Montserrat-Bold', fontSize: 24, color: cor.fg('#1A1A1A'), marginBottom: 4 },
+  pageSubtitle: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: cor.fg('#5A6B87'), marginBottom: 20 },
+  card: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, padding: 20, marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
-  cardTitle: { fontSize: 16, fontFamily: 'Montserrat-Bold', color: '#1A1A1A' },
-  cardPaciente: { fontSize: 12, fontFamily: 'Montserrat-Regular', color: '#6292D6', marginTop: 2 },
-  cardText: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: '#333', lineHeight: 18 },
-  cardData: { fontSize: 11, fontFamily: 'Montserrat-Regular', color: '#8696BB', marginTop: 10, textAlign: 'right' },
+  cardTitle: { fontSize: 16, fontFamily: 'Montserrat-Bold', color: cor.fg('#1A1A1A') },
+  cardPaciente: { fontSize: 12, fontFamily: 'Montserrat-Regular', color: cor.fg('#6292D6'), marginTop: 2 },
+  cardText: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: cor.fg('#333'), lineHeight: 18 },
+  cardData: { fontSize: 11, fontFamily: 'Montserrat-Regular', color: cor.fg('#8696BB'), marginTop: 10, textAlign: 'right' },
   avisoContainer: { paddingVertical: 30, alignItems: 'center' },
-  avisoTexto: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: '#5A6B87', textAlign: 'center', paddingHorizontal: 20 },
-  fab: { position: 'absolute', right: 20, bottom: 90, backgroundColor: '#1A56DB', width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 }
+  avisoTexto: { fontSize: 13, fontFamily: 'Montserrat-Regular', color: cor.fg('#5A6B87'), textAlign: 'center', paddingHorizontal: 20 },
+  fab: { position: 'absolute', right: 20, bottom: 90, backgroundColor: cor.bg('#1A56DB'), width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 }
 });

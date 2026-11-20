@@ -4,14 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
 import NavBar from '../components/navBarCli.js';
-import paleta from '../styles/Tema.js';
 import { escutarHorariosOcupados } from '../services/consultasService.js';
 import { blocosDaConsulta, HORARIOS_PADRAO, horarioJaPassou, nomeDoDia, proximosDias } from '../utils/datas.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 // Quantos dias à frente o cliente pode escolher (contando a partir de hoje).
 const DIAS_NA_AGENDA = 14;
 
 export default function PerfilProfissional({ route, navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const insets = useSafeAreaInsets();
   const profissional = route?.params?.profissional || { nome: 'Dr. Thiago', esp: 'Especialista em traumas' };
   
@@ -49,7 +50,7 @@ export default function PerfilProfissional({ route, navigation }) {
         <Image source={require('../assets/profissionalExemplo.png')} style={styles.headerImage} resizeMode="cover" />
         
         <TouchableOpacity style={[styles.backButton, { top: insets.top + 10 }]} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={30} color="#FFF" />
+          <Ionicons name="chevron-back" size={30} color={cor.fg("#FFF")} />
         </TouchableOpacity>
       </View>
 
@@ -126,41 +127,41 @@ export default function PerfilProfissional({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+const criarStyles = (cor) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   headerImageContainer: { height: '35%', width: '100%', position: 'relative' },
   headerImage: { width: '100%', height: '100%' },
   backButton: { position: 'absolute', left: 20, backgroundColor: 'rgba(98, 146, 214, 0.8)', borderRadius: 20, padding: 5 },
   
   contentScroll: { paddingHorizontal: 20, paddingBottom: 130 },
   nameCard: {
-    backgroundColor: '#6292D6', borderRadius: 15, paddingVertical: 20, paddingHorizontal: 15,
+    backgroundColor: cor.bg('#6292D6'), borderRadius: 15, paddingVertical: 20, paddingHorizontal: 15,
     alignItems: 'center', marginTop: 20, marginBottom: 30,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 5,
   },
-  nameCardTitle: { color: '#FFF', fontSize: 22, fontFamily: 'Montserrat-Bold', marginBottom: 5 },
-  nameCardSubtitle: { color: '#FFF', fontSize: 13, fontFamily: 'Montserrat-Regular' },
+  nameCardTitle: { color: cor.fg('#FFF'), fontSize: 22, fontFamily: 'Montserrat-Bold', marginBottom: 5 },
+  nameCardSubtitle: { color: cor.fg('#FFF'), fontSize: 13, fontFamily: 'Montserrat-Regular' },
   
-  sectionTitle: { fontSize: 15, fontFamily: 'Montserrat-Bold', color: '#1A1A1A', marginBottom: 15, marginTop: 10 },
+  sectionTitle: { fontSize: 15, fontFamily: 'Montserrat-Bold', color: cor.fg('#1A1A1A'), marginBottom: 15, marginTop: 10 },
   
   daysScroll: { marginHorizontal: -20, marginBottom: 30, flexGrow: 0 },
   daysContainer: { paddingHorizontal: 20, paddingVertical: 4, gap: 10 },
-  dayCard: { alignItems: 'center', minWidth: 64, paddingVertical: 12, paddingHorizontal: 10, borderRadius: 16, backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  dayCardActive: { backgroundColor: '#6292D6' },
-  dayText: { fontSize: 13, fontFamily: 'Montserrat-Bold', color: '#333', marginBottom: 4 },
-  dayNum: { fontSize: 18, fontFamily: 'Montserrat-Bold', color: '#333' },
-  dayMes: { fontSize: 11, fontFamily: 'Montserrat-Regular', color: '#777', marginTop: 2 },
+  dayCard: { alignItems: 'center', minWidth: 64, paddingVertical: 12, paddingHorizontal: 10, borderRadius: 16, backgroundColor: cor.bg('#FFF'), shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  dayCardActive: { backgroundColor: cor.bg('#6292D6') },
+  dayText: { fontSize: 13, fontFamily: 'Montserrat-Bold', color: cor.fg('#333'), marginBottom: 4 },
+  dayNum: { fontSize: 18, fontFamily: 'Montserrat-Bold', color: cor.fg('#333') },
+  dayMes: { fontSize: 11, fontFamily: 'Montserrat-Regular', color: cor.fg('#777'), marginTop: 2 },
   
   timesContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 40 },
-  timePill: { backgroundColor: '#FFF', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  timePillActive: { backgroundColor: '#FF8C42' },
-  timePillIndisponivel: { backgroundColor: '#EEF1F6', elevation: 0, shadowOpacity: 0 },
-  timeTextIndisponivel: { color: '#A0AABB', textDecorationLine: 'line-through' },
-  semHorarios: { fontSize: 12, fontFamily: 'Montserrat-Regular', color: '#B03030', marginTop: -30, marginBottom: 30 },
-  timeText: { fontSize: 13, fontFamily: 'Montserrat-Bold', color: '#999' },
-  textWhite: { color: '#FFF' },
+  timePill: { backgroundColor: cor.bg('#FFF'), paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  timePillActive: { backgroundColor: cor.bg('#FF8C42') },
+  timePillIndisponivel: { backgroundColor: cor.bg('#EEF1F6'), elevation: 0, shadowOpacity: 0 },
+  timeTextIndisponivel: { color: cor.fg('#A0AABB'), textDecorationLine: 'line-through' },
+  semHorarios: { fontSize: 12, fontFamily: 'Montserrat-Regular', color: cor.fg('#B03030'), marginTop: -30, marginBottom: 30 },
+  timeText: { fontSize: 13, fontFamily: 'Montserrat-Bold', color: cor.fg('#999') },
+  textWhite: { color: cor.fg('#FFF') },
   
-  confirmButton: { backgroundColor: '#6292D6', paddingVertical: 15, borderRadius: 30, alignItems: 'center', width: '90%', alignSelf: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
+  confirmButton: { backgroundColor: cor.bg('#6292D6'), paddingVertical: 15, borderRadius: 30, alignItems: 'center', width: '90%', alignSelf: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
   confirmButtonDisabled: { opacity: 0.5 },
-  confirmButtonText: { color: '#FFF', fontSize: 16, fontFamily: 'Montserrat-Bold' },
+  confirmButtonText: { color: cor.fg('#FFF'), fontSize: 16, fontFamily: 'Montserrat-Bold' },
 });

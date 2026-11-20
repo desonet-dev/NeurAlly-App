@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import EditableField from '../components/EditableField.js';
 import SelectField from '../components/SelectField.js';
 import { MUNICIPIOS } from '../constants/opcoes.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function PerfilDadosPsi({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -56,7 +57,7 @@ export default function PerfilDadosPsi({ navigation }) {
         <View style={styles.card}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Ionicons name="chevron-back" size={28} color="#1A56DB" />
+              <Ionicons name="chevron-back" size={28} color={cor.fg("#1A56DB")} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Dados Pessoais</Text>
           </View>
@@ -128,15 +129,15 @@ export default function PerfilDadosPsi({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: paleta.cor.fundoCard, 
+    backgroundColor: cor.bg('#9EBDF0'), 
     padding: 20 
   },
   card: { 
     flex: 1, 
-    backgroundColor: '#FFF', 
+    backgroundColor: cor.bg('#FFF'), 
     borderRadius: 20, 
     overflow: 'hidden' 
   },
@@ -149,12 +150,12 @@ const styles = StyleSheet.create({
   headerTitle: { 
     fontFamily: 'Montserrat-Bold', 
     fontSize: 20, 
-    color: '#1A56DB', 
+    color: cor.fg('#1A56DB'), 
     marginLeft: 10 
   },
   divider: { 
     height: 2, 
-    backgroundColor: '#1A56DB', 
+    backgroundColor: cor.bg('#1A56DB'), 
     opacity: 0.5, 
     marginHorizontal: 20, 
     marginBottom: 10 
@@ -169,14 +170,14 @@ const styles = StyleSheet.create({
   label: { 
     fontFamily: 'Montserrat-Bold', 
     fontSize: 10, 
-    color: '#1A56DB', 
+    color: cor.fg('#1A56DB'), 
     marginBottom: 5, 
     marginLeft: 5 
   },
   inputWrapper: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#F0F4FF', 
+    backgroundColor: cor.bg('#F0F4FF'), 
     borderRadius: 12, 
     paddingHorizontal: 15, 
     shadowColor: '#000', 
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     flex: 1, 
     fontFamily: 'Montserrat-Regular', 
     fontSize: 12, 
-    color: '#333' 
+    color: cor.fg('#333') 
   },
   row: { 
     flexDirection: 'row', 
@@ -203,13 +204,13 @@ const styles = StyleSheet.create({
   },
   spacerDivider: { 
     height: 2, 
-    backgroundColor: '#1A56DB', 
+    backgroundColor: cor.bg('#1A56DB'), 
     opacity: 0.5, 
     marginVertical: 15 
   },
   paymentButton: { 
     width: '100%', 
-    backgroundColor: '#F0F4FF', 
+    backgroundColor: cor.bg('#F0F4FF'), 
     paddingVertical: 15, 
     borderRadius: 15, 
     alignItems: 'center', 
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   },
   paymentButtonText: { 
     fontFamily: 'Montserrat-Bold', 
-    color: '#1A56DB', 
+    color: cor.fg('#1A56DB'), 
     fontSize: 14 
   }
 });

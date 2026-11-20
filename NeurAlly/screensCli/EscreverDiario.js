@@ -8,9 +8,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import NavBar from '../components/navBarCli.js';
-import paleta from '../styles/Tema.js';
 import { adicionarRegistro } from '../services/diarioService.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
   monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
@@ -32,6 +32,7 @@ function getHojeISO() {
 }
 
 export default function EscreverDiario({ navigation, route }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [titulo, setTitulo] = useState('');
   const [relato, setRelato] = useState('');
   const [humor, setHumor] = useState(null);
@@ -86,7 +87,7 @@ export default function EscreverDiario({ navigation, route }) {
           <TextInput
             style={styles.inputTitle}
             placeholder="Digite o título de seu relato aqui..."
-            placeholderTextColor="#888"
+            placeholderTextColor={cor.fg("#888")}
             value={titulo}
             onChangeText={setTitulo}
             editable={!salvando}
@@ -95,7 +96,7 @@ export default function EscreverDiario({ navigation, route }) {
           <TextInput
             style={styles.inputBody}
             placeholder="Digite o seu relato aqui..."
-            placeholderTextColor="#888"
+            placeholderTextColor={cor.fg("#888")}
             multiline={true}
             textAlignVertical="top"
             value={relato}
@@ -109,7 +110,7 @@ export default function EscreverDiario({ navigation, route }) {
               onPress={() => setHumor('triste')}
               disabled={salvando}
             >
-              <MaterialCommunityIcons name="emoticon-sad-outline" size={45} color="#FF8C42" />
+              <MaterialCommunityIcons name="emoticon-sad-outline" size={45} color={cor.fg("#FF8C42")} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -117,7 +118,7 @@ export default function EscreverDiario({ navigation, route }) {
               onPress={() => setHumor('neutro')}
               disabled={salvando}
             >
-              <MaterialCommunityIcons name="emoticon-neutral-outline" size={45} color="#FF8C42" />
+              <MaterialCommunityIcons name="emoticon-neutral-outline" size={45} color={cor.fg("#FF8C42")} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -125,7 +126,7 @@ export default function EscreverDiario({ navigation, route }) {
               onPress={() => setHumor('feliz')}
               disabled={salvando}
             >
-              <MaterialCommunityIcons name="emoticon-happy-outline" size={45} color="#6292D6" />
+              <MaterialCommunityIcons name="emoticon-happy-outline" size={45} color={cor.fg("#6292D6")} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -133,7 +134,7 @@ export default function EscreverDiario({ navigation, route }) {
               onPress={() => setHumor('muitofeliz')}
               disabled={salvando}
             >
-              <MaterialCommunityIcons name="emoticon-excited-outline" size={45} color="#6292D6" />
+              <MaterialCommunityIcons name="emoticon-excited-outline" size={45} color={cor.fg("#6292D6")} />
             </TouchableOpacity>
           </View>
 
@@ -145,19 +146,19 @@ export default function EscreverDiario({ navigation, route }) {
                 [selectedDate]: {
                   selected: true,
                   selectedColor: 'transparent',
-                  selectedTextColor: '#6292D6',
+                  selectedTextColor: cor.fg('#6292D6'),
                 }
               }}
               theme={{
-                calendarBackground: '#FFF',
-                textSectionTitleColor: '#FFF',
+                calendarBackground: cor.bg('#FFF'),
+                textSectionTitleColor: cor.fg('#FFF'),
                 selectedDayBackgroundColor: 'transparent',
-                selectedDayTextColor: '#6292D6',
-                todayTextColor: '#6292D6',
-                dayTextColor: '#333',
-                textDisabledColor: '#FFB890',
-                arrowColor: '#FFF',
-                monthTextColor: '#FFF',
+                selectedDayTextColor: cor.fg('#6292D6'),
+                todayTextColor: cor.fg('#6292D6'),
+                dayTextColor: cor.fg('#333'),
+                textDisabledColor: cor.fg('#FFB890'),
+                arrowColor: cor.fg('#FFF'),
+                monthTextColor: cor.fg('#FFF'),
                 textDayFontFamily: 'Montserrat-Regular',
                 textMonthFontFamily: 'Montserrat-Bold',
                 textDayHeaderFontFamily: 'Montserrat-Regular',
@@ -166,14 +167,14 @@ export default function EscreverDiario({ navigation, route }) {
                 textDayHeaderFontSize: 12,
                 'stylesheet.calendar.header': {
                   header: {
-                    backgroundColor: '#6292D6',
+                    backgroundColor: cor.bg('#6292D6'),
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingVertical: 10,
                   },
                   dayHeader: {
-                    color: '#FFF',
+                    color: cor.fg('#FFF'),
                     fontFamily: 'Montserrat-Regular',
                     fontSize: 12,
                     marginTop: 10,
@@ -183,13 +184,13 @@ export default function EscreverDiario({ navigation, route }) {
                     marginTop: 0,
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    backgroundColor: '#6292D6',
+                    backgroundColor: cor.bg('#6292D6'),
                     paddingHorizontal: 10,
                   }
                 },
                 'stylesheet.day.basic': {
                   selected: {
-                    borderColor: '#6292D6',
+                    borderColor: cor.bd('#6292D6'),
                     borderWidth: 1.5,
                     borderRadius: 20,
                   }
@@ -205,7 +206,7 @@ export default function EscreverDiario({ navigation, route }) {
               disabled={salvando}
             >
               {salvando ? (
-                <ActivityIndicator size="small" color="#FFF" />
+                <ActivityIndicator size="small" color={cor.fg("#FFF")} />
               ) : (
                 <Text style={styles.submitButtonText}>Enviar</Text>
               )}
@@ -216,7 +217,7 @@ export default function EscreverDiario({ navigation, route }) {
               onPress={() => navigation.goBack()}
               disabled={salvando}
             >
-              <Ionicons name="close" size={30} color="#FFF" />
+              <Ionicons name="close" size={30} color={cor.fg("#FFF")} />
             </TouchableOpacity>
           </View>
 
@@ -227,20 +228,20 @@ export default function EscreverDiario({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: paleta.cor.fundo },
+const criarStyles = (cor) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   scrollContent: { padding: 20, paddingBottom: 130 },
-  inputTitle: { backgroundColor: '#FFF', borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
-  inputBody: { backgroundColor: '#FFF', borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 160, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  inputTitle: { backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  inputBody: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 160, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   moodContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 25 },
-  moodIcon: { backgroundColor: '#FFF', width: 70, height: 70, borderRadius: 15, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'transparent', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
-  moodIconActiveOrange: { borderColor: '#FF8C42', backgroundColor: '#FFF3E0' },
-  moodIconActiveBlue: { borderColor: '#6292D6', backgroundColor: '#E3F2FD' },
+  moodIcon: { backgroundColor: cor.bg('#FFF'), width: 70, height: 70, borderRadius: 15, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'transparent', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  moodIconActiveOrange: { borderColor: cor.bd('#FF8C42'), backgroundColor: cor.bg('#FFF3E0') },
+  moodIconActiveBlue: { borderColor: cor.bd('#6292D6'), backgroundColor: cor.bg('#E3F2FD') },
   calendarWrapper: {
     borderRadius: 15,
     overflow: 'hidden',
     marginBottom: 25,
-    backgroundColor: '#FFF',
+    backgroundColor: cor.bg('#FFF'),
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -248,8 +249,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   actionButtonsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 20 },
-  submitButton: { backgroundColor: '#6292D6', paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3, minWidth: 120, alignItems: 'center' },
+  submitButton: { backgroundColor: cor.bg('#6292D6'), paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3, minWidth: 120, alignItems: 'center' },
   submitButtonDisabled: { opacity: 0.7 },
-  submitButtonText: { color: '#FFF', fontSize: 16, fontFamily: 'Montserrat-Bold' },
-  cancelButton: { backgroundColor: '#FF8C42', width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 }
+  submitButtonText: { color: cor.fg('#FFF'), fontSize: 16, fontFamily: 'Montserrat-Bold' },
+  cancelButton: { backgroundColor: cor.bg('#FF8C42'), width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 }
 });

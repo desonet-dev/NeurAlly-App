@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 // Campo que abre um menu de opções.
 //  - multiple=false: `value` é uma string; escolher uma opção fecha o menu.
 //  - multiple=true:  `value` é um array; as opções são marcadas/desmarcadas e o menu fecha em "Concluir".
@@ -16,6 +17,7 @@ export default function SelectField({
   emptyText,
   containerStyle,
 }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [aberto, setAberto] = useState(false);
 
   const selecionados = multiple ? (Array.isArray(value) ? value : []) : value;
@@ -50,7 +52,7 @@ export default function SelectField({
         >
           {textoExibido}
         </Text>
-        <Ionicons name="caret-down" size={20} color="#000" />
+        <Ionicons name="caret-down" size={20} color={cor.fg("#000")} />
       </TouchableOpacity>
 
       <Modal
@@ -79,10 +81,10 @@ export default function SelectField({
                       <Ionicons
                         name={marcada ? 'checkbox' : 'square-outline'}
                         size={22}
-                        color="#1A56DB"
+                        color={cor.fg("#1A56DB")}
                       />
                     ) : (
-                      marcada && <Ionicons name="checkmark" size={22} color="#1A56DB" />
+                      marcada && <Ionicons name="checkmark" size={22} color={cor.fg("#1A56DB")} />
                     )}
                   </TouchableOpacity>
                 );
@@ -105,14 +107,14 @@ export default function SelectField({
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   container: { marginBottom: 20 },
-  label: { fontFamily: 'Montserrat-Bold', fontSize: 11, color: '#1A56DB', marginBottom: 5, marginLeft: 5 },
+  label: { fontFamily: 'Montserrat-Bold', fontSize: 11, color: cor.fg('#1A56DB'), marginBottom: 5, marginLeft: 5 },
   wrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F0F4FF',
+    backgroundColor: cor.bg('#F0F4FF'),
     borderRadius: 12,
     paddingHorizontal: 15,
     height: 45,
@@ -122,8 +124,8 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  texto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 13, color: '#333', marginRight: 10 },
-  placeholder: { color: '#888' },
+  texto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 13, color: cor.fg('#333'), marginRight: 10 },
+  placeholder: { color: cor.fg('#888') },
 
   overlay: {
     flex: 1,
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
   menu: {
     width: '100%',
     maxHeight: '75%',
-    backgroundColor: '#FFF',
+    backgroundColor: cor.bg('#FFF'),
     borderRadius: 20,
     padding: 20,
     elevation: 5,
@@ -144,7 +146,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
   },
-  menuTitulo: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: '#1A1A1A', marginBottom: 12 },
+  menuTitulo: { fontFamily: 'Montserrat-Bold', fontSize: 16, color: cor.fg('#1A1A1A'), marginBottom: 12 },
   lista: { flexGrow: 0 },
   opcao: {
     flexDirection: 'row',
@@ -154,25 +156,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 12,
     marginBottom: 6,
-    backgroundColor: '#F7F9FF',
+    backgroundColor: cor.bg('#F7F9FF'),
   },
-  opcaoMarcada: { backgroundColor: '#E4ECFF' },
-  opcaoTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: '#333', marginRight: 10 },
-  opcaoTextoMarcado: { fontFamily: 'Montserrat-Bold', color: '#1A56DB' },
+  opcaoMarcada: { backgroundColor: cor.bg('#E4ECFF') },
+  opcaoTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: cor.fg('#333'), marginRight: 10 },
+  opcaoTextoMarcado: { fontFamily: 'Montserrat-Bold', color: cor.fg('#1A56DB') },
   botaoConcluir: {
-    backgroundColor: '#1A56DB',
+    backgroundColor: cor.bg('#1A56DB'),
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 12,
   },
-  botaoConcluirTexto: { fontFamily: 'Montserrat-Bold', color: '#FFF', fontSize: 14 },
+  botaoConcluirTexto: { fontFamily: 'Montserrat-Bold', color: cor.fg('#FFF'), fontSize: 14 },
   botaoCancelar: {
-    backgroundColor: '#F0F4FF',
+    backgroundColor: cor.bg('#F0F4FF'),
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 12,
   },
-  botaoCancelarTexto: { fontFamily: 'Montserrat-Bold', color: '#1A56DB', fontSize: 14 },
+  botaoCancelarTexto: { fontFamily: 'Montserrat-Bold', color: cor.fg('#1A56DB'), fontSize: 14 },
 });

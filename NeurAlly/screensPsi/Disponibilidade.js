@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, TextInput, Alert } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import SelectField from '../components/SelectField.js';
 import { INTERVALOS, BLOQUEIOS } from '../constants/opcoes.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function DisponibilidadePsi({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -58,7 +59,7 @@ export default function DisponibilidadePsi({ navigation }) {
       <View style={styles.card}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={28} color="#1A56DB" />
+            <Ionicons name="chevron-back" size={28} color={cor.fg("#1A56DB")} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Disponibilidade</Text>
         </View>
@@ -81,7 +82,7 @@ export default function DisponibilidadePsi({ navigation }) {
                 style={styles.iconButton} 
                 onPress={() => index === 0 ? removerHorario(item.id) : removerHorario(item.id)}
               >
-                <Ionicons name="trash-outline" size={20} color="#1A56DB" />
+                <Ionicons name="trash-outline" size={20} color={cor.fg("#1A56DB")} />
               </TouchableOpacity>
             </View>
           ))}
@@ -94,7 +95,7 @@ export default function DisponibilidadePsi({ navigation }) {
               <TextInput style={styles.timeInput} value="--:--" editable={false} />
             </View>
             <TouchableOpacity style={styles.iconButton} onPress={adicionarHorario}>
-              <Ionicons name="add" size={24} color="#1A56DB" />
+              <Ionicons name="add" size={24} color={cor.fg("#1A56DB")} />
             </TouchableOpacity>
           </View>
 
@@ -137,15 +138,15 @@ export default function DisponibilidadePsi({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: paleta.cor.fundoCard, 
+    backgroundColor: cor.bg('#9EBDF0'), 
     padding: 20 
   },
   card: { 
     flex: 1, 
-    backgroundColor: '#FFF', 
+    backgroundColor: cor.bg('#FFF'), 
     borderRadius: 20, 
     overflow: 'hidden' 
   },
@@ -158,12 +159,12 @@ const styles = StyleSheet.create({
   headerTitle: { 
     fontFamily: 'Montserrat-Bold', 
     fontSize: 20, 
-    color: '#1A56DB', 
+    color: cor.fg('#1A56DB'), 
     marginLeft: 10 
   },
   divider: { 
     height: 2, 
-    backgroundColor: '#1A56DB', 
+    backgroundColor: cor.bg('#1A56DB'), 
     opacity: 0.5, 
     marginHorizontal: 20, 
     marginBottom: 20 
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   label: { 
     fontFamily: 'Montserrat-Bold', 
     fontSize: 11, 
-    color: '#1A56DB', 
+    color: cor.fg('#1A56DB'), 
     marginBottom: 10, 
     marginLeft: 5 
   },
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   },
   timeInputBox: { 
     flex: 1, 
-    backgroundColor: '#F0F4FF', 
+    backgroundColor: cor.bg('#F0F4FF'), 
     borderRadius: 10, 
     height: 40, 
     justifyContent: 'center', 
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   timeInput: { 
     fontFamily: 'Montserrat-Regular', 
     fontSize: 13, 
-    color: '#333' 
+    color: cor.fg('#333') 
   },
   iconButton: { 
     width: 30, 
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   dayPill: { 
     flex: 1, 
     height: 35, 
-    backgroundColor: '#F0F4FF', 
+    backgroundColor: cor.bg('#F0F4FF'), 
     borderRadius: 10, 
     justifyContent: 'center', 
     alignItems: 'center', 
@@ -229,15 +230,15 @@ const styles = StyleSheet.create({
     elevation: 2 
   },
   dayPillActive: { 
-    backgroundColor: '#1A56DB' 
+    backgroundColor: cor.bg('#1A56DB') 
   },
   dayText: { 
     fontFamily: 'Montserrat-Bold', 
     fontSize: 10, 
-    color: '#1A56DB' 
+    color: cor.fg('#1A56DB') 
   },
   dayTextActive: { 
-    color: '#FFF' 
+    color: cor.fg('#FFF') 
   },
   spacer: { 
     height: 10 
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     alignItems: 'center', 
     justifyContent: 'space-between', 
-    backgroundColor: '#F0F4FF', 
+    backgroundColor: cor.bg('#F0F4FF'), 
     borderRadius: 12, 
     paddingHorizontal: 15, 
     height: 45, 
@@ -262,6 +263,6 @@ const styles = StyleSheet.create({
   inputText: { 
     fontFamily: 'Montserrat-Regular', 
     fontSize: 13, 
-    color: '#333' 
+    color: cor.fg('#333') 
   }
 });

@@ -8,9 +8,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { LocaleConfig } from 'react-native-calendars';
 import NavBar from '../components/navBarCli.js';
 import DynamicCalendar from '../components/DynamicCalendar.js';
-import paleta from '../styles/Tema.js';
 import { escutarRegistrosPorData, escutarDatasComRegistro } from '../services/diarioService.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
   monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
@@ -35,6 +35,7 @@ function formatarDataExtenso(dataISO) {
 }
 
 export default function DiarioEmocional({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [selectedDate, setSelectedDate] = useState(getHojeISO());
   const [relatos, setRelatos] = useState([]);
   const [datasComRegistro, setDatasComRegistro] = useState(new Set());
@@ -102,10 +103,10 @@ export default function DiarioEmocional({ navigation }) {
 
   const getEmotionIcon = (emocao) => {
     switch (emocao) {
-      case 'triste': return <MaterialCommunityIcons name="emoticon-sad-outline" size={40} color="#FF8C42" />;
-      case 'neutro': return <MaterialCommunityIcons name="emoticon-neutral-outline" size={40} color="#FF8C42" />;
-      case 'feliz': return <MaterialCommunityIcons name="emoticon-happy-outline" size={40} color="#6292D6" />;
-      case 'muitofeliz': return <MaterialCommunityIcons name="emoticon-excited-outline" size={40} color="#6292D6" />;
+      case 'triste': return <MaterialCommunityIcons name="emoticon-sad-outline" size={40} color={cor.fg("#FF8C42")} />;
+      case 'neutro': return <MaterialCommunityIcons name="emoticon-neutral-outline" size={40} color={cor.fg("#FF8C42")} />;
+      case 'feliz': return <MaterialCommunityIcons name="emoticon-happy-outline" size={40} color={cor.fg("#6292D6")} />;
+      case 'muitofeliz': return <MaterialCommunityIcons name="emoticon-excited-outline" size={40} color={cor.fg("#6292D6")} />;
       default: return null;
     }
   };
@@ -127,7 +128,7 @@ export default function DiarioEmocional({ navigation }) {
         </View>
 
         {carregando && (
-          <ActivityIndicator size="small" color={paleta.cor.a5} style={{ marginTop: 10 }} />
+          <ActivityIndicator size="small" color={cor.fg('#4A77D4')} style={{ marginTop: 10 }} />
         )}
 
         {!carregando && erro && (
@@ -165,7 +166,7 @@ export default function DiarioEmocional({ navigation }) {
         style={styles.fab}
         onPress={() => navigation.navigate('EscreverDiario', { data: selectedDate })}
       >
-        <Ionicons name="add" size={32} color="#FFF" />
+        <Ionicons name="add" size={32} color={cor.fg("#FFF")} />
       </TouchableOpacity>
 
       <NavBar />
@@ -173,10 +174,10 @@ export default function DiarioEmocional({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: paleta.cor.fundo
+    backgroundColor: cor.bg('#E4F0F8')
   },
   scrollContent: {
     padding: 20,
@@ -190,17 +191,17 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 2,
-    backgroundColor: '#B0C4DE',
+    backgroundColor: cor.bg('#B0C4DE'),
     opacity: 0.5
   },
   dateTitle: {
     marginHorizontal: 15,
     fontSize: 20,
     fontFamily: 'Montserrat-Bold',
-    color: '#6292D6'
+    color: cor.fg('#6292D6')
   },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: cor.bg('#FFF'),
     borderRadius: 15,
     padding: 20,
     marginBottom: 15,
@@ -219,19 +220,19 @@ const styles = StyleSheet.create({
   cardData: {
     fontSize: 12,
     fontFamily: 'Montserrat-Bold',
-    color: '#1A1A1A',
+    color: cor.fg('#1A1A1A'),
     marginBottom: 5
   },
   cardTitle: {
     fontSize: 16,
     fontFamily: 'Montserrat-Bold',
-    color: '#1A1A1A',
+    color: cor.fg('#1A1A1A'),
     textTransform: 'uppercase'
   },
   cardText: {
     fontSize: 13,
     fontFamily: 'Montserrat-Regular',
-    color: '#333',
+    color: cor.fg('#333'),
     lineHeight: 18
   },
   avisoContainer: {
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   avisoTexto: {
     fontSize: 13,
     fontFamily: 'Montserrat-Regular',
-    color: '#5A6B87',
+    color: cor.fg('#5A6B87'),
     textAlign: 'center',
     paddingHorizontal: 20
   },
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: 90,
-    backgroundColor: '#1A56DB',
+    backgroundColor: cor.bg('#1A56DB'),
     width: 60,
     height: 60,
     borderRadius: 30,

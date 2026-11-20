@@ -1,11 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image, FlatList, TouchableOpacity } from 'react-native';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 // "Nome curto" para caber embaixo do avatar: tira "Dr."/"Dra." e usa só o primeiro nome.
 const nomeCurto = (nome = '') => nome.replace(/^dra?\.\s*/i, '').split(' ')[0];
 
 // Lista horizontal de contatos online (avatar + bolinha verde). Some quando ninguém está online.
 export default function ContatosOnline({ contatos, onPress }) {
+  const [styles, cor] = useEstilos(criarStyles);
   if (!contatos || contatos.length === 0) return null;
 
   return (
@@ -30,7 +32,7 @@ export default function ContatosOnline({ contatos, onPress }) {
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   container: { marginTop: 10 },
   listContent: { paddingHorizontal: 16 },
   item: { width: 64, alignItems: 'center', marginRight: 12 },
@@ -42,9 +44,9 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
     borderRadius: 7.5,
-    backgroundColor: '#22C55E',
+    backgroundColor: cor.bg('#22C55E'),
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: cor.bd('#FFF'),
   },
-  nome: { marginTop: 4, fontSize: 11, fontFamily: 'Montserrat-Regular', color: '#1A1A1A' },
+  nome: { marginTop: 4, fontSize: 11, fontFamily: 'Montserrat-Regular', color: cor.fg('#1A1A1A') },
 });

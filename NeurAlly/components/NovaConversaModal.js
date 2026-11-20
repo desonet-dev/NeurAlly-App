@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, FlatList, TextInput, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import ItemProfissional from './ItemProfissional.js';
 import { filtrarProfissionais } from '../services/profissionaisService.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 // Tela em janela com as opções para iniciar uma conversa: lista de pessoas com barra de pesquisa.
 //  - opcoes: [{ id, nome, esp, crp, uid, ... }]  (esp aparece abaixo do nome)
 //  - onSelecionar(opcao): chamado ao tocar numa pessoa
@@ -22,6 +22,7 @@ export default function NovaConversaModal({
   erro = '',
   onSelecionar,
 }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const insets = useSafeAreaInsets();
   const [busca, setBusca] = useState('');
 
@@ -38,18 +39,18 @@ export default function NovaConversaModal({
         <View style={styles.header}>
           <Text style={styles.titulo}>{titulo}</Text>
           <TouchableOpacity onPress={onFechar} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityLabel="Fechar">
-            <Ionicons name="close" size={28} color="#1A56DB" />
+            <Ionicons name="close" size={28} color={cor.fg("#1A56DB")} />
           </TouchableOpacity>
         </View>
 
         <Text style={styles.subtitulo}>Escolha com quem você quer conversar.</Text>
 
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+          <Ionicons name="search" size={20} color={cor.fg("#999")} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder={placeholder}
-            placeholderTextColor="#999"
+            placeholderTextColor={cor.fg("#999")}
             value={busca}
             onChangeText={setBusca}
             autoCorrect={false}
@@ -57,14 +58,14 @@ export default function NovaConversaModal({
           />
           {busca.length > 0 && (
             <TouchableOpacity onPress={() => setBusca('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityLabel="Limpar busca">
-              <Ionicons name="close-circle" size={20} color="#999" />
+              <Ionicons name="close-circle" size={20} color={cor.fg("#999")} />
             </TouchableOpacity>
           )}
         </View>
 
         {!!erro && (
           <View style={styles.erroBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
-            <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+            <Ionicons name="alert-circle" size={18} color={cor.fg("#D64545")} style={{ marginRight: 8 }} />
             <Text style={styles.erroTexto}>{erro}</Text>
           </View>
         )}
@@ -78,7 +79,7 @@ export default function NovaConversaModal({
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             carregando ? (
-              <ActivityIndicator color="#6292D6" style={styles.vazio} />
+              <ActivityIndicator color={cor.fg("#6292D6")} style={styles.vazio} />
             ) : (
               <Text style={[styles.vazio, styles.vazioTexto]}>
                 {busca.trim() ? `Nenhum resultado para "${busca.trim()}".` : vazio}
@@ -89,7 +90,7 @@ export default function NovaConversaModal({
 
         {ocupado && (
           <View style={styles.ocupadoOverlay}>
-            <ActivityIndicator size="large" color="#FFF" />
+            <ActivityIndicator size="large" color={cor.fg("#FFF")} />
             <Text style={styles.ocupadoTexto}>Abrindo conversa...</Text>
           </View>
         )}
@@ -98,22 +99,22 @@ export default function NovaConversaModal({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: paleta.cor.fundo, paddingHorizontal: 20 },
+const criarStyles = (cor) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: cor.bg('#E4F0F8'), paddingHorizontal: 20 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  titulo: { fontFamily: 'Montserrat-Bold', fontSize: 22, color: '#1A1A1A' },
-  subtitulo: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: '#5A6B87', marginBottom: 16 },
+  titulo: { fontFamily: 'Montserrat-Bold', fontSize: 22, color: cor.fg('#1A1A1A') },
+  subtitulo: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: cor.fg('#5A6B87'), marginBottom: 16 },
   searchContainer: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 12, paddingHorizontal: 15, height: 50, marginBottom: 14,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FFF'), borderRadius: 12, paddingHorizontal: 15, height: 50, marginBottom: 14,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2,
   },
   searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 15, color: '#333' },
-  erroBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDEDED', borderWidth: 1, borderColor: '#F5C2C2', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 12 },
-  erroTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#B03030' },
+  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 15, color: cor.fg('#333') },
+  erroBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FDEDED'), borderWidth: 1, borderColor: cor.bd('#F5C2C2'), borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 12 },
+  erroTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#B03030') },
   lista: { paddingBottom: 30 },
   vazio: { marginTop: 40 },
-  vazioTexto: { textAlign: 'center', fontFamily: 'Montserrat-Regular', fontSize: 14, color: '#5A6B87' },
+  vazioTexto: { textAlign: 'center', fontFamily: 'Montserrat-Regular', fontSize: 14, color: cor.fg('#5A6B87') },
   ocupadoOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center' },
-  ocupadoTexto: { fontFamily: 'Montserrat-Bold', color: '#FFF', marginTop: 12, fontSize: 14 },
+  ocupadoTexto: { fontFamily: 'Montserrat-Bold', color: cor.fg('#FFF'), marginTop: 12, fontSize: 14 },
 });

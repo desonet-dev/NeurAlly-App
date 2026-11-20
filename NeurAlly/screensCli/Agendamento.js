@@ -4,12 +4,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFonts } from 'expo-font';
 import NavBar from '../components/navBarCli.js';
 import DynamicCalendar from '../components/DynamicCalendar.js';
-import paleta from '../styles/Tema.js';
 import useConsultas from '../hooks/useConsultas.js';
 import { diaDoMes, formatarDataLonga, mesAbreviado, nomeDoDia } from '../utils/datas.js';
 import { cancelarConsulta } from '../services/consultasService.js';
 import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
+// Função auxiliar para pegar a data atual no formato ISO (AAAA-MM-DD)
 function getHojeISO() {
   const hoje = new Date();
   const ano = hoje.getFullYear();
@@ -19,9 +20,12 @@ function getHojeISO() {
 }
 
 export default function Agendamento({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
+  // Estado para controlar a data selecionada no calendário
   const [selectedDate, setSelectedDate] = useState(getHojeISO());
   const { proximas, datasComConsulta } = useConsultas();
 
+  // Cancelamento: a consulta aguardando confirmação, o andamento e o resultado.
   const [paraCancelar, setParaCancelar] = useState(null);
   const [cancelando, setCancelando] = useState(false);
   const [cancelada, setCancelada] = useState(false);
@@ -100,7 +104,7 @@ export default function Agendamento({ navigation }) {
                       onPress={() => navigation.navigate('FinalAgendamento', { reagendar: consulta })}
                       accessibilityLabel={`Reagendar consulta com ${consulta.profissionalNome}`}
                     >
-                      <Ionicons name="calendar-outline" size={16} color="#1A56DB" style={{ marginRight: 6 }} />
+                      <Ionicons name="calendar-outline" size={16} color={cor.fg("#1A56DB")} style={{ marginRight: 6 }} />
                       <Text style={styles.acaoReagendarTexto}>Reagendar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -108,7 +112,7 @@ export default function Agendamento({ navigation }) {
                       onPress={() => { setErroAcao(''); setParaCancelar(consulta); }}
                       accessibilityLabel={`Cancelar consulta com ${consulta.profissionalNome}`}
                     >
-                      <Ionicons name="close-circle-outline" size={16} color="#D64545" style={{ marginRight: 6 }} />
+                      <Ionicons name="close-circle-outline" size={16} color={cor.fg("#D64545")} style={{ marginRight: 6 }} />
                       <Text style={styles.acaoCancelarTexto}>Cancelar</Text>
                     </TouchableOpacity>
                   </View>
@@ -119,7 +123,7 @@ export default function Agendamento({ navigation }) {
 
           {!!erroAcao && (
             <View style={styles.erroBox} accessibilityRole="alert" accessibilityLiveRegion="polite">
-              <Ionicons name="alert-circle" size={18} color="#D64545" style={{ marginRight: 8 }} />
+              <Ionicons name="alert-circle" size={18} color={cor.fg("#D64545")} style={{ marginRight: 8 }} />
               <Text style={styles.erroTexto}>{erroAcao}</Text>
             </View>
           )}
@@ -169,11 +173,11 @@ export default function Agendamento({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
   semConsultas: {
     fontSize: 13,
     fontFamily: 'Montserrat-Regular',
-    color: '#5A6B87',
+    color: cor.fg('#5A6B87'),
     textAlign: 'center',
     marginTop: 5,
   },
@@ -181,7 +185,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   consultaItem: {
-    backgroundColor: '#F0F4FF',
+    backgroundColor: cor.bg('#F0F4FF'),
     borderRadius: 15,
     padding: 12,
     marginBottom: 10,
@@ -204,17 +208,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
-  acaoReagendar: { backgroundColor: '#FFF', borderColor: '#1A56DB' },
-  acaoReagendarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: '#1A56DB' },
-  acaoCancelar: { backgroundColor: '#FFF', borderColor: '#D64545' },
-  acaoCancelarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: '#D64545' },
-  erroBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDEDED', borderWidth: 1, borderColor: '#F5C2C2', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 5 },
-  erroTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#B03030' },
+  acaoReagendar: { backgroundColor: cor.bg('#FFF'), borderColor: cor.bd('#1A56DB') },
+  acaoReagendarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: cor.fg('#1A56DB') },
+  acaoCancelar: { backgroundColor: cor.bg('#FFF'), borderColor: cor.bd('#D64545') },
+  acaoCancelarTexto: { fontFamily: 'Montserrat-Bold', fontSize: 12, color: cor.fg('#D64545') },
+  erroBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FDEDED'), borderWidth: 1, borderColor: cor.bd('#F5C2C2'), borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 5 },
+  erroTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#B03030') },
   consultaData: {
     width: 52,
     height: 52,
     borderRadius: 14,
-    backgroundColor: paleta.cor.a7,
+    backgroundColor: cor.bg('#4894FE'),
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -222,13 +226,13 @@ const styles = StyleSheet.create({
   consultaDia: {
     fontSize: 18,
     fontFamily: 'Montserrat-Bold',
-    color: '#FFF',
+    color: cor.fg('#FFF'),
     lineHeight: 22,
   },
   consultaMes: {
     fontSize: 11,
     fontFamily: 'Montserrat-Bold',
-    color: '#FFF',
+    color: cor.fg('#FFF'),
   },
   consultaInfo: {
     flex: 1,
@@ -236,24 +240,24 @@ const styles = StyleSheet.create({
   consultaNome: {
     fontSize: 14,
     fontFamily: 'Montserrat-Bold',
-    color: '#1A56DB',
+    color: cor.fg('#1A56DB'),
   },
   consultaDetalhe: {
     fontSize: 12,
     fontFamily: 'Montserrat-Regular',
-    color: '#5A6B87',
+    color: cor.fg('#5A6B87'),
     marginTop: 2,
   },
   container: {
     flex: 1,
-    backgroundColor: paleta.cor.fundo
+    backgroundColor: cor.bg('#E4F0F8')
   },
   scrollContent: {
     padding: 20,
     paddingBottom: 130
   },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: cor.bg('#FFF'),
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
@@ -266,18 +270,18 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontFamily: 'Montserrat-Bold',
-    color: '#1A1A1A',
+    color: cor.fg('#1A1A1A'),
     marginBottom: 10
   },
   cardSubtitle: {
     fontSize: 13,
     fontFamily: 'Montserrat-Regular',
-    color: '#333',
+    color: cor.fg('#333'),
     lineHeight: 18,
     marginBottom: 15
   },
   orangeButtonSmall: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: cor.bg('#FF8C42'),
     alignSelf: 'flex-end',
     paddingVertical: 8,
     paddingHorizontal: 15,
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   orangeButtonLarge: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: cor.bg('#FF8C42'),
     alignSelf: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -295,7 +299,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   buttonTextWhite: {
-    color: '#FFF',
+    color: cor.fg('#FFF'),
     fontFamily: 'Montserrat-Bold',
     fontSize: 13
   },

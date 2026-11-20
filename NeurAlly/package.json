@@ -17,6 +17,8 @@
     "expo": "~58.0.25",
     "expo-dev-client": "~58.0.20",
     "expo-font": "~58.0.12",
+    "expo-image-manipulator": "~58.0.16",
+    "expo-image-picker": "~58.0.10",
     "expo-notifications": "~58.1.9",
     "expo-splash-screen": "~58.0.14",
     "expo-status-bar": "~58.0.5",

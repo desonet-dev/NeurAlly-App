@@ -13,10 +13,11 @@ import {
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import { recuperarSenha, traduzErroFirebase } from '../services/authService.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function EsqueciSenhaScreen({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
     const [email, setEmail] = useState('');
     const [enviando, setEnviando] = useState(false);
 
@@ -56,7 +57,7 @@ export default function EsqueciSenhaScreen({ navigation }) {
             >
                 {/* Botão de voltar sutil no topo (opcional, mas recomendado) */}
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={28} color="#333" />
+                    <Ionicons name="arrow-back" size={28} color={cor.fg("#333")} />
                 </TouchableOpacity>
 
                 <View style={styles.content}>
@@ -70,7 +71,7 @@ export default function EsqueciSenhaScreen({ navigation }) {
                         <TextInput
                             style={styles.input}
                             placeholder="Digite seu E-mail"
-                            placeholderTextColor="#666"
+                            placeholderTextColor={cor.fg("#666")}
                             keyboardType="email-address"
                             autoCapitalize="none"
                             value={email}
@@ -84,7 +85,7 @@ export default function EsqueciSenhaScreen({ navigation }) {
                             disabled={enviando}
                         >
                             {enviando ? (
-                                <ActivityIndicator size="small" color="#FFF" />
+                                <ActivityIndicator size="small" color={cor.fg("#FFF")} />
                             ) : (
                                 <Text style={styles.submitButtonText}>Enviar e-mail</Text>
                             )}
@@ -96,10 +97,10 @@ export default function EsqueciSenhaScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.fundoAuth,
+        backgroundColor: cor.bg('#FFF'),
     },
     keyboardView: {
         flex: 1,
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
         paddingBottom: 50,
     },
     card: {
-        backgroundColor: paleta.cor.fundoCard,
+        backgroundColor: cor.bg('#9EBDF0'),
         width: '100%',
         borderRadius: 15,
         padding: 25,
@@ -130,14 +131,14 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 26,
         fontFamily: 'Montserrat-Regular',
-        color: '#000',
+        color: cor.fg('#000'),
         marginBottom: 20,
         textAlign: 'center',
     },
     description: {
         fontSize: 13,
         fontFamily: 'Montserrat-Regular',
-        color: '#333',
+        color: cor.fg('#333'),
         textAlign: 'center',
         lineHeight: 20,
         marginBottom: 30,
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
-        backgroundColor: paleta.cor.fundoAuth,
+        backgroundColor: cor.bg('#FFF'),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
     },
     submitButton: {
-        backgroundColor: '#2563EB',
+        backgroundColor: cor.bg('#2563EB'),
         paddingVertical: 12,
         paddingHorizontal: 30,
         borderRadius: 8,
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     submitButtonText: {
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         fontFamily: 'Montserrat-Regular',
         fontSize: 16,
     }

@@ -3,11 +3,12 @@ import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Tex
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import paleta from '../styles/Tema.js';
 import SelectField from '../components/SelectField.js';
 import { ESPECIALIDADES, PUBLICO_ALVO } from '../constants/opcoes.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function ExibicaoPsi({ navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -23,7 +24,7 @@ export default function ExibicaoPsi({ navigation }) {
       <View style={styles.card}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={28} color="#1A56DB" />
+            <Ionicons name="chevron-back" size={28} color={cor.fg("#1A56DB")} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Exibição</Text>
         </View>
@@ -41,7 +42,7 @@ export default function ExibicaoPsi({ navigation }) {
                 multiline
                 editable={false}
               />
-              <MaterialIcons name="edit" size={20} color="#000" />
+              <MaterialIcons name="edit" size={20} color={cor.fg("#000")} />
             </View>
           </View>
 
@@ -66,7 +67,7 @@ export default function ExibicaoPsi({ navigation }) {
             <Text style={styles.label}>Vídeo apresentativo</Text>
             <TouchableOpacity style={styles.uploadWrapper}>
               <Text style={styles.uploadText}>Inserir vídeo aqui</Text>
-              <Ionicons name="push-outline" size={20} color="#000" />
+              <Ionicons name="push-outline" size={20} color={cor.fg("#000")} />
             </TouchableOpacity>
           </View>
 
@@ -76,18 +77,18 @@ export default function ExibicaoPsi({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: paleta.cor.fundoCard, padding: 20 },
-  card: { flex: 1, backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden' },
+const criarStyles = (cor) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: cor.bg('#9EBDF0'), padding: 20 },
+  card: { flex: 1, backgroundColor: cor.bg('#FFF'), borderRadius: 20, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingBottom: 10 },
-  headerTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: '#1A56DB', marginLeft: 10 },
-  divider: { height: 2, backgroundColor: '#1A56DB', opacity: 0.5, marginHorizontal: 20, marginBottom: 20 },
+  headerTitle: { fontFamily: 'Montserrat-Bold', fontSize: 20, color: cor.fg('#1A56DB'), marginLeft: 10 },
+  divider: { height: 2, backgroundColor: cor.bg('#1A56DB'), opacity: 0.5, marginHorizontal: 20, marginBottom: 20 },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
   inputContainer: { marginBottom: 20 },
-  label: { fontFamily: 'Montserrat-Bold', fontSize: 11, color: '#1A56DB', marginBottom: 5, marginLeft: 5 },
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F0F4FF', borderRadius: 12, paddingHorizontal: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  input: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: '#333', marginRight: 10 },
-  inputText: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: '#333' },
-  uploadWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F0F4FF', borderRadius: 12, paddingHorizontal: 15, height: 45, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2, borderWidth: 1, borderColor: '#E0E8FF' },
-  uploadText: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: '#888' }
+  label: { fontFamily: 'Montserrat-Bold', fontSize: 11, color: cor.fg('#1A56DB'), marginBottom: 5, marginLeft: 5 },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: cor.bg('#F0F4FF'), borderRadius: 12, paddingHorizontal: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  input: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#333'), marginRight: 10 },
+  inputText: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: cor.fg('#333') },
+  uploadWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: cor.bg('#F0F4FF'), borderRadius: 12, paddingHorizontal: 15, height: 45, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2, borderWidth: 1, borderColor: cor.bd('#E0E8FF') },
+  uploadText: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: cor.fg('#888') }
 });

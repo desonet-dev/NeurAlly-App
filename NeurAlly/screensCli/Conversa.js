@@ -13,17 +13,20 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
-import paleta from '../styles/Tema.js';
 import { useFonts } from 'expo-font';
 import { ouvirMensagens, enviarMensagem } from '../services/chatService';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function Conversa({ route, navigation }) {
+  const [styles, cor] = useEstilos(criarStyles);
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState([]);
     const insets = useSafeAreaInsets();
 
+    // Recebe o contato, o chatId e o ID do usuário logado via route.params
     const { contato, chatId, usuarioId } = route.params || {};
 
+    // Efeito para escutar as mensagens do Firestore em tempo real
     useEffect(() => {
         if (!chatId) return;
 
@@ -35,15 +38,17 @@ export default function Conversa({ route, navigation }) {
         return () => unsubscribe();
     }, [chatId]);
 
+    // Função para enviar a mensagem
     const handleEnviar = async () => {
         if (inputText.trim() === '' || !chatId || !usuarioId) return;
 
         const textoParaEnviar = inputText;
-        setInputText('');
+        setInputText(''); // Limpa o input imediatamente para melhor fluidez
 
         await enviarMensagem(chatId, textoParaEnviar, usuarioId);
     };
 
+    // Formata o timestamp do Firestore para exibição (ex: "15/06/26 12:03")
     const formatarHora = (timestamp) => {
         if (!timestamp) return '';
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -53,6 +58,7 @@ export default function Conversa({ route, navigation }) {
     };
 
     const renderItem = ({ item }) => {
+        // Se sua mensagem vier com tipo 'date' do banco ou quiser manter compatibilidade
         if (item.type === 'date') {
             return (
                 <View style={styles.dateContainer}>
@@ -97,7 +103,7 @@ export default function Conversa({ route, navigation }) {
                 {/* Cabeçalho */}
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={28} color="#FFF" />
+                        <Ionicons name="arrow-back" size={28} color={cor.fg("#FFF")} />
                     </TouchableOpacity>
 
                     <Image
@@ -127,25 +133,25 @@ export default function Conversa({ route, navigation }) {
                 <View style={[styles.inputContainer, { paddingBottom: 10 + insets.bottom }]}>
                     <View style={styles.textInputWrapper}>
                         <TouchableOpacity style={styles.iconButton}>
-                            <Feather name="smile" size={22} color="#555" />
+                            <Feather name="smile" size={22} color={cor.fg("#555")} />
                         </TouchableOpacity>
 
                         <TextInput
                             style={styles.input}
                             placeholder="Escreva aqui"
-                            placeholderTextColor="#888"
+                            placeholderTextColor={cor.fg("#888")}
                             value={inputText}
                             onChangeText={setInputText}
                             multiline={true}
                         />
 
                         <TouchableOpacity style={styles.iconButton}>
-                            <Feather name="camera" size={22} color="#555" />
+                            <Feather name="camera" size={22} color={cor.fg("#555")} />
                         </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity style={styles.sendButton} onPress={handleEnviar}>
-                        <Ionicons name="send" size={18} color="#FFF" style={{ marginLeft: 3 }} />
+                        <Ionicons name="send" size={18} color={cor.fg("#FFF")} style={{ marginLeft: 3 }} />
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
@@ -153,16 +159,16 @@ export default function Conversa({ route, navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.fundo,
+        backgroundColor: cor.bg('#E4F0F8'),
     },
     header: {
         paddingTop: 30,
         paddingBottom: 15,
         paddingHorizontal: 16,
-        backgroundColor: paleta.cor.a4,
+        backgroundColor: cor.bg('#6196DA'),
         flexDirection: 'row',
         alignItems: 'center',
         borderBottomLeftRadius: 16,
@@ -183,12 +189,12 @@ const styles = StyleSheet.create({
     },
     headerName: {
         fontSize: 18,
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         fontFamily: 'Montserrat-Bold',
     },
     headerRole: {
         fontSize: 14,
-        color: '#FFF',
+        color: cor.fg('#FFF'),
         alignSelf: 'center',
         fontFamily: 'Montserrat-Bold',
     },
@@ -218,23 +224,23 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     userBubble: {
-        backgroundColor: '#D1E3F8',
+        backgroundColor: cor.bg('#D1E3F8'),
         borderBottomRightRadius: 6,
     },
     otherBubble: {
-        backgroundColor: '#F3F2F8',
+        backgroundColor: cor.bg('#F3F2F8'),
         borderBottomLeftRadius: 6,
     },
     messageText: {
         fontSize: 15,
-        color: '#222',
+        color: cor.fg('#222'),
         fontFamily: 'Montserrat-Regular',
         lineHeight: 22,
     },
     timeText: {
         fontSize: 13,
         fontFamily: 'Montserrat-Bold',
-        color: '#D0D0D0',
+        color: cor.fg('#D0D0D0'),
         marginTop: 6,
     },
     userTime: {
@@ -251,26 +257,26 @@ const styles = StyleSheet.create({
     dateLine: {
         flex: 1,
         height: 1.5,
-        backgroundColor: '#EAEAEA',
+        backgroundColor: cor.bg('#EAEAEA'),
     },
     dateText: {
         marginHorizontal: 14,
         fontSize: 13,
         fontFamily: 'Montserrat-Bold',
-        color: '#D0D0D0',
+        color: cor.fg('#D0D0D0'),
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'flex-end',
         paddingHorizontal: 12,
         paddingVertical: 10,
-        backgroundColor: '#FFF',
+        backgroundColor: cor.bg('#FFF'),
     },
     textInputWrapper: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F2F2F4',
+        backgroundColor: cor.bg('#F2F2F4'),
         borderRadius: 24,
         paddingHorizontal: 12,
         minHeight: 48,
@@ -279,7 +285,7 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         fontSize: 15,
-        color: '#333',
+        color: cor.fg('#333'),
         fontFamily: 'Montserrat-Regular',
         paddingHorizontal: 10,
         paddingVertical: 10,
@@ -291,7 +297,7 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 24,
-        backgroundColor: paleta.cor.a4,
+        backgroundColor: cor.bg('#6196DA'),
         justifyContent: 'center',
         alignItems: 'center',
         marginLeft: 10,

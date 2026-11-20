@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import paleta from '../styles/Tema.js';
 import NavBar from '../components/navBarCli.js';
 import SearchBar from '../components/searchBar.js';
 import ContatosOnline from '../components/ContatosOnline.js';
@@ -22,7 +21,9 @@ import { useAuth } from '../contexts/AuthContext.js';
 import useProfissionais from '../hooks/useProfissionais.js';
 import NovaConversaModal from '../components/NovaConversaModal.js';
 
+import { useEstilos } from '../contexts/TemaContext.js';
 export default function Conversas() {
+  const [styles, cor] = useEstilos(criarStyles);
     // ID do usuário logado atual
     const { usuario } = useAuth();
     const meuIdUsuario = usuario?.uid;
@@ -200,7 +201,7 @@ export default function Conversas() {
                 onPress={abrirNovaConversa}
                 accessibilityLabel="Iniciar nova conversa"
             >
-                <Ionicons name="chatbubbles-outline" size={26} color="#FFF" />
+                <Ionicons name="chatbubbles-outline" size={26} color={cor.fg("#FFF")} />
             </TouchableOpacity>
 
             <NovaConversaModal
@@ -220,10 +221,10 @@ export default function Conversas() {
     );
 }
 
-const styles = StyleSheet.create({
+const criarStyles = (cor) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: paleta.cor.fundo,
+        backgroundColor: cor.bg('#E4F0F8'),
     },
     activeNow: {
         marginHorizontal: 16,
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
     activeText: {
         fontSize: 22,
         fontFamily: 'Montserrat-Bold',
-        color: '#000',
+        color: cor.fg('#000'),
     },
     chatsList: {
         flex: 1,
@@ -251,10 +252,10 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     chatCardHired: {
-        backgroundColor: paleta.cor.a4,
+        backgroundColor: cor.bg('#6196DA'),
     },
     chatCardNormal: {
-        backgroundColor: paleta.cor.a1,
+        backgroundColor: cor.bg('#F2F2FF'),
     },
     cardAvatar: {
         width: 55,
@@ -275,13 +276,13 @@ const styles = StyleSheet.create({
     cardName: {
         fontSize: 16,
         fontFamily: 'Montserrat-Bold',
-        color: '#1A1A1A',
+        color: cor.fg('#1A1A1A'),
         flex: 1,
     },
     cardTitle: {
         fontSize: 13,
         fontFamily: 'Montserrat-Bold',
-        color: '#4A5568',
+        color: cor.fg('#4A5568'),
         marginLeft: 8,
     },
     cardMessage: {
@@ -289,14 +290,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Regular',
     },
     textWhite: {
-        color: '#FFFFFF',
+        color: cor.fg('#FFFFFF'),
         fontFamily: 'Montserrat-Bold',
     },
     textWhiteSubtle: {
-        color: '#EAF2FF',
+        color: cor.fg('#EAF2FF'),
     },
     textDarkSubtle: {
-        color: '#4A5568',
+        color: cor.fg('#4A5568'),
     },
     emptyContainer: {
         alignItems: 'center',
@@ -307,21 +308,21 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 16,
         fontFamily: 'Montserrat-Bold',
-        color: '#333',
+        color: cor.fg('#333'),
         textAlign: 'center',
         marginBottom: 8,
     },
     emptySubText: {
         fontSize: 13,
         fontFamily: 'Montserrat-Regular',
-        color: '#666',
+        color: cor.fg('#666'),
         textAlign: 'center',
     },
     fab: {
         position: 'absolute',
         right: 20,
         bottom: 90,
-        backgroundColor: paleta.cor.a4 || '#1A56DB',
+        backgroundColor: cor.bg('#6196DA') || cor.bg('#1A56DB'),
         width: 60,
         height: 60,
         borderRadius: 30,
