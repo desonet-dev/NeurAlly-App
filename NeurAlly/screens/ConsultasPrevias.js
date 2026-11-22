@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext.js';
 import useConsultas from '../hooks/useConsultas.js';
 import DetalhesConsultaModal, { situacaoDaConsulta } from '../components/DetalhesConsultaModal.js';
 import { abrirConversaDaConsulta } from '../utils/abrirConversa.js';
+import { podeConversarCom } from '../utils/contatos.js';
 import { chaveDeOrdem, consultaEhFutura, diaDoMes, faixaDeHorario, mesAbreviado, nomeDoDia } from '../utils/datas.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
@@ -17,7 +18,7 @@ export default function ConsultasPrevias({ navigation }) {
   const { usuario, perfil } = useAuth();
   const ehProfissional = perfil?.tipo === 'psicologo';
   const papel = ehProfissional ? 'profissional' : 'cliente';
-  const { todas, carregando, erro } = useConsultas(papel);
+  const { todas, proximas, carregando, erro } = useConsultas(papel);
 
   const [aba, setAba] = useState('realizadas');
   const [selecionada, setSelecionada] = useState(null);
@@ -160,7 +161,8 @@ export default function ConsultasPrevias({ navigation }) {
         consulta={selecionada}
         papel={papel}
         onFechar={fecharDetalhes}
-        onConversar={selecionada && (ehProfissional ? selecionada.clienteId : selecionada.profissionalId) ? conversar : undefined}
+        // Só dá para conversar com quem tem uma consulta marcada (futura) com você.
+        onConversar={selecionada && podeConversarCom(proximas, papel, ehProfissional ? selecionada.clienteId : selecionada.profissionalId) ? conversar : undefined}
         onAgendarNovamente={selecionada && !ehProfissional ? agendarNovamente : undefined}
         erro={erroConversa}
         ocupado={abrindoConversa}

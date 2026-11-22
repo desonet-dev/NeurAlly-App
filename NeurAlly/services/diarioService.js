@@ -1,6 +1,8 @@
 import {
   collection,
   addDoc,
+  deleteDoc,
+  doc,
   getDocs,
   query,
   where,
@@ -20,13 +22,15 @@ function colecaoDoUsuario(uid) {
  */
 export async function adicionarRegistro({ titulo, texto, emocao, data }) {
   const uid = await garantirLogado();
-  await addDoc(colecaoDoUsuario(uid), {
+  const referencia = await addDoc(colecaoDoUsuario(uid), {
     titulo,
     texto,
     emocao,
     data,
     criadoEm: serverTimestamp(),
   });
+  // Devolve o id para o Jardim Zen poder dar as gotas deste registro.
+  return referencia?.id;
 }
 
 export async function escutarRegistrosPorData(data, aoAtualizar, aoFalhar) {
@@ -70,6 +74,12 @@ export async function escutarDatasComRegistro(aoAtualizar, aoFalhar) {
       if (aoFalhar) aoFalhar(erro);
     }
   );
+}
+
+// Apaga um único registro do diário (não dá para desfazer).
+export async function excluirRegistro(id) {
+  const uid = await garantirLogado();
+  await deleteDoc(doc(db, 'usuarios', uid, 'diario', id));
 }
 
 /**

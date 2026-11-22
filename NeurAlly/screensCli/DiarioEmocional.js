@@ -8,7 +8,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { LocaleConfig } from 'react-native-calendars';
 import NavBar from '../components/navBarCli.js';
 import DynamicCalendar from '../components/DynamicCalendar.js';
-import { escutarRegistrosPorData, escutarDatasComRegistro } from '../services/diarioService.js';
+import { escutarRegistrosPorData, escutarDatasComRegistro, excluirRegistro } from '../services/diarioService.js';
+import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
 LocaleConfig.locales['pt-br'] = {
@@ -41,6 +42,11 @@ export default function DiarioEmocional({ navigation }) {
   const [datasComRegistro, setDatasComRegistro] = useState(new Set());
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+
+  // Exclusão de um registro: o item aguardando confirmação, o andamento e o erro.
+  const [paraExcluir, setParaExcluir] = useState(null);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExcluir, setErroExcluir] = useState('');
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -101,6 +107,25 @@ export default function DiarioEmocional({ navigation }) {
 
   if (!fontsLoaded) return null;
 
+  const confirmarExclusao = async () => {
+    if (!paraExcluir || excluindo) return;
+    setExcluindo(true);
+    try {
+      await excluirRegistro(paraExcluir.id);
+      setParaExcluir(null);
+    } catch (e) {
+      console.warn('Erro ao excluir o registro do diário:', e);
+      setParaExcluir(null);
+      setErroExcluir(
+        e?.code === 'permission-denied'
+          ? 'Sem permissão para excluir. Verifique as regras do Firestore.'
+          : 'Não foi possível excluir o registro. Verifique sua conexão e tente novamente.'
+      );
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
   const getEmotionIcon = (emocao) => {
     switch (emocao) {
       case 'triste': return <MaterialCommunityIcons name="emoticon-sad-outline" size={40} color={cor.fg("#FF8C42")} />;
@@ -157,6 +182,16 @@ export default function DiarioEmocional({ navigation }) {
               {getEmotionIcon(item.emocao)}
             </View>
             <Text style={styles.cardText}>{item.texto}</Text>
+            <View style={styles.cardAcoes}>
+              <TouchableOpacity
+                style={styles.excluirBotao}
+                onPress={() => setParaExcluir(item)}
+                accessibilityLabel={`Excluir registro ${item.titulo}`}
+              >
+                <Ionicons name="trash-outline" size={16} color={cor.fg("#D64545")} style={{ marginRight: 6 }} />
+                <Text style={styles.excluirTexto}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ))}
 
@@ -168,6 +203,26 @@ export default function DiarioEmocional({ navigation }) {
       >
         <Ionicons name="add" size={32} color={cor.fg("#FFF")} />
       </TouchableOpacity>
+
+      <ModalConfirmacao
+        visivel={!!paraExcluir}
+        tipo="perigo"
+        titulo="Excluir este registro?"
+        mensagem={paraExcluir ? `O registro "${paraExcluir.titulo}" do dia ${paraExcluir.data} será apagado e não poderá ser recuperado.` : ''}
+        textoConfirmar="Sim, excluir"
+        textoCancelar="Voltar"
+        carregando={excluindo}
+        onConfirmar={confirmarExclusao}
+        onCancelar={() => setParaExcluir(null)}
+      />
+
+      <ModalConfirmacao
+        visivel={!!erroExcluir}
+        tipo="perigo"
+        titulo="Não foi possível excluir"
+        mensagem={erroExcluir}
+        onConfirmar={() => setErroExcluir('')}
+      />
 
       <NavBar />
     </SafeAreaView>
@@ -234,6 +289,22 @@ const criarStyles = (cor) => StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
     color: cor.fg('#333'),
     lineHeight: 18
+  },
+  cardAcoes: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12
+  },
+  excluirBotao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8
+  },
+  excluirTexto: {
+    fontSize: 12,
+    fontFamily: 'Montserrat-Bold',
+    color: cor.fg('#D64545')
   },
   avisoContainer: {
     paddingVertical: 30,

@@ -20,6 +20,7 @@ import { cadastrarUsuario, traduzErroFirebase } from '../services/authService.js
 import { useAuth } from '../contexts/AuthContext.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { formatarCpf, formatarDataNascimento } from '../utils/formatacao.js';
 export default function CadastroScreen({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
     const [isPsychologist, setIsPsychologist] = useState(false);
@@ -102,8 +103,8 @@ export default function CadastroScreen({ navigation }) {
 
                     {/* Campos em comum */}
                     <TextInput style={styles.input} placeholder="Nome" placeholderTextColor={cor.fg("#666")} value={nome} onChangeText={setNome} editable={!cadastrando} />
-                    <TextInput style={styles.input} placeholder="Data de nascimento" placeholderTextColor={cor.fg("#666")} value={dataNascimento} onChangeText={setDataNascimento} editable={!cadastrando} />
-                    <TextInput style={styles.input} placeholder="CPF" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" value={cpf} onChangeText={setCpf} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="Data de nascimento (DD/MM/AAAA)" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={10} value={dataNascimento} onChangeText={(t) => setDataNascimento(formatarDataNascimento(t))} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="CPF" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={14} value={cpf} onChangeText={(t) => setCpf(formatarCpf(t))} editable={!cadastrando} />
                     <TextInput style={styles.input} placeholder="E-mail" placeholderTextColor={cor.fg("#666")} keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} editable={!cadastrando} />
                     <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor={cor.fg("#666")} keyboardType="phone-pad" value={telefone} onChangeText={setTelefone} editable={!cadastrando} />
                     <TextInput style={styles.input} placeholder="Senha" placeholderTextColor={cor.fg("#666")} secureTextEntry={true} value={senha} onChangeText={setSenha} editable={!cadastrando} />
@@ -206,6 +207,7 @@ const criarStyles = (cor) => StyleSheet.create({
     input: {
         width: '100%',
         backgroundColor: cor.bg('#FFF'),
+        color: cor.fg('#333'),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,

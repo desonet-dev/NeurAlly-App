@@ -9,6 +9,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import NavBar from '../components/navBarCli.js';
 import { adicionarRegistro } from '../services/diarioService.js';
+import { premiarRegistroDoDiario } from '../services/jardimService.js';
+import ModalGotasDiario from '../components/ModalGotasDiario.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
 LocaleConfig.locales['pt-br'] = {
@@ -38,6 +40,8 @@ export default function EscreverDiario({ navigation, route }) {
   const [humor, setHumor] = useState(null);
   const [selectedDate, setSelectedDate] = useState(route?.params?.data || getHojeISO());
   const [salvando, setSalvando] = useState(false);
+  // Recompensa do Jardim Zen mostrada depois de salvar o registro: { gotasGanhas, mensagem, novasEspecies }.
+  const [recompensa, setRecompensa] = useState(null);
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -58,13 +62,22 @@ export default function EscreverDiario({ navigation, route }) {
 
     setSalvando(true);
     try {
-      await adicionarRegistro({
+      const registroId = await adicionarRegistro({
         titulo: titulo.trim(),
         texto: relato.trim(),
         emocao: humor,
         data: selectedDate,
       });
-      navigation.goBack();
+
+      // O registro já está salvo. As gotas do Jardim Zen são um extra: se der algum problema aqui,
+      // o jardim credita depois (ao ser aberto), então não atrapalha o diário.
+      try {
+        const premio = await premiarRegistroDoDiario({ registroId, emocao: humor });
+        setRecompensa(premio);
+      } catch (erroPremio) {
+        console.warn('Não foi possível dar as gotas agora:', erroPremio);
+        navigation.goBack();
+      }
     } catch (erro) {
       console.warn('Erro ao salvar registro do diário:', erro);
       Alert.alert(
@@ -108,6 +121,7 @@ export default function EscreverDiario({ navigation, route }) {
             <TouchableOpacity
               style={[styles.moodIcon, humor === 'triste' && styles.moodIconActiveOrange]}
               onPress={() => setHumor('triste')}
+              accessibilityLabel="Me sinto: Triste"
               disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-sad-outline" size={45} color={cor.fg("#FF8C42")} />
@@ -116,6 +130,7 @@ export default function EscreverDiario({ navigation, route }) {
             <TouchableOpacity
               style={[styles.moodIcon, humor === 'neutro' && styles.moodIconActiveOrange]}
               onPress={() => setHumor('neutro')}
+              accessibilityLabel="Me sinto: Neutro"
               disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-neutral-outline" size={45} color={cor.fg("#FF8C42")} />
@@ -124,6 +139,7 @@ export default function EscreverDiario({ navigation, route }) {
             <TouchableOpacity
               style={[styles.moodIcon, humor === 'feliz' && styles.moodIconActiveBlue]}
               onPress={() => setHumor('feliz')}
+              accessibilityLabel="Me sinto: Feliz"
               disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-happy-outline" size={45} color={cor.fg("#6292D6")} />
@@ -132,6 +148,7 @@ export default function EscreverDiario({ navigation, route }) {
             <TouchableOpacity
               style={[styles.moodIcon, humor === 'muitofeliz' && styles.moodIconActiveBlue]}
               onPress={() => setHumor('muitofeliz')}
+              accessibilityLabel="Me sinto: Muito feliz"
               disabled={salvando}
             >
               <MaterialCommunityIcons name="emoticon-excited-outline" size={45} color={cor.fg("#6292D6")} />
@@ -223,6 +240,17 @@ export default function EscreverDiario({ navigation, route }) {
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <ModalGotasDiario
+        visivel={!!recompensa}
+        gotas={recompensa?.gotasGanhas || 0}
+        mensagem={recompensa?.mensagem || ''}
+        novasEspecies={recompensa?.novasEspecies || []}
+        textoPrincipal="Ir ao jardim"
+        onPrincipal={() => { setRecompensa(null); navigation.replace('JardimZen'); }}
+        textoSecundario="Continuar"
+        onSecundario={() => { setRecompensa(null); navigation.goBack(); }}
+      />
+
       <NavBar />
     </SafeAreaView>
   );

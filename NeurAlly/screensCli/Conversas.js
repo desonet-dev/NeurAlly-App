@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ouvirConversasDoUsuario, obterOuCriarChat } from '../services/chatService';
 import { ouvirContatosOnline } from '../services/presencaService';
 import { useAuth } from '../contexts/AuthContext.js';
-import useProfissionais from '../hooks/useProfissionais.js';
+import useContatosDeConsulta from '../hooks/useContatosDeConsulta.js';
 import NovaConversaModal from '../components/NovaConversaModal.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
@@ -35,7 +35,8 @@ export default function Conversas() {
     const [novaConversaAberta, setNovaConversaAberta] = useState(false);
     const [abrindoConversa, setAbrindoConversa] = useState(false);
     const [erroNovaConversa, setErroNovaConversa] = useState('');
-    const { profissionais, carregando: carregandoProfissionais } = useProfissionais();
+    // Só aparecem aqui os profissionais com quem existe uma consulta marcada.
+    const { contatos: contatosComConsulta, carregando: carregandoContatos } = useContatosDeConsulta('cliente');
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -81,10 +82,6 @@ export default function Conversas() {
     const iniciarConversa = async (profissional) => {
         if (abrindoConversa) return;
 
-        if (!profissional.uid) {
-            setErroNovaConversa('Este profissional é apenas um exemplo (ainda não tem conta no app), então não dá para conversar com ele.');
-            return;
-        }
         if (!meuIdUsuario) {
             setErroNovaConversa('Entre na sua conta para iniciar uma conversa.');
             return;
@@ -102,7 +99,7 @@ export default function Conversas() {
                     id: profissional.uid,
                     name: profissional.nome,
                     title: 'Psicólogo',
-                    profilePicture: profissional.img || require('../assets/Anderson.png'),
+                    profilePicture: require('../assets/Anderson.png'),
                 },
             });
         } catch (erro) {
@@ -209,8 +206,9 @@ export default function Conversas() {
                 onFechar={() => setNovaConversaAberta(false)}
                 titulo="Nova conversa"
                 placeholder="Procure por um profissional"
-                opcoes={profissionais}
-                carregando={carregandoProfissionais}
+                vazio="Você ainda não tem consultas marcadas. Quando marcar uma consulta, o profissional aparece aqui para você conversar."
+                opcoes={contatosComConsulta}
+                carregando={carregandoContatos}
                 ocupado={abrindoConversa}
                 erro={erroNovaConversa}
                 onSelecionar={iniciarConversa}

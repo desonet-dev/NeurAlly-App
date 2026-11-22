@@ -109,10 +109,16 @@ export default function HomeScreen({ navigation }) {
 
                 <SmallCalendar datasConsulta={datasComConsulta} />
 
-                <TouchableOpacity style={styles.optionCard} activeOpacity={0.8}>
+                <TouchableOpacity
+                    style={styles.optionCard}
+                    activeOpacity={0.85}
+                    onPress={() => navigation.navigate('JogosRelaxantes')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Abrir jogos relaxantes"
+                >
                     <Text style={styles.optionTitle}>Jogos relaxantes</Text>
                     <Text style={styles.optionDescription}>
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                        Cuide de um jardim zen, plante flores e relaxe. Escrever no diário rende gotas para regar suas plantas.
                     </Text>
 
                     <View style={styles.optionIconContainer}>
@@ -226,7 +232,12 @@ const criarStyles = (cor) => StyleSheet.create({
         marginHorizontal: 20,
     },
     optionCard: {
-        backgroundColor: cor.bg('#99BCEE'),
+        backgroundColor: cor.bg('#FA8231'),
+        shadowColor: '#FA8231',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 5,
         borderRadius: 20,
         padding: 24,
         marginBottom: 10,

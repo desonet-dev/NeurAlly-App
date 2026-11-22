@@ -10,6 +10,9 @@ import { cancelarConsulta } from '../services/consultasService.js';
 import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import DetalhesConsultaModal from '../components/DetalhesConsultaModal.js';
+import { abrirConversaDaConsulta } from '../utils/abrirConversa.js';
+import { useAuth } from '../contexts/AuthContext.js';
 // Função auxiliar para pegar a data atual no formato ISO (AAAA-MM-DD)
 function getHojeISO() {
   const hoje = new Date();
@@ -25,6 +28,12 @@ export default function Agendamento({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(getHojeISO());
   const { proximas, datasComConsulta } = useConsultas();
 
+  // Consulta aberta nos detalhes (ao tocar no card) e abertura da conversa com o profissional.
+  const { usuario } = useAuth();
+  const [detalhe, setDetalhe] = useState(null);
+  const [abrindoConversa, setAbrindoConversa] = useState(false);
+  const [erroConversa, setErroConversa] = useState('');
+
   // Cancelamento: a consulta aguardando confirmação, o andamento e o resultado.
   const [paraCancelar, setParaCancelar] = useState(null);
   const [cancelando, setCancelando] = useState(false);
@@ -37,6 +46,30 @@ export default function Agendamento({ navigation }) {
   });
 
   if (!fontsLoaded) return null;
+
+  const fecharDetalhe = () => {
+    setDetalhe(null);
+    setErroConversa('');
+  };
+
+  const conversarComProfissional = async () => {
+    if (abrindoConversa || !detalhe) return;
+    setErroConversa('');
+    setAbrindoConversa(true);
+    try {
+      await abrirConversaDaConsulta({ navigation, consulta: detalhe, papel: 'cliente', meuId: usuario?.uid });
+      fecharDetalhe();
+    } catch (e) {
+      console.warn('Erro ao abrir conversa:', e);
+      setErroConversa(
+        e?.code === 'conversa/sem-conta'
+          ? 'Este profissional ainda não tem conta no app, então não dá para conversar.'
+          : 'Não foi possível abrir a conversa. Verifique sua conexão e tente novamente.'
+      );
+    } finally {
+      setAbrindoConversa(false);
+    }
+  };
 
   const confirmarCancelamento = async () => {
     if (!paraCancelar || cancelando) return;
@@ -84,7 +117,14 @@ export default function Agendamento({ navigation }) {
           ) : (
             <View style={styles.listaConsultas}>
               {proximas.map((consulta) => (
-                <View key={consulta.id} style={styles.consultaItem}>
+                <TouchableOpacity
+                  key={consulta.id}
+                  style={styles.consultaItem}
+                  activeOpacity={0.85}
+                  onPress={() => { setErroConversa(''); setDetalhe(consulta); }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ver detalhes da consulta com ${consulta.profissionalNome} às ${consulta.horario}`}
+                >
                   <View style={styles.consultaLinha}>
                     <View style={styles.consultaData}>
                       <Text style={styles.consultaDia}>{diaDoMes(consulta.data)}</Text>
@@ -116,7 +156,7 @@ export default function Agendamento({ navigation }) {
                       <Text style={styles.acaoCancelarTexto}>Cancelar</Text>
                     </TouchableOpacity>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           )}
@@ -145,6 +185,17 @@ export default function Agendamento({ navigation }) {
 
       </ScrollView>
       <NavBar />
+
+      <DetalhesConsultaModal
+        consulta={detalhe}
+        papel="cliente"
+        onFechar={fecharDetalhe}
+        onConversar={detalhe?.profissionalId ? conversarComProfissional : undefined}
+        onReagendar={detalhe ? () => { const c = detalhe; fecharDetalhe(); navigation.navigate('FinalAgendamento', { reagendar: c }); } : undefined}
+        onCancelar={detalhe ? () => { const c = detalhe; fecharDetalhe(); setErroAcao(''); setParaCancelar(c); } : undefined}
+        erro={erroConversa}
+        ocupado={abrindoConversa}
+      />
 
       <ModalConfirmacao
         visivel={!!paraCancelar}

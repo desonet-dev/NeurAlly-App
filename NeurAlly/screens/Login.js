@@ -191,6 +191,7 @@ const criarStyles = (cor) => StyleSheet.create({
     input: {
         width: '100%',
         backgroundColor: cor.bg('#FFF'),
+        color: cor.fg('#333'),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,

@@ -6,12 +6,14 @@ import NavBarPsi from '../components/navBarPsi.js';
 import { useAuth } from '../contexts/AuthContext.js';
 import { useOrigemDaFoto } from '../hooks/useFotoPerfil.js';
 import useConsultas from '../hooks/useConsultas.js';
-import { diasDaSemana, faixaDeHorario, formatarDataLonga, hojeISO } from '../utils/datas.js';
+import { dataDeISO, faixaDeHorario, formatarDataLonga, proximosDias } from '../utils/datas.js';
+import useHoje from '../hooks/useHoje.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
 export default function HomePsicologo({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
   const { perfil } = useAuth();
+  const hoje = useHoje();
   const fotoPerfil = useOrigemDaFoto();
   // Consultas que os clientes marcaram com este psicólogo.
   const { proximas, datasComConsulta } = useConsultas('profissional');
@@ -24,8 +26,8 @@ export default function HomePsicologo({ navigation }) {
 
   if (!fontsLoaded) return null;
 
-  const semana = diasDaSemana();
-  const hoje = hojeISO();
+  // Hoje e os 6 dias seguintes.
+  const semana = proximosDias(7, dataDeISO(hoje));
 
   return (
     <SafeAreaView style={styles.container}>

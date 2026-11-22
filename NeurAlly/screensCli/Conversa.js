@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     StyleSheet,
     Text,
@@ -15,6 +15,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import { useFonts } from 'expo-font';
 import { ouvirMensagens, enviarMensagem } from '../services/chatService';
+import { useAuth } from '../contexts/AuthContext.js';
+import useContatosDeConsulta from '../hooks/useContatosDeConsulta.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
 export default function Conversa({ route, navigation }) {
@@ -22,9 +24,16 @@ export default function Conversa({ route, navigation }) {
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState([]);
     const insets = useSafeAreaInsets();
+    const listaRef = useRef(null);
+
+    // A conversa só aceita mensagens enquanto houver uma consulta marcada com a outra pessoa.
+    const { perfil } = useAuth();
+    const papel = perfil?.tipo === 'psicologo' ? 'profissional' : 'cliente';
+    const { podeConversarCom, carregando: carregandoConsultas } = useContatosDeConsulta(papel);
 
     // Recebe o contato, o chatId e o ID do usuário logado via route.params
     const { contato, chatId, usuarioId } = route.params || {};
+    const conversaLiberada = carregandoConsultas || podeConversarCom(contato?.id);
 
     // Efeito para escutar as mensagens do Firestore em tempo real
     useEffect(() => {
@@ -40,7 +49,7 @@ export default function Conversa({ route, navigation }) {
 
     // Função para enviar a mensagem
     const handleEnviar = async () => {
-        if (inputText.trim() === '' || !chatId || !usuarioId) return;
+        if (inputText.trim() === '' || !chatId || !usuarioId || !conversaLiberada) return;
 
         const textoParaEnviar = inputText;
         setInputText(''); // Limpa o input imediatamente para melhor fluidez
@@ -122,6 +131,11 @@ export default function Conversa({ route, navigation }) {
 
                 {/* Mensagens em tempo real */}
                 <FlatList
+                    ref={listaRef}
+                    testID="lista-mensagens"
+                    // Abre já na mensagem mais recente (no fim da lista) e acompanha as novas mensagens.
+                    onContentSizeChange={() => listaRef.current?.scrollToEnd({ animated: false })}
+                    onLayout={() => listaRef.current?.scrollToEnd({ animated: false })}
                     data={messages}
                     keyExtractor={(item) => item.id}
                     renderItem={renderItem}
@@ -129,7 +143,18 @@ export default function Conversa({ route, navigation }) {
                     showsVerticalScrollIndicator={false}
                 />
 
+                {/* Sem consulta marcada: só leitura */}
+                {!conversaLiberada && (
+                    <View style={[styles.avisoSemConsulta, { paddingBottom: 14 + insets.bottom }]}>
+                        <Ionicons name="calendar-outline" size={18} color={cor.fg("#5A6B87")} style={{ marginRight: 8 }} />
+                        <Text style={styles.avisoSemConsultaTexto}>
+                            Você só pode enviar mensagens enquanto tiver uma consulta marcada com {contato?.name || 'esta pessoa'}.
+                        </Text>
+                    </View>
+                )}
+
                 {/* Parte inferior da tela (input e botões) */}
+                {conversaLiberada && (
                 <View style={[styles.inputContainer, { paddingBottom: 10 + insets.bottom }]}>
                     <View style={styles.textInputWrapper}>
                         <TouchableOpacity style={styles.iconButton}>
@@ -150,16 +175,32 @@ export default function Conversa({ route, navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.sendButton} onPress={handleEnviar}>
+                    <TouchableOpacity style={styles.sendButton} onPress={handleEnviar} accessibilityLabel="Enviar mensagem">
                         <Ionicons name="send" size={18} color={cor.fg("#FFF")} style={{ marginLeft: 3 }} />
                     </TouchableOpacity>
                 </View>
+                )}
             </KeyboardAvoidingView>
         </View>
     );
 }
 
 const criarStyles = (cor) => StyleSheet.create({
+    avisoSemConsulta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 14,
+        paddingHorizontal: 20,
+        backgroundColor: cor.bg('#FFF'),
+        borderTopWidth: 1,
+        borderTopColor: cor.bd('#EEE'),
+    },
+    avisoSemConsultaTexto: {
+        flex: 1,
+        fontFamily: 'Montserrat-Regular',
+        fontSize: 12,
+        color: cor.fg('#5A6B87'),
+    },
     container: {
         flex: 1,
         backgroundColor: cor.bg('#E4F0F8'),

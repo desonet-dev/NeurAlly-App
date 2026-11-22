@@ -8,7 +8,7 @@ import { sairDoGoogle } from './googleAuthService';
 import { consultaEhFutura } from '../utils/datas.js';
 
 // Subcoleções guardadas dentro de usuarios/{uid}.
-const SUBCOLECOES = ['diario', 'anotacoes', 'triagem'];
+const SUBCOLECOES = ['diario', 'anotacoes', 'triagem', 'jardim'];
 
 // Contas do Google não têm senha para confirmar: o Firebase só permite excluir se o login for recente.
 const LOGIN_RECENTE_MS = 4 * 60 * 1000;

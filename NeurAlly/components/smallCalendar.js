@@ -2,10 +2,11 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { diasDaSemana, hojeISO } from '../utils/datas.js';
+import { dataDeISO, proximosDias } from '../utils/datas.js';
+import useHoje from '../hooks/useHoje.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
-// Calendário da semana atual (segunda a domingo).
+// Calendário de 7 dias: começa em HOJE e mostra os 6 dias seguintes (muda sozinho a cada dia).
 //  - Dia com consulta marcada: fica azul.
 //  - Hoje (sem consulta): ganha só um contorno azul.
 //  - Demais dias: normais.
@@ -14,6 +15,7 @@ export default function SmallCalendar({ datasConsulta = new Set() }) {
   const [styles, cor] = useEstilos(criarStyles);
   const navigation = useNavigation();
 
+  const hoje = useHoje();
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
     'Montserrat-Bold': require('../styles/fonts/Montserrat/static/Montserrat-Bold.ttf'),
@@ -22,8 +24,7 @@ export default function SmallCalendar({ datasConsulta = new Set() }) {
     return null;
   }
 
-  const semana = diasDaSemana();
-  const hoje = hojeISO();
+  const semana = proximosDias(7, dataDeISO(hoje));
 
   return (
     <View style={styles.calendarView}>

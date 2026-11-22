@@ -49,6 +49,7 @@ export default function DetalhesConsultaModal({
   onConversar,
   onCancelar,
   onAgendarNovamente,
+  onReagendar,
   erro = '',
   ocupado = false,
 }) {
@@ -128,6 +129,12 @@ export default function DetalhesConsultaModal({
                   <Text style={styles.botaoTexto}>{ehProfissional ? 'Conversar com o paciente' : 'Conversar com o profissional'}</Text>
                 </>
               )}
+            </TouchableOpacity>
+          )}
+          {!!onReagendar && (
+            <TouchableOpacity style={styles.botaoContorno} onPress={onReagendar}>
+              <Ionicons name="calendar-outline" size={18} color={cor.fg("#1A56DB")} style={{ marginRight: 8 }} />
+              <Text style={styles.botaoContornoTexto}>Reagendar</Text>
             </TouchableOpacity>
           )}
           {!!onAgendarNovamente && (

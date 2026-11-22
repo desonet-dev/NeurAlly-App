@@ -8,6 +8,7 @@ import { MUNICIPIOS } from '../constants/opcoes.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { apenasDigitos, formatarCpf, formatarDataNascimento } from '../utils/formatacao.js';
 export default function DadosPessoais({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
@@ -79,12 +80,12 @@ export default function DadosPessoais({ navigation }) {
             <EditableField label="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" />
             <EditableField label="Telefone" value={telefone} onChangeText={setTelefone} keyboardType="phone-pad" />
             <EditableField label="Senha" value={senha} onChangeText={setSenha} secure />
-            <EditableField label="Data de Nascimento" value={dataNascimento} onChangeText={setDataNascimento} />
+            <EditableField label="Data de Nascimento" value={dataNascimento} onChangeText={(t) => setDataNascimento(formatarDataNascimento(t))} keyboardType="numeric" />
 
             {/* CPF apenas leitura com aviso */}
             <EditableField
               label="CPF"
-              value={cpf || 'Não informado'}
+              value={cpf ? (apenasDigitos(cpf).length === 11 ? formatarCpf(cpf) : cpf) : 'Não informado'}
               locked
               onLockedPress={() => Alert.alert('Aviso', 'O CPF não pode ser alterado.')}
             />

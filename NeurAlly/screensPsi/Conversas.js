@@ -13,7 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import NavBarPsi from '../components/navBarPsi.js';
 import NovaConversaModal from '../components/NovaConversaModal.js';
 import { useAuth } from '../contexts/AuthContext.js';
-import useConsultas from '../hooks/useConsultas.js';
+import useContatosDeConsulta from '../hooks/useContatosDeConsulta.js';
 import SearchBar from '../components/searchBar.js';
 import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
@@ -27,20 +27,11 @@ export default function ConversasPsi() {
 
     const [conversas, setConversas] = useState([]);
 
-    // Nova conversa: pacientes que já marcaram consulta com este psicólogo.
+    // Nova conversa: só os pacientes com consulta marcada com este psicólogo.
     const [novaConversaAberta, setNovaConversaAberta] = useState(false);
     const [abrindoConversa, setAbrindoConversa] = useState(false);
     const [erroNovaConversa, setErroNovaConversa] = useState('');
-    const { todas: consultasDoPsicologo, carregando: carregandoPacientes } = useConsultas('profissional');
-    const pacientes = React.useMemo(() => {
-        const porId = new Map();
-        consultasDoPsicologo.forEach((c) => {
-            if (c.clienteId && !porId.has(c.clienteId)) {
-                porId.set(c.clienteId, { id: c.clienteId, uid: c.clienteId, nome: c.clienteNome || 'Paciente', esp: 'Paciente' });
-            }
-        });
-        return [...porId.values()].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-    }, [consultasDoPsicologo]);
+    const { contatos: pacientes, carregando: carregandoPacientes } = useContatosDeConsulta('profissional');
 
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -201,7 +192,7 @@ export default function ConversasPsi() {
                 onFechar={() => setNovaConversaAberta(false)}
                 titulo="Nova conversa"
                 placeholder="Procure por um paciente"
-                vazio="Os pacientes que marcarem consulta com você aparecem aqui para você iniciar uma conversa."
+                vazio="Você não tem consultas marcadas no momento. Os pacientes com consulta marcada aparecem aqui para você iniciar uma conversa."
                 opcoes={pacientes}
                 carregando={carregandoPacientes}
                 ocupado={abrindoConversa}

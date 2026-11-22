@@ -18,6 +18,7 @@ import { completarPerfil, traduzErroFirebase } from '../services/authService.js'
 import { useAuth } from '../contexts/AuthContext.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { formatarCpf, formatarDataNascimento } from '../utils/formatacao.js';
 // Tela de primeiro acesso: aparece quando a pessoa entrou (ex.: com Google) mas ainda
 // não escolheu se é cliente ou psicólogo. Cria o documento usuarios/{uid}.
 function avisar(titulo, mensagem) {
@@ -110,8 +111,8 @@ export default function CompletarCadastroScreen({ navigation, route }) {
 
                         <TextInput style={styles.input} placeholder="Nome" placeholderTextColor={cor.fg("#666")} value={nome} onChangeText={setNome} editable={!salvando} />
                         <TextInput style={[styles.input, styles.inputBloqueado]} placeholder="E-mail" placeholderTextColor={cor.fg("#666")} value={email} editable={false} />
-                        <TextInput style={styles.input} placeholder="Data de nascimento" placeholderTextColor={cor.fg("#666")} value={dataNascimento} onChangeText={setDataNascimento} editable={!salvando} />
-                        <TextInput style={styles.input} placeholder="CPF" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" value={cpf} onChangeText={setCpf} editable={!salvando} />
+                        <TextInput style={styles.input} placeholder="Data de nascimento (DD/MM/AAAA)" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={10} value={dataNascimento} onChangeText={(t) => setDataNascimento(formatarDataNascimento(t))} editable={!salvando} />
+                        <TextInput style={styles.input} placeholder="CPF" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={14} value={cpf} onChangeText={(t) => setCpf(formatarCpf(t))} editable={!salvando} />
                         <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor={cor.fg("#666")} keyboardType="phone-pad" value={telefone} onChangeText={setTelefone} editable={!salvando} />
 
                         {isPsychologist && (

@@ -9,6 +9,7 @@ import { cancelarConsulta } from '../services/consultasService.js';
 import ModalConfirmacao from '../components/ModalConfirmacao.js';
 import DetalhesConsultaModal from '../components/DetalhesConsultaModal.js';
 import { abrirConversaDaConsulta } from '../utils/abrirConversa.js';
+import { podeConversarCom } from '../utils/contatos.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
@@ -24,7 +25,7 @@ export default function AgendaPsi({ navigation }) {
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [diaSelecionado, setDiaSelecionado] = useState(hojeISO());
   // Consultas que os clientes marcaram com este psicólogo.
-  const { consultas, carregando, erro } = useConsultas('profissional');
+  const { consultas, proximas, carregando, erro } = useConsultas('profissional');
 
   // Consulta aberta nos detalhes (ao tocar no card) e abertura da conversa com o paciente.
   const { usuario } = useAuth();
@@ -227,7 +228,7 @@ export default function AgendaPsi({ navigation }) {
         consulta={detalhe}
         papel="profissional"
         onFechar={fecharDetalhe}
-        onConversar={detalhe?.clienteId ? conversarComPaciente : undefined}
+        onConversar={podeConversarCom(proximas, 'profissional', detalhe?.clienteId) ? conversarComPaciente : undefined}
         onCancelar={
           detalhe && detalhe.status !== 'cancelada' && consultaEhFutura(detalhe)
             ? () => { const c = detalhe; fecharDetalhe(); setErroCancelar(''); setParaCancelar(c); }
