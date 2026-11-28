@@ -4,6 +4,9 @@
 
 ---
 
+## Link para download do APK do aplicativo
+[Clique aqui para baixar](https://expo.dev/accounts/deson/projects/NeurAlly/builds/87aa282f-b5ab-4988-850c-e3b3f893e5dc)
+
 ## Descrição do Projeto
 
 Um app voltado para a saúde mental, visa democratizar o acesso à tratamento e acompanhamento psicológico para a população brasileira.
