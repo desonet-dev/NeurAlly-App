@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet, Text, View, ScrollView, TouchableOpacity,
-  SafeAreaView, ActivityIndicator, Alert
+  SafeAreaView, ActivityIndicator, TextInput
 } from 'react-native';
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import NavBarPsi from '../components/navBarPsi.js';
 import { escutarAnotacoes, removerAnotacao } from '../services/anotacoesService.js';
+import ModalConfirmacao from '../components/ModalConfirmacao.js';
+import { filtrarPorTexto } from '../utils/busca.js';
+import { campoWeb } from '../styles/campos.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
 // Converte o timestamp do Firestore em algo como "16/09/2026 14:30".
@@ -25,6 +28,17 @@ export default function AnotacoesPsi({ navigation }) {
   const [anotacoes, setAnotacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [busca, setBusca] = useState('');
+
+  // Apagar com confirmação (a janela própria funciona igual no celular e na web).
+  const [paraApagar, setParaApagar] = useState(null);
+  const [erroApagar, setErroApagar] = useState(false);
+
+  // A busca procura no nome do paciente, no título e no texto da anotação.
+  const filtradas = useMemo(
+    () => filtrarPorTexto(anotacoes, busca, (a) => [a.paciente, a.titulo, a.texto]),
+    [anotacoes, busca]
+  );
 
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('../styles/fonts/Montserrat/static/Montserrat-Regular.ttf'),
@@ -66,21 +80,17 @@ export default function AnotacoesPsi({ navigation }) {
 
   if (!fontsLoaded) return null;
 
-  const confirmarRemocao = (anotacao) => {
-    Alert.alert('Apagar anotação', `Deseja apagar "${anotacao.titulo}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Apagar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await removerAnotacao(anotacao.id);
-          } catch (erroRecebido) {
-            Alert.alert('Não foi possível apagar', 'Verifique sua conexão e tente novamente.');
-          }
-        },
-      },
-    ]);
+  const confirmarRemocao = (anotacao) => setParaApagar(anotacao);
+
+  const apagarAnotacao = async () => {
+    const alvo = paraApagar;
+    setParaApagar(null);
+    if (!alvo) return;
+    try {
+      await removerAnotacao(alvo.id);
+    } catch (erroRecebido) {
+      setErroApagar(true);
+    }
   };
 
   return (
@@ -91,6 +101,26 @@ export default function AnotacoesPsi({ navigation }) {
         <Text style={styles.pageSubtitle}>
           Registros particulares sobre seus atendimentos. Toque para editar.
         </Text>
+
+        {/* Barra de pesquisa: paciente, título ou texto da anotação */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={cor.fg("#999")} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por paciente, título ou texto"
+            placeholderTextColor={cor.fg("#999")}
+            value={busca}
+            onChangeText={setBusca}
+            autoCorrect={false}
+            returnKeyType="search"
+            accessibilityLabel="Buscar anotações"
+          />
+          {busca.length > 0 && (
+            <TouchableOpacity onPress={() => setBusca('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityLabel="Limpar busca">
+              <Ionicons name="close-circle" size={20} color={cor.fg("#999")} />
+            </TouchableOpacity>
+          )}
+        </View>
 
         {carregando && (
           <ActivityIndicator size="small" color={cor.fg('#4A77D4')} style={{ marginTop: 20 }} />
@@ -112,7 +142,13 @@ export default function AnotacoesPsi({ navigation }) {
           </View>
         )}
 
-        {!carregando && !erro && anotacoes.map((item) => (
+        {!carregando && !erro && anotacoes.length > 0 && filtradas.length === 0 && (
+          <View style={styles.avisoContainer}>
+            <Text style={styles.avisoTexto}>Nenhuma anotação encontrada para "{busca.trim()}".</Text>
+          </View>
+        )}
+
+        {!carregando && !erro && filtradas.map((item) => (
           <TouchableOpacity
             key={item.id}
             style={styles.card}
@@ -126,7 +162,7 @@ export default function AnotacoesPsi({ navigation }) {
                   <Text style={styles.cardPaciente}>Paciente: {item.paciente}</Text>
                 )}
               </View>
-              <TouchableOpacity onPress={() => confirmarRemocao(item)} hitSlop={10}>
+              <TouchableOpacity onPress={() => confirmarRemocao(item)} hitSlop={10} accessibilityLabel={`Apagar anotação ${item.titulo}`}>
                 <Ionicons name="trash-outline" size={20} color={cor.fg("#D64545")} />
               </TouchableOpacity>
             </View>
@@ -138,6 +174,25 @@ export default function AnotacoesPsi({ navigation }) {
         ))}
 
       </ScrollView>
+
+      <ModalConfirmacao
+        visivel={!!paraApagar}
+        tipo="perigo"
+        titulo="Apagar anotação?"
+        mensagem={paraApagar ? `A anotação "${paraApagar.titulo}" será apagada e não poderá ser recuperada.` : ''}
+        textoConfirmar="Sim, apagar"
+        textoCancelar="Cancelar"
+        onConfirmar={apagarAnotacao}
+        onCancelar={() => setParaApagar(null)}
+      />
+
+      <ModalConfirmacao
+        visivel={erroApagar}
+        tipo="perigo"
+        titulo="Não foi possível apagar"
+        mensagem="Verifique sua conexão e tente novamente."
+        onConfirmar={() => setErroApagar(false)}
+      />
 
       <TouchableOpacity
         style={styles.fab}
@@ -154,6 +209,22 @@ export default function AnotacoesPsi({ navigation }) {
 const criarStyles = (cor) => StyleSheet.create({
   container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   scrollContent: { padding: 20, paddingBottom: 130 },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: cor.bg('#FFF'),
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    height: 48,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: cor.fg('#333'), ...campoWeb(cor) },
   pageTitle: { fontFamily: 'Montserrat-Bold', fontSize: 24, color: cor.fg('#1A1A1A'), marginBottom: 4 },
   pageSubtitle: { fontFamily: 'Montserrat-Regular', fontSize: 13, color: cor.fg('#5A6B87'), marginBottom: 20 },
   card: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, padding: 20, marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },

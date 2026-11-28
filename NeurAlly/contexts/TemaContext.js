@@ -50,7 +50,7 @@ export function TemaProvider({ children }) {
   useEffect(() => {
     try {
       Appearance.setColorScheme(
-        preferenciaTema === TEMA_CLARO ? 'light' : preferenciaTema === TEMA_ESCURO ? 'dark' : null
+        preferenciaTema === TEMA_CLARO ? 'light' : preferenciaTema === TEMA_ESCURO ? 'dark' : 'auto'
       );
     } catch (erro) {
       // Plataformas sem suporte: só o visual do app muda.

@@ -1,22 +1,29 @@
-import { useEffect, useState } from 'react';
-import { carregarProfissionais } from '../services/profissionaisService.js';
+import { useCallback, useEffect, useState } from 'react';
+import { escutarPsicologos } from '../services/profissionaisService.js';
 
-// Carrega os profissionais disponíveis (psicólogos cadastrados; exemplos se ainda não houver nenhum).
+// Psicólogos que criaram conta no app, sempre atualizados (aparecem na hora, sem reabrir a tela).
 export default function useProfissionais() {
   const [profissionais, setProfissionais] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
-    let ativo = true;
-    carregarProfissionais().then((lista) => {
-      if (!ativo) return;
-      setProfissionais(lista);
-      setCarregando(false);
-    });
-    return () => {
-      ativo = false;
-    };
-  }, []);
+    setCarregando(true);
+    setErro(null);
+    const parar = escutarPsicologos(
+      (lista) => {
+        setProfissionais(lista);
+        setCarregando(false);
+      },
+      (e) => {
+        setErro(e);
+        setCarregando(false);
+      }
+    );
+    return parar;
+  }, [tentativa]);
 
-  return { profissionais, carregando };
+  const recarregar = useCallback(() => setTentativa((n) => n + 1), []);
+  return { profissionais, carregando, erro, recarregar };
 }

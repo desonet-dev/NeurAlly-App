@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-nativ
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 // Campo de texto bloqueado por padrão. Só fica editável depois de tocar no lápis
 // e volta a ficar bloqueado quando perde o foco (toque fora / fechar o teclado).
 //
@@ -115,6 +116,7 @@ const criarStyles = (cor) => StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
     fontSize: 12,
     color: cor.fg('#333'),
+    ...campoWeb(cor),
     marginRight: 8,
     height: '100%',
   },

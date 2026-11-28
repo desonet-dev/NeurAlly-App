@@ -13,6 +13,7 @@ import { premiarRegistroDoDiario } from '../services/jardimService.js';
 import ModalGotasDiario from '../components/ModalGotasDiario.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
   monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
@@ -157,6 +158,7 @@ export default function EscreverDiario({ navigation, route }) {
 
           <View style={styles.calendarWrapper}>
             <Calendar
+              key={cor.escuro ? 'escuro' : 'claro'}
               current={selectedDate}
               onDayPress={(day) => setSelectedDate(day.dateString)}
               markedDates={{
@@ -259,8 +261,8 @@ export default function EscreverDiario({ navigation, route }) {
 const criarStyles = (cor) => StyleSheet.create({
   container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   scrollContent: { padding: 20, paddingBottom: 130 },
-  inputTitle: { backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
-  inputBody: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 160, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  inputTitle: { backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', color: cor.fg('#333'), ...campoWeb(cor), marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  inputBody: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 160, fontSize: 14, fontFamily: 'Montserrat-Regular', color: cor.fg('#333'), ...campoWeb(cor), marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   moodContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 25 },
   moodIcon: { backgroundColor: cor.bg('#FFF'), width: 70, height: 70, borderRadius: 15, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'transparent', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   moodIconActiveOrange: { borderColor: cor.bd('#FF8C42'), backgroundColor: cor.bg('#FFF3E0') },

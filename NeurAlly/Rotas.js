@@ -24,6 +24,8 @@ import ConsultasPreviasScreen from './screens/ConsultasPrevias.js';
 import DocumentoLegalScreen from './screens/DocumentoLegal.js';
 import JogosRelaxantesScreen from './screens/JogosRelaxantes.js';
 import JardimZenScreen from './screens/JardimZen.js';
+import PerfilPublicoScreen from './screens/PerfilPublico.js';
+import SalaConsultaScreen from './screens/SalaConsulta.js';
 
 import HomePsiScreen from './screensPsi/Home.js';
 import PerfilPsiScreen from './screensPsi/Perfil.js';
@@ -62,6 +64,8 @@ const screens = [
   { name: 'DocumentoLegal', component: DocumentoLegalScreen },
   { name: 'JogosRelaxantes', component: JogosRelaxantesScreen },
   { name: 'JardimZen', component: JardimZenScreen },
+  { name: 'PerfilPublico', component: PerfilPublicoScreen },
+  { name: 'SalaConsulta', component: SalaConsultaScreen },
 
   { name: 'HomePsi', component: HomePsiScreen },
   { name: 'PerfilPsi', component: PerfilPsiScreen },

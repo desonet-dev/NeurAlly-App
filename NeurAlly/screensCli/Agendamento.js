@@ -13,6 +13,7 @@ import { useEstilos } from '../contexts/TemaContext.js';
 import DetalhesConsultaModal from '../components/DetalhesConsultaModal.js';
 import { abrirConversaDaConsulta } from '../utils/abrirConversa.js';
 import { useAuth } from '../contexts/AuthContext.js';
+import { consultaParaNavegacao, consultaTemVideo } from '../utils/chamada.js';
 // Função auxiliar para pegar a data atual no formato ISO (AAAA-MM-DD)
 function getHojeISO() {
   const hoje = new Date();
@@ -191,6 +192,7 @@ export default function Agendamento({ navigation }) {
         papel="cliente"
         onFechar={fecharDetalhe}
         onConversar={detalhe?.profissionalId ? conversarComProfissional : undefined}
+        onEntrarNaChamada={detalhe && consultaTemVideo(detalhe) ? () => { const c = detalhe; fecharDetalhe(); navigation.navigate('SalaConsulta', { consulta: consultaParaNavegacao(c) }); } : undefined}
         onReagendar={detalhe ? () => { const c = detalhe; fecharDetalhe(); navigation.navigate('FinalAgendamento', { reagendar: c }); } : undefined}
         onCancelar={detalhe ? () => { const c = detalhe; fecharDetalhe(); setErroAcao(''); setParaCancelar(c); } : undefined}
         erro={erroConversa}

@@ -137,9 +137,9 @@ export default function JardimZen({ navigation }) {
     if (r.erro) return;
     setDisparoChuva((d) => d + 1);
     const nome = ESPECIES[planta.especie].nome;
-    if (r.subiuDeEstagio) setMensagemPlanta(`✨ Sua ${nome.toLowerCase()} virou: ${NOMES_ESTAGIOS[r.estagio].toLowerCase()}!`);
+    if (r.subiuDeEstagio) setMensagemPlanta(`Sua ${nome.toLowerCase()} virou: ${NOMES_ESTAGIOS[r.estagio].toLowerCase()}!`);
     else if (r.acordou) setMensagemPlanta(`Sua ${nome.toLowerCase()} acordou. Que bom te ver de volta!`);
-    else setMensagemPlanta('Regada com carinho. 💧');
+    else setMensagemPlanta('Regada com carinho.');
   };
 
   const confirmarRemocao = () => {

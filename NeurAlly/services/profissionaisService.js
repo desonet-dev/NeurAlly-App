@@ -1,77 +1,72 @@
-import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from './firebaseConfig.js';
+import { filtrarPorTexto, normalizarTexto as normalizar } from '../utils/busca.js';
 
 // Diretório público de psicólogos: psicologos/{uid} guarda só o que o cliente precisa ver na busca
-// (nome e CRP). Dados sensíveis (CPF, telefone, nascimento) ficam apenas em usuarios/{uid}.
-const jaPublicados = new Set();
+// e no perfil público (nome, CRP, especialidade, biografia e foto). Dados sensíveis (CPF, telefone,
+// nascimento) ficam apenas em usuarios/{uid}.
+const ultimaPublicacao = new Map();
 
-export async function publicarPsicologo(uid, { nome, crp = '', especialidade = '' }) {
-  if (!uid || jaPublicados.has(uid)) return;
+// Cria/atualiza a ficha pública do psicólogo. Só grava de novo quando algo mudou (nome, CRP, foto...).
+export async function publicarPsicologo(uid, perfil = {}) {
+  if (!uid) return;
+  const dados = {
+    nome: perfil.nomeSocial || perfil.nome || '',
+    crp: perfil.crp || '',
+    especialidade: perfil.especialidade || '',
+    biografia: perfil.biografia || '',
+    foto: perfil.foto || '',
+  };
+  const assinatura = JSON.stringify(dados);
+  if (ultimaPublicacao.get(uid) === assinatura) return;
+
   try {
-    await setDoc(doc(db, 'psicologos', uid), { nome: nome || '', crp, especialidade }, { merge: true });
-    jaPublicados.add(uid);
+    await setDoc(doc(db, 'psicologos', uid), dados, { merge: true });
+    ultimaPublicacao.set(uid, assinatura);
   } catch (erro) {
     console.warn('Não foi possível publicar o psicólogo no diretório:', erro?.message || erro);
   }
 }
 
-// Psicólogos cadastrados no app, no formato usado pelas telas de busca.
-// `uid` identifica o psicólogo de verdade: é ele que liga a consulta à agenda dele.
-export async function listarPsicologos() {
-  const snapshot = await getDocs(collection(db, 'psicologos'));
-
-  return snapshot.docs.map((d) => {
-    const dados = d.data();
-    return {
-      id: d.id,
-      uid: d.id,
-      nome: dados.nome || 'Psicólogo(a)',
-      exp: '',
-      crp: dados.crp ? `CRP ${dados.crp}` : '',
-      esp: dados.especialidade || 'Psicólogo(a)',
-    };
-  });
+function paraProfissional(id, dados) {
+  return {
+    id,
+    uid: id,
+    nome: dados.nome || 'Psicólogo(a)',
+    exp: '',
+    crp: dados.crp ? `CRP ${dados.crp}` : '',
+    esp: dados.especialidade || 'Psicólogo(a)',
+    bio: dados.biografia || '',
+    foto: dados.foto || '',
+  };
 }
 
-// Exemplos mostrados enquanto ainda não há psicólogos cadastrados no app (não têm uid, então
-// não dão acesso a uma agenda nem a uma conversa de verdade).
-export const PROFISSIONAIS_EXEMPLO = [
-  { id: '1', nome: 'João Mendonça', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
-  { id: '2', nome: 'Caroline de Jesus', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
-  { id: '3', nome: 'Carla Andrade', exp: '25 anos de atuação', crp: 'CRP XX/00000', esp: 'Especialista em Neuropsicologia' },
-];
-
-// Lista os profissionais disponíveis: os psicólogos cadastrados de verdade; se não houver nenhum
-// (ou se a leitura falhar), cai nos exemplos para as telas nunca ficarem vazias.
-export async function carregarProfissionais() {
-  try {
-    const lista = await listarPsicologos();
-    if (lista.length > 0) {
-      return lista.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+// Escuta, em tempo real, os psicólogos que criaram conta no app (só os de verdade, sem exemplos).
+// `uid` identifica o psicólogo: é ele que liga a consulta à agenda e à conversa.
+// Devolve a função para parar de escutar.
+export function escutarPsicologos(aoAtualizar, aoFalhar) {
+  return onSnapshot(
+    collection(db, 'psicologos'),
+    (snapshot) => {
+      const lista = snapshot.docs.map((d) => paraProfissional(d.id, d.data()));
+      aoAtualizar(lista.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')));
+    },
+    (erro) => {
+      console.warn('Não foi possível listar os psicólogos:', erro?.message || erro);
+      if (aoFalhar) aoFalhar(erro);
     }
-  } catch (erro) {
-    console.warn('Não foi possível listar os psicólogos:', erro?.message || erro);
-  }
-  return PROFISSIONAIS_EXEMPLO;
+  );
+}
+
+export async function buscarPsicologo(uid) {
+  const instantaneo = await getDoc(doc(db, 'psicologos', uid));
+  return instantaneo.exists() ? paraProfissional(uid, instantaneo.data()) : null;
 }
 
 // "João Mendonça" -> "joao mendonca": busca sem diferenciar maiúsculas nem acentos.
-export function normalizarTexto(texto) {
-  return String(texto || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
+export const normalizarTexto = normalizar;
 
 // Filtra pelo que a pessoa digitou na barra de pesquisa (nome, especialidade ou CRP).
-// Todas as palavras digitadas precisam aparecer em algum desses campos.
 export function filtrarProfissionais(lista, busca) {
-  const palavras = normalizarTexto(busca).split(/\s+/).filter(Boolean);
-  if (palavras.length === 0) return lista;
-
-  return lista.filter((p) => {
-    const texto = normalizarTexto(`${p.nome} ${p.esp} ${p.crp}`);
-    return palavras.every((palavra) => texto.includes(palavra));
-  });
+  return filtrarPorTexto(lista, busca, (p) => [p.nome, p.esp, p.crp]);
 }

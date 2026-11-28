@@ -50,6 +50,7 @@ export default function DetalhesConsultaModal({
   onCancelar,
   onAgendarNovamente,
   onReagendar,
+  onEntrarNaChamada,
   erro = '',
   ocupado = false,
 }) {
@@ -119,6 +120,12 @@ export default function DetalhesConsultaModal({
             </View>
           )}
 
+          {!!onEntrarNaChamada && (
+            <TouchableOpacity style={styles.botaoVideo} onPress={onEntrarNaChamada} accessibilityLabel={ehProfissional ? 'Abrir sala de vídeo' : 'Entrar na sala de vídeo'}>
+              <Ionicons name="videocam" size={18} color={cor.fg("#FFF")} style={{ marginRight: 8 }} />
+              <Text style={styles.botaoTexto}>{ehProfissional ? 'Abrir sala de vídeo' : 'Entrar na sala de vídeo'}</Text>
+            </TouchableOpacity>
+          )}
           {!!onConversar && (
             <TouchableOpacity style={[styles.botao, ocupado && { opacity: 0.7 }]} onPress={onConversar} disabled={ocupado}>
               {ocupado ? (
@@ -176,6 +183,7 @@ const criarStyles = (cor) => StyleSheet.create({
   erroBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FDEDED'), borderWidth: 1, borderColor: cor.bd('#F5C2C2'), borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 10 },
   erroTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#B03030') },
   botao: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: cor.bg('#1A56DB'), borderRadius: 12, paddingVertical: 14, marginBottom: 8 },
+  botaoVideo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#2E9E5B', borderRadius: 12, paddingVertical: 14, marginBottom: 8 },
   botaoTexto: { fontFamily: 'Montserrat-Bold', color: cor.fg('#FFF'), fontSize: 14 },
   botaoContorno: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: cor.bd('#1A56DB'), borderRadius: 12, paddingVertical: 13, marginBottom: 8 },
   botaoContornoTexto: { fontFamily: 'Montserrat-Bold', color: cor.fg('#1A56DB'), fontSize: 14 },

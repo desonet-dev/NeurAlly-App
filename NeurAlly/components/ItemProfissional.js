@@ -15,7 +15,7 @@ export default function ItemProfissional({ profissional, onPress, selecionado = 
       accessibilityRole="button"
       accessibilityLabel={`${profissional.nome}, ${profissional.esp || 'Psicólogo(a)'}`}
     >
-      <Image source={profissional.img || require('../assets/Anderson.png')} style={styles.avatar} />
+      <Image source={profissional.foto ? { uri: profissional.foto } : profissional.img || require('../assets/perfil.png')} style={styles.avatar} />
       <View style={styles.info}>
         <Text style={styles.nome} numberOfLines={1}>{profissional.nome}</Text>
         <Text style={styles.esp} numberOfLines={1}>{profissional.esp || 'Psicólogo(a)'}</Text>

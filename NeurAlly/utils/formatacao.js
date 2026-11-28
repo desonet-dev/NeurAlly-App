@@ -20,3 +20,15 @@ export function formatarDataNascimento(texto) {
   if (n.length <= 4) return `${n.slice(0, 2)}/${n.slice(2)}`;
   return `${n.slice(0, 2)}/${n.slice(2, 4)}/${n.slice(4)}`;
 }
+
+// "11912345678" -> "(11) 91234-5678"; "1112345678" -> "(11) 1234-5678" (vai formatando enquanto digita)
+export function formatarTelefone(texto) {
+  const n = apenasDigitos(texto).slice(0, 11);
+  if (n.length === 0) return '';
+  if (n.length <= 2) return `(${n}`;
+  const ddd = n.slice(0, 2);
+  const resto = n.slice(2);
+  if (n.length <= 6) return `(${ddd}) ${resto}`;
+  if (n.length <= 10) return `(${ddd}) ${resto.slice(0, 4)}-${resto.slice(4)}`;
+  return `(${ddd}) ${resto.slice(0, 5)}-${resto.slice(5)}`;
+}

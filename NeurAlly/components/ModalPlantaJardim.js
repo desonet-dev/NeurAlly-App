@@ -72,7 +72,7 @@ export default function ModalPlantaJardim({
                 </Text>
               </View>
             ) : (
-              <Text style={styles.progressoTexto}>Totalmente crescida! Aproveite a vista. 🌸</Text>
+              <Text style={styles.progressoTexto}>Totalmente crescida! Aproveite a vista.</Text>
             )}
 
             {adormecida && (

@@ -15,6 +15,7 @@ import ItemProfissional from '../components/ItemProfissional.js';
 import ModalConfirmacao from '../components/ModalConfirmacao.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
   monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
@@ -51,7 +52,7 @@ export default function FinalAgendamento({ navigation, route }) {
   const [ocupados, setOcupados] = useState(new Set());
 
   // Profissionais disponíveis para escolher (e a barra de pesquisa que filtra a lista).
-  const { profissionais, carregando: carregandoProfissionais } = useProfissionais();
+  const { profissionais, carregando: carregandoProfissionais, erro: erroProfissionais, recarregar: recarregarProfissionais } = useProfissionais();
   const filtrados = useMemo(() => filtrarProfissionais(profissionais, busca), [profissionais, busca]);
 
   // uid do psicólogo escolhido (só existe para psicólogos reais da busca).
@@ -196,8 +197,16 @@ export default function FinalAgendamento({ navigation, route }) {
 
             {carregandoProfissionais ? (
               <ActivityIndicator color={cor.fg("#6292D6")} style={{ marginVertical: 20 }} />
+            ) : erroProfissionais ? (
+              <TouchableOpacity onPress={recarregarProfissionais}>
+                <Text style={styles.semResultado}>Não foi possível carregar os profissionais. Toque para tentar de novo.</Text>
+              </TouchableOpacity>
             ) : filtrados.length === 0 ? (
-              <Text style={styles.semResultado}>Nenhum profissional encontrado para "{busca.trim()}".</Text>
+              <Text style={styles.semResultado}>
+                {busca.trim()
+                  ? `Nenhum profissional encontrado para "${busca.trim()}".`
+                  : 'Ainda não há psicólogos cadastrados. Assim que um psicólogo criar a conta, ele aparece aqui.'}
+              </Text>
             ) : (
               filtrados.map((p) => (
                 <ItemProfissional key={p.id} profissional={p} onPress={escolherProfissional} />
@@ -208,6 +217,7 @@ export default function FinalAgendamento({ navigation, route }) {
 
         <View style={styles.calendarWrapper}>
           <Calendar
+            key={cor.escuro ? 'escuro' : 'claro'}
             current={hojeISO()}
             minDate={hojeISO()}
             onDayPress={(day) => { setSelectedDate(day.dateString); setAviso(''); }}
@@ -358,7 +368,7 @@ const criarStyles = (cor) => StyleSheet.create({
   atualTexto: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 12, color: cor.fg('#1A56DB') },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 15, height: 50, marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: cor.fg('#333') },
+  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 14, color: cor.fg('#333'), ...campoWeb(cor) },
   calendarWrapper: { borderRadius: 15, overflow: 'hidden', marginBottom: 20, backgroundColor: cor.bg('#FFF'), elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
   legenda: { fontFamily: 'Montserrat-Regular', fontSize: 11, color: cor.fg('#5A6B87'), marginTop: -10, marginBottom: 15, marginLeft: 5 },
   avisoBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: cor.bg('#FDEDED'), borderWidth: 1, borderColor: cor.bd('#F5C2C2'), borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginTop: 10 },

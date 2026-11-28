@@ -6,7 +6,7 @@ const DIAS_ABREV = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 // Duração considerada para saber se uma consulta de hoje já terminou.
-const DURACAO_CONSULTA_MIN = 60;
+export const DURACAO_CONSULTA_MIN = 60;
 
 export function paraISO(data) {
   const ano = data.getFullYear();

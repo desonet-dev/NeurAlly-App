@@ -206,7 +206,7 @@ export default function Conversas() {
                 onFechar={() => setNovaConversaAberta(false)}
                 titulo="Nova conversa"
                 placeholder="Procure por um profissional"
-                vazio="Você ainda não tem consultas marcadas. Quando marcar uma consulta, o profissional aparece aqui para você conversar."
+                vazio="Você ainda não marcou nenhuma consulta. Depois de marcar a primeira, o profissional aparece aqui para você conversar."
                 opcoes={contatosComConsulta}
                 carregando={carregandoContatos}
                 ocupado={abrindoConversa}

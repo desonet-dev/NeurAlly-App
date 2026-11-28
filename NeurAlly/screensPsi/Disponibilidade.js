@@ -6,6 +6,7 @@ import SelectField from '../components/SelectField.js';
 import { INTERVALOS, BLOQUEIOS } from '../constants/opcoes.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 export default function DisponibilidadePsi({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
@@ -187,6 +188,8 @@ const criarStyles = (cor) => StyleSheet.create({
   },
   timeInputBox: { 
     flex: 1, 
+    minWidth: 0, 
+    overflow: 'hidden', 
     backgroundColor: cor.bg('#F0F4FF'), 
     borderRadius: 10, 
     height: 40, 
@@ -199,14 +202,22 @@ const criarStyles = (cor) => StyleSheet.create({
     shadowRadius: 2, 
     elevation: 2 
   },
+  // width 100% + minWidth 0: na web o campo tem largura própria e vazava para fora da caixa.
   timeInput: { 
+    width: '100%', 
+    minWidth: 0, 
+    height: 40, 
+    padding: 0, 
+    textAlign: 'center', 
     fontFamily: 'Montserrat-Regular', 
     fontSize: 13, 
-    color: cor.fg('#333') 
+    color: cor.fg('#333'), 
+    ...campoWeb(cor) 
   },
   iconButton: { 
     width: 30, 
     height: 30, 
+    flexShrink: 0, 
     justifyContent: 'center', 
     alignItems: 'center' 
   },

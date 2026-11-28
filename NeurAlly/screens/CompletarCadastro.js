@@ -18,7 +18,9 @@ import { completarPerfil, traduzErroFirebase } from '../services/authService.js'
 import { useAuth } from '../contexts/AuthContext.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
-import { formatarCpf, formatarDataNascimento } from '../utils/formatacao.js';
+import { campoWeb } from '../styles/campos.js';
+import { formatarCpf, formatarDataNascimento, formatarTelefone } from '../utils/formatacao.js';
+import LinksLegais from '../components/LinksLegais.js';
 // Tela de primeiro acesso: aparece quando a pessoa entrou (ex.: com Google) mas ainda
 // não escolheu se é cliente ou psicólogo. Cria o documento usuarios/{uid}.
 function avisar(titulo, mensagem) {
@@ -113,7 +115,7 @@ export default function CompletarCadastroScreen({ navigation, route }) {
                         <TextInput style={[styles.input, styles.inputBloqueado]} placeholder="E-mail" placeholderTextColor={cor.fg("#666")} value={email} editable={false} />
                         <TextInput style={styles.input} placeholder="Data de nascimento (DD/MM/AAAA)" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={10} value={dataNascimento} onChangeText={(t) => setDataNascimento(formatarDataNascimento(t))} editable={!salvando} />
                         <TextInput style={styles.input} placeholder="CPF" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={14} value={cpf} onChangeText={(t) => setCpf(formatarCpf(t))} editable={!salvando} />
-                        <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor={cor.fg("#666")} keyboardType="phone-pad" value={telefone} onChangeText={setTelefone} editable={!salvando} />
+                        <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor={cor.fg("#666")} keyboardType="phone-pad" maxLength={15} value={telefone} onChangeText={(t) => setTelefone(formatarTelefone(t))} editable={!salvando} />
 
                         {isPsychologist && (
                             <TextInput
@@ -138,6 +140,9 @@ export default function CompletarCadastroScreen({ navigation, route }) {
                             )}
                         </TouchableOpacity>
                     </View>
+
+                    {/* Termos e política de privacidade */}
+                    <LinksLegais navigation={navigation} />
 
                     {/* Toggle (Alternância de Perfil) */}
                     <View style={styles.toggleContainer}>
@@ -211,6 +216,8 @@ const criarStyles = (cor) => StyleSheet.create({
     input: {
         width: '100%',
         backgroundColor: cor.bg('#FFF'),
+        color: cor.fg('#333'),
+        ...campoWeb(cor),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,

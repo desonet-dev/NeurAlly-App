@@ -18,7 +18,7 @@ export default function ConsultasPrevias({ navigation }) {
   const { usuario, perfil } = useAuth();
   const ehProfissional = perfil?.tipo === 'psicologo';
   const papel = ehProfissional ? 'profissional' : 'cliente';
-  const { todas, proximas, carregando, erro } = useConsultas(papel);
+  const { todas, consultas, carregando, erro } = useConsultas(papel);
 
   const [aba, setAba] = useState('realizadas');
   const [selecionada, setSelecionada] = useState(null);
@@ -161,8 +161,8 @@ export default function ConsultasPrevias({ navigation }) {
         consulta={selecionada}
         papel={papel}
         onFechar={fecharDetalhes}
-        // Só dá para conversar com quem tem uma consulta marcada (futura) com você.
-        onConversar={selecionada && podeConversarCom(proximas, papel, ehProfissional ? selecionada.clienteId : selecionada.profissionalId) ? conversar : undefined}
+        // Dá para conversar com quem você já marcou pelo menos uma consulta (não cancelada).
+        onConversar={selecionada && podeConversarCom(consultas, papel, ehProfissional ? selecionada.clienteId : selecionada.profissionalId) ? conversar : undefined}
         onAgendarNovamente={selecionada && !ehProfissional ? agendarNovamente : undefined}
         erro={erroConversa}
         ocupado={abrindoConversa}

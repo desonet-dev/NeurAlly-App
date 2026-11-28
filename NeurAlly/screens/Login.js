@@ -14,10 +14,12 @@ import {
 import { useFonts } from 'expo-font';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import SocialButtons from '../components/SocialButtons.js';
+import LinksLegais from '../components/LinksLegais.js';
 import { buscarPerfilComTentativas, entrarComEmailSenha, rotaInicial, traduzErroFirebase } from '../services/authService.js';
 import useLoginGoogle from '../hooks/useLoginGoogle.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 export default function LoginScreen({ navigation, route }) {
   const [styles, cor] = useEstilos(criarStyles);
     const [email, setEmail] = useState('');
@@ -149,6 +151,9 @@ export default function LoginScreen({ navigation, route }) {
                     </TouchableOpacity>
                 </View>
 
+                {/* Termos e política de privacidade */}
+                <LinksLegais navigation={navigation} />
+
                 {/* Ícones Sociais */}
                 <SocialButtons style={{ marginTop: 40 }} onGooglePress={entrarComGoogle} />
 
@@ -192,6 +197,7 @@ const criarStyles = (cor) => StyleSheet.create({
         width: '100%',
         backgroundColor: cor.bg('#FFF'),
         color: cor.fg('#333'),
+        ...campoWeb(cor),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,

@@ -13,7 +13,8 @@ const LIMITE_AGENDADAS = 60;
 
 // Quanto tempo ANTES da consulta cada lembrete é enviado (em minutos).
 // Para mudar os avisos, é só editar esta lista (ex.: [24 * 60, 60, 15]).
-export const ANTECEDENCIAS_MIN = [24 * 60, 60];
+// O 0 é o aviso "na hora" (na consulta on-line, lembra de abrir a sala de vídeo).
+export const ANTECEDENCIAS_MIN = [24 * 60, 60, 0];
 
 const suportado = Platform.OS !== 'web';
 
@@ -36,6 +37,18 @@ function textoDoLembrete(consulta, papel, minutosAntes) {
       : `com ${consulta.profissionalNome || 'o profissional'}`;
   const tipo = consulta.modalidade === 'online' ? 'on-line' : 'presencial';
 
+  if (minutosAntes === 0) {
+    if (consulta.modalidade === 'online') {
+      return {
+        titulo: 'Sua consulta começa agora',
+        corpo:
+          papel === 'profissional'
+            ? `Abra o app e inicie a chamada de vídeo da consulta ${quem}.`
+            : `Abra o app para entrar na sala de vídeo da consulta ${quem}. A sala de espera já está aberta.`,
+      };
+    }
+    return { titulo: 'Sua consulta começa agora', corpo: `Sua consulta ${tipo} ${quem} começa agora, às ${consulta.horario}.` };
+  }
   if (minutosAntes >= 24 * 60) {
     return {
       titulo: 'Consulta amanhã',

@@ -96,7 +96,7 @@ export const ouvirConversasDoUsuario = (userId, callback) => {
         id: outroId,
         name: 'Usuário',
         title: 'Profissional',
-        profilePicture: require('../assets/Anderson.png'),
+        profilePicture: require('../assets/perfil.png'),
       };
 
       if (outroId) {
@@ -105,6 +105,7 @@ export const ouvirConversasDoUsuario = (userId, callback) => {
           if (userDoc.exists()) {
             const userData = userDoc.data();
             dadosContato.name = userData.nome || 'Usuário';
+            if (userData.foto) dadosContato.profilePicture = { uri: userData.foto };
             dadosContato.title = userData.tipo === 'psicologo' ? 'Psicólogo' : 'Cliente';
           }
         } catch (e) {
@@ -148,7 +149,7 @@ export const ouvirConversasDoPsicologo = (userId, callback) => {
         name: 'Paciente',
         title: 'Cliente',
         emAcompanhamento: true,
-        profilePicture: require('../assets/Anderson.png'),
+        profilePicture: require('../assets/perfil.png'),
       };
 
       if (outroId) {
@@ -157,6 +158,7 @@ export const ouvirConversasDoPsicologo = (userId, callback) => {
           if (userDoc.exists()) {
             const userData = userDoc.data();
             dadosContato.name = userData.nome || 'Paciente';
+            if (userData.foto) dadosContato.profilePicture = { uri: userData.foto };
             dadosContato.title = userData.tipo === 'psicologo' ? 'Profissional' : 'Cliente';
           }
         } catch (e) {

@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext.js';
 import useConsultas from '../hooks/useConsultas.js';
 import { aoTocarNoLembrete, cancelarTodosLembretes, sincronizarLembretes } from '../services/notificacoesService.js';
+import { destinoDoLembrete } from '../utils/chamada.js';
 
 // Componente invisível: mantém os lembretes de consulta (notificações) sempre em dia.
 // Fica no App.js, então vale para qualquer tela. Quando uma consulta é marcada, reagendada ou
@@ -30,9 +31,11 @@ function Sincronizador({ papel }) {
   // Tocar no lembrete leva para a tela das consultas.
   useEffect(
     () =>
-      aoTocarNoLembrete(() => {
+      aoTocarNoLembrete((dados) => {
         try {
-          navigation.navigate(papel === 'profissional' ? 'AgendaPsi' : 'Agendamento');
+          // Consulta on-line com a sala disponível: o lembrete leva direto para a sala da consulta.
+          const { rota, params } = destinoDoLembrete(proximasRef.current, dados, papel);
+          navigation.navigate(rota, params);
         } catch (erro) {
           console.warn('Não foi possível abrir a tela da consulta:', erro?.message || erro);
         }

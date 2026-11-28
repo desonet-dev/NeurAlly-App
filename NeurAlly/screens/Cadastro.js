@@ -20,7 +20,9 @@ import { cadastrarUsuario, traduzErroFirebase } from '../services/authService.js
 import { useAuth } from '../contexts/AuthContext.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
-import { formatarCpf, formatarDataNascimento } from '../utils/formatacao.js';
+import { campoWeb } from '../styles/campos.js';
+import { formatarCpf, formatarDataNascimento, formatarTelefone } from '../utils/formatacao.js';
+import LinksLegais from '../components/LinksLegais.js';
 export default function CadastroScreen({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
     const [isPsychologist, setIsPsychologist] = useState(false);
@@ -106,7 +108,7 @@ export default function CadastroScreen({ navigation }) {
                     <TextInput style={styles.input} placeholder="Data de nascimento (DD/MM/AAAA)" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={10} value={dataNascimento} onChangeText={(t) => setDataNascimento(formatarDataNascimento(t))} editable={!cadastrando} />
                     <TextInput style={styles.input} placeholder="CPF" placeholderTextColor={cor.fg("#666")} keyboardType="numeric" maxLength={14} value={cpf} onChangeText={(t) => setCpf(formatarCpf(t))} editable={!cadastrando} />
                     <TextInput style={styles.input} placeholder="E-mail" placeholderTextColor={cor.fg("#666")} keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} editable={!cadastrando} />
-                    <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor={cor.fg("#666")} keyboardType="phone-pad" value={telefone} onChangeText={setTelefone} editable={!cadastrando} />
+                    <TextInput style={styles.input} placeholder="Telefone" placeholderTextColor={cor.fg("#666")} keyboardType="phone-pad" maxLength={15} value={telefone} onChangeText={(t) => setTelefone(formatarTelefone(t))} editable={!cadastrando} />
                     <TextInput style={styles.input} placeholder="Senha" placeholderTextColor={cor.fg("#666")} secureTextEntry={true} value={senha} onChangeText={setSenha} editable={!cadastrando} />
 
                     {/* Renderização Condicional: Só aparece se for Psicólogo */}
@@ -142,6 +144,9 @@ export default function CadastroScreen({ navigation }) {
                         )}
                     </TouchableOpacity>
                 </View>
+
+                {/* Termos e política de privacidade */}
+                <LinksLegais navigation={navigation} />
 
                 {/* Toggle (Alternância de Perfil) */}
                 <View style={styles.toggleContainer}>
@@ -208,6 +213,7 @@ const criarStyles = (cor) => StyleSheet.create({
         width: '100%',
         backgroundColor: cor.bg('#FFF'),
         color: cor.fg('#333'),
+        ...campoWeb(cor),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,

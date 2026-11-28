@@ -7,6 +7,7 @@ import { filtrarProfissionais } from '../services/profissionaisService.js';
 import useProfissionais from '../hooks/useProfissionais.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 export default function BuscaProfissionais({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
@@ -15,7 +16,7 @@ export default function BuscaProfissionais({ navigation }) {
   });
 
   // Psicólogos reais (contas cadastradas como psicólogo). Se não houver nenhum, ficam os exemplos.
-  const { profissionais, carregando } = useProfissionais();
+  const { profissionais, carregando, erro, recarregar } = useProfissionais();
   const [busca, setBusca] = useState('');
   const filtrados = useMemo(() => filtrarProfissionais(profissionais, busca), [profissionais, busca]);
 
@@ -30,7 +31,7 @@ export default function BuscaProfissionais({ navigation }) {
         <Text style={styles.cardTextBold}>{item.esp}</Text>
       </View>
       <View style={styles.cardRight}>
-        <Image source={item.img || require('../assets/Anderson.png')} style={styles.avatar} />
+        <Image source={item.foto ? { uri: item.foto } : item.img || require('../assets/perfil.png')} style={styles.avatar} />
         {/* Navega para a Tela 3 passando os dados */}
         <TouchableOpacity 
           style={styles.conhecerButton}
@@ -73,8 +74,19 @@ export default function BuscaProfissionais({ navigation }) {
         ListEmptyComponent={
           carregando ? (
             <ActivityIndicator style={styles.vazio} color={cor.fg("#6292D6")} />
+          ) : erro ? (
+            <View style={styles.vazio}>
+              <Text style={styles.vazioTexto}>Não foi possível carregar os profissionais. Verifique sua conexão.</Text>
+              <TouchableOpacity onPress={recarregar}>
+                <Text style={styles.vazioLink}>Tentar de novo</Text>
+              </TouchableOpacity>
+            </View>
           ) : (
-            <Text style={[styles.vazio, styles.vazioTexto]}>Nenhum profissional encontrado para "{busca.trim()}".</Text>
+            <Text style={[styles.vazio, styles.vazioTexto]}>
+              {busca.trim()
+                ? `Nenhum profissional encontrado para "${busca.trim()}".`
+                : 'Ainda não há psicólogos cadastrados. Assim que um psicólogo criar a conta, ele aparece aqui.'}
+            </Text>
           )
         }
       />
@@ -91,7 +103,7 @@ const criarStyles = (cor) => StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2,
   },
   searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 15 },
+  searchInput: { flex: 1, fontFamily: 'Montserrat-Regular', fontSize: 15, color: cor.fg('#333'), ...campoWeb(cor) },
   listContent: { paddingHorizontal: 20, paddingBottom: 130 },
   card: {
     backgroundColor: cor.bg('#FFF'), borderRadius: 16, padding: 18, marginBottom: 15, flexDirection: 'row', justifyContent: 'space-between',
@@ -105,6 +117,7 @@ const criarStyles = (cor) => StyleSheet.create({
   avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: cor.bg('#EEE'), marginBottom: 10 },
   conhecerButton: { backgroundColor: cor.bg('#FF8C42'), paddingVertical: 6, paddingHorizontal: 15, borderRadius: 6 },
   vazio: { marginTop: 40 },
+  vazioLink: { fontFamily: 'Montserrat-Bold', fontSize: 14, color: cor.fg('#1A56DB'), textAlign: 'center', marginTop: 12 },
   vazioTexto: { textAlign: 'center', fontFamily: 'Montserrat-Regular', fontSize: 14, color: cor.fg('#5A6B87') },
   conhecerText: { color: cor.fg('#FFF'), fontFamily: 'Montserrat-Bold', fontSize: 12 },
 });

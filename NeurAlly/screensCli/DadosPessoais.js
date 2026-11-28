@@ -8,7 +8,7 @@ import { MUNICIPIOS } from '../constants/opcoes.js';
 import { useAuth } from '../contexts/AuthContext.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
-import { apenasDigitos, formatarCpf, formatarDataNascimento } from '../utils/formatacao.js';
+import { apenasDigitos, formatarCpf, formatarDataNascimento, formatarTelefone } from '../utils/formatacao.js';
 export default function DadosPessoais({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
   const [fontsLoaded] = useFonts({
@@ -78,7 +78,7 @@ export default function DadosPessoais({ navigation }) {
             <EditableField label="Nome social" value={nomeSocial} onChangeText={setNomeSocial} />
             <EditableField label="Biografia" value={biografia} onChangeText={setBiografia} multiline height={100} />
             <EditableField label="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" />
-            <EditableField label="Telefone" value={telefone} onChangeText={setTelefone} keyboardType="phone-pad" />
+            <EditableField label="Telefone" value={telefone} onChangeText={(t) => setTelefone(formatarTelefone(t))} keyboardType="phone-pad" />
             <EditableField label="Senha" value={senha} onChangeText={setSenha} secure />
             <EditableField label="Data de Nascimento" value={dataNascimento} onChangeText={(t) => setDataNascimento(formatarDataNascimento(t))} keyboardType="numeric" />
 

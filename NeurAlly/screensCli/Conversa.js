@@ -17,6 +17,7 @@ import { useFonts } from 'expo-font';
 import { ouvirMensagens, enviarMensagem } from '../services/chatService';
 import { useAuth } from '../contexts/AuthContext.js';
 import useContatosDeConsulta from '../hooks/useContatosDeConsulta.js';
+import { carregarPerfilPublico } from '../services/perfilPublicoService.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
 export default function Conversa({ route, navigation }) {
@@ -25,14 +26,31 @@ export default function Conversa({ route, navigation }) {
     const [messages, setMessages] = useState([]);
     const insets = useSafeAreaInsets();
     const listaRef = useRef(null);
+    const [fotoContato, setFotoContato] = useState(null);
 
-    // A conversa só aceita mensagens enquanto houver uma consulta marcada com a outra pessoa.
+    // A conversa só aceita mensagens depois que existe pelo menos uma consulta marcada com a outra pessoa
+    // (depois disso fica liberada, mesmo sem consulta marcada no momento).
     const { perfil } = useAuth();
     const papel = perfil?.tipo === 'psicologo' ? 'profissional' : 'cliente';
     const { podeConversarCom, carregando: carregandoConsultas } = useContatosDeConsulta(papel);
 
     // Recebe o contato, o chatId e o ID do usuário logado via route.params
     const { contato, chatId, usuarioId } = route.params || {};
+    const abrirPerfil = () => {
+        if (contato?.id) navigation.navigate('PerfilPublico', { usuarioId: contato.id, nome: contato.name });
+    };
+
+    // Foto de perfil atual do contato (a lista de conversas só leva uma imagem padrão).
+    useEffect(() => {
+        let ativo = true;
+        if (contato?.id) {
+            carregarPerfilPublico(contato.id)
+                .then((p) => ativo && p.foto && setFotoContato(p.foto))
+                .catch(() => {});
+        }
+        return () => { ativo = false; };
+    }, [contato?.id]);
+
     const conversaLiberada = carregandoConsultas || podeConversarCom(contato?.id);
 
     // Efeito para escutar as mensagens do Firestore em tempo real
@@ -115,16 +133,25 @@ export default function Conversa({ route, navigation }) {
                         <Ionicons name="arrow-back" size={28} color={cor.fg("#FFF")} />
                     </TouchableOpacity>
 
-                    <Image
-                        source={contato?.profilePicture || require('../assets/Anderson.png')}
-                        style={styles.headerAvatar}
-                    />
+                    {/* Tocar na foto ou no nome abre o perfil público da pessoa */}
+                    <TouchableOpacity
+                        style={styles.headerPerfil}
+                        onPress={abrirPerfil}
+                        disabled={!contato?.id}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Ver perfil de ${contato?.name || 'contato'}`}
+                    >
+                        <Image
+                            source={fotoContato ? { uri: fotoContato } : contato?.profilePicture || require('../assets/perfil.png')}
+                            style={styles.headerAvatar}
+                        />
 
-                    <View style={styles.headerTitleContainer}>
-                        <Text style={styles.headerName} numberOfLines={1}>
-                            {contato?.name || 'Carregando...'}
-                        </Text>
-                    </View>
+                        <View style={styles.headerTitleContainer}>
+                            <Text style={styles.headerName} numberOfLines={1}>
+                                {contato?.name || 'Carregando...'}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
 
                     <Text style={styles.headerRole}>{contato?.title || 'Profissional'}</Text>
                 </View>
@@ -148,7 +175,7 @@ export default function Conversa({ route, navigation }) {
                     <View style={[styles.avisoSemConsulta, { paddingBottom: 14 + insets.bottom }]}>
                         <Ionicons name="calendar-outline" size={18} color={cor.fg("#5A6B87")} style={{ marginRight: 8 }} />
                         <Text style={styles.avisoSemConsultaTexto}>
-                            Você só pode enviar mensagens enquanto tiver uma consulta marcada com {contato?.name || 'esta pessoa'}.
+                            Para conversar, é preciso ter marcado pelo menos uma consulta com {contato?.name || 'esta pessoa'}.
                         </Text>
                     </View>
                 )}
@@ -217,6 +244,11 @@ const criarStyles = (cor) => StyleSheet.create({
     },
     backButton: {
         marginRight: 10,
+    },
+    headerPerfil: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     headerAvatar: {
         width: 44,

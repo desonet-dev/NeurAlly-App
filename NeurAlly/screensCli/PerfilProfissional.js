@@ -47,7 +47,7 @@ export default function PerfilProfissional({ route, navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.headerImageContainer}>
-        <Image source={require('../assets/profissionalExemplo.png')} style={styles.headerImage} resizeMode="cover" />
+        <Image source={profissional.foto ? { uri: profissional.foto } : require('../assets/profissionalExemplo.png')} style={styles.headerImage} resizeMode="cover" />
         
         <TouchableOpacity style={[styles.backButton, { top: insets.top + 10 }]} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={30} color={cor.fg("#FFF")} />

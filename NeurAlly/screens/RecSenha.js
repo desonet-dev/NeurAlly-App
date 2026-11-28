@@ -16,6 +16,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { recuperarSenha, traduzErroFirebase } from '../services/authService.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 export default function EsqueciSenhaScreen({ navigation }) {
   const [styles, cor] = useEstilos(criarStyles);
     const [email, setEmail] = useState('');
@@ -147,6 +148,8 @@ const criarStyles = (cor) => StyleSheet.create({
     input: {
         width: '100%',
         backgroundColor: cor.bg('#FFF'),
+        color: cor.fg('#333'),
+        ...campoWeb(cor),
         borderRadius: 8,
         height: 45,
         paddingHorizontal: 15,

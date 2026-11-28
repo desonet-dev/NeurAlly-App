@@ -20,12 +20,14 @@ import { useNavigation } from '@react-navigation/native';
 import { ouvirConversasDoPsicologo, obterOuCriarChat } from '../services/chatService';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { ouvirContatosOnline } from '../services/presencaService';
 export default function ConversasPsi() {
   const [styles, cor] = useEstilos(criarStyles);
     const { usuario } = useAuth();
     const meuIdPsicologo = usuario?.uid;
 
     const [conversas, setConversas] = useState([]);
+    const [idsOnline, setIdsOnline] = useState([]);
 
     // Nova conversa: só os pacientes com consulta marcada com este psicólogo.
     const [novaConversaAberta, setNovaConversaAberta] = useState(false);
@@ -48,6 +50,12 @@ export default function ConversasPsi() {
 
         return () => unsubscribe();
     }, [meuIdPsicologo]);
+
+    // Presença real dos pacientes: a bolinha verde só aparece para quem está online no app agora.
+    useEffect(() => {
+        const parar = ouvirContatosOnline(conversas.map((c) => c.id), setIdsOnline);
+        return parar;
+    }, [conversas]);
 
     // Função para abrir o chat selecionado
     const abrirChat = (chat) => {
@@ -121,7 +129,7 @@ export default function ConversasPsi() {
                                     source={item.profilePicture}
                                     style={styles.activeImage}
                                 />
-                                <View style={styles.onlineBadge} />
+                                {(item.online || idsOnline.includes(item.id)) && <View style={styles.onlineBadge} />}
                             </TouchableOpacity>
                         )}
                     />
@@ -192,7 +200,7 @@ export default function ConversasPsi() {
                 onFechar={() => setNovaConversaAberta(false)}
                 titulo="Nova conversa"
                 placeholder="Procure por um paciente"
-                vazio="Você não tem consultas marcadas no momento. Os pacientes com consulta marcada aparecem aqui para você iniciar uma conversa."
+                vazio="Nenhum paciente marcou consulta com você ainda. Quem marcar pelo menos uma consulta aparece aqui para você iniciar uma conversa."
                 opcoes={pacientes}
                 carregando={carregandoPacientes}
                 ocupado={abrindoConversa}

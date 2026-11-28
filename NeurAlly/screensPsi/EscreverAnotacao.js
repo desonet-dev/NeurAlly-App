@@ -8,6 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { adicionarAnotacao, atualizarAnotacao } from '../services/anotacoesService.js';
 
 import { useEstilos } from '../contexts/TemaContext.js';
+import { campoWeb } from '../styles/campos.js';
 export default function EscreverAnotacaoPsi({ navigation, route }) {
   const [styles, cor] = useEstilos(criarStyles);
   // Quando a tela recebe uma anotacao por parametro, estamos editando;
@@ -129,8 +130,8 @@ const criarStyles = (cor) => StyleSheet.create({
   container: { flex: 1, backgroundColor: cor.bg('#E4F0F8') },
   scrollContent: { padding: 20, paddingBottom: 40 },
   pageTitle: { fontFamily: 'Montserrat-Bold', fontSize: 24, color: cor.fg('#1A1A1A'), marginBottom: 20 },
-  inputTitle: { backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
-  inputBody: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 200, fontSize: 14, fontFamily: 'Montserrat-Regular', marginBottom: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  inputTitle: { backgroundColor: cor.bg('#FFF'), borderRadius: 25, paddingHorizontal: 20, height: 50, fontSize: 14, fontFamily: 'Montserrat-Regular', color: cor.fg('#333'), ...campoWeb(cor), marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+  inputBody: { backgroundColor: cor.bg('#FFF'), borderRadius: 15, paddingHorizontal: 20, paddingTop: 15, height: 200, fontSize: 14, fontFamily: 'Montserrat-Regular', color: cor.fg('#333'), ...campoWeb(cor), marginBottom: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
   actionButtonsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 20 },
   submitButton: { backgroundColor: cor.bg('#6292D6'), paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3, minWidth: 120, alignItems: 'center' },
   submitButtonDisabled: { opacity: 0.7 },

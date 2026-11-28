@@ -62,6 +62,20 @@ service cloud.firestore {
             || resource.data.profissionalId == request.auth.uid);
     }
 
+    // Chamadas de vídeo das consultas on-line: um documento por consulta (mesmo id da consulta).
+    // O psicólogo da consulta abre e encerra a sala; ele e o paciente conseguem ler o estado
+    // (se a sala está aberta e o endereço dela). Só vale para consultas ainda 'agendada'.
+    match /chamadas/{consultaId} {
+      allow read: if request.auth != null
+        && (get(/databases/$(database)/documents/consultas/$(consultaId)).data.clienteId == request.auth.uid
+            || get(/databases/$(database)/documents/consultas/$(consultaId)).data.profissionalId == request.auth.uid);
+      allow create, update: if request.auth != null
+        && get(/databases/$(database)/documents/consultas/$(consultaId)).data.profissionalId == request.auth.uid
+        && get(/databases/$(database)/documents/consultas/$(consultaId)).data.status == 'agendada'
+        && request.resource.data.profissionalId == request.auth.uid
+        && request.resource.data.clienteId == get(/databases/$(database)/documents/consultas/$(consultaId)).data.clienteId;
+    }
+
     // Conversas
     match /chats/{chatId} {
       // Conversas reais: só os dois participantes

@@ -1,14 +1,5 @@
 import { db } from './firebaseConfig';
-import {
-  collection,
-  doc,
-  documentId,
-  onSnapshot,
-  query,
-  serverTimestamp,
-  setDoc,
-  where,
-} from 'firebase/firestore';
+import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 
 // Presença online guardada em usuarios/{uid}: { online: boolean, ultimoAcesso: Timestamp }.
 // Enquanto o app está aberto, o AuthContext atualiza `ultimoAcesso` a cada minuto (heartbeat).
@@ -47,6 +38,8 @@ function estaOnline(dados) {
 
 // Escuta em tempo real quais dos `ids` estão online. callback recebe um array de ids.
 // Retorna a função para cancelar a escuta.
+// Cada contato é escutado pelo próprio documento (usuarios/{id}): é o que as regras do Firestore permitem
+// (consultas em lote na coleção `usuarios` são bloqueadas), por isso antes ninguém aparecia como ativo.
 export function ouvirContatosOnline(ids, callback) {
   const lista = [...new Set((ids || []).filter(Boolean))];
   if (lista.length === 0) {
@@ -54,29 +47,21 @@ export function ouvirContatosOnline(ids, callback) {
     return () => {};
   }
 
-  // O Firestore limita o operador "in" a 30 valores por consulta.
-  const blocos = [];
-  for (let i = 0; i < lista.length; i += 30) blocos.push(lista.slice(i, i + 30));
-
-  const dadosPorBloco = {};
+  const dadosPorId = {};
   const emitir = () => {
-    const onlineAgora = Object.values(dadosPorBloco)
-      .flat()
-      .filter(({ dados }) => estaOnline(dados))
-      .map(({ id }) => id);
-    callback(onlineAgora);
+    callback(lista.filter((id) => dadosPorId[id] && estaOnline(dadosPorId[id])));
   };
 
-  const cancelamentos = blocos.map((bloco, indice) =>
+  const cancelamentos = lista.map((id) =>
     onSnapshot(
-      query(collection(db, 'usuarios'), where(documentId(), 'in', bloco)),
+      doc(db, 'usuarios', id),
       (snapshot) => {
-        dadosPorBloco[indice] = snapshot.docs.map((d) => ({ id: d.id, dados: d.data() }));
+        dadosPorId[id] = snapshot.exists() ? snapshot.data() : null;
         emitir();
       },
       (erro) => {
-        console.warn('Erro ao escutar contatos online:', erro?.message || erro);
-        dadosPorBloco[indice] = [];
+        console.warn('Erro ao escutar contato online:', erro?.message || erro);
+        dadosPorId[id] = null;
         emitir();
       }
     )
